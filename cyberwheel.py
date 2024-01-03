@@ -1,7 +1,8 @@
 import gymnasium as gym
 from gymnasium import spaces
 from network import *
-from redagent import *
+from redagents.shortestpath import ShortestPathRedAgent
+import numpy as np
 
 class Cyberwheel(gym.Env):
 
@@ -25,7 +26,7 @@ class Cyberwheel(gym.Env):
         # Observation space: Binary vector indicating whether each host is compromised or not
         self.observation_space = spaces.MultiBinary(self.network_size)
 
-        self.red_agent = RedAgent(self.observation_space, self.network.graph, self.network.source, self.network.target, self.network.host_to_index)
+        self.red_agent = ShortestPathRedAgent(self.observation_space, self.network.graph, self.network.source, self.network.target, self.network.host_to_index)
 
     # private method that converts state into observation 
     # convert the dictionary of Host objects into the observation vector

@@ -63,23 +63,26 @@ class Network:
 
         # With some probability, connect nodes between subnets
         edges = [(node1, node2) for node1 in self.hosts.keys() for node2 in self.hosts.keys() if self.hosts[node1].subnet_name != self.hosts[node2].subnet_name and random.random() < .01]
+        print(edges)
         self.graph.add_edges_from(edges)
 
-        # Assign 1 host where red agent starts
+        # Randomly assign 1 host where red agent starts
         self.source = random.choice(list(self.hosts.keys()))
 
         # Compute the shortest path lengths from source to all reachable nodes
         length = nx.single_source_shortest_path_length(self.graph, self.source)
 
+        # Set the target to one of the nodes that is furthest away
         self.target = self.source
         for node in length:
             if length[node] > length[self.target]:
                 self.target = node 
 
-        #print(length[self.target])
-
         self.hosts[self.target].target = True
-            
+
+    '''
+    Create a set of subnets to draw from - currently it generates many more than actually needed 
+    '''
     def generate_subnets(self, number_subnets, number_hosts):
         
         network = ipaddress.IPv4Network('192.168.0.0/16')

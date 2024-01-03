@@ -3,6 +3,8 @@ from stable_baselines3.common.env_checker import check_env
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.utils import set_random_seed
+from stable_baselines3.common.monitor import Monitor
+
 
 def make_env(env_id: str, rank: int, seed: int = 0):
     """
@@ -16,6 +18,7 @@ def make_env(env_id: str, rank: int, seed: int = 0):
     def _init():
         env = Cyberwheel(2,2,1)
         env.reset(seed=seed + rank)
+        env = Monitor(env, 'monitor_logs/')
         return env
 
     set_random_seed(seed)

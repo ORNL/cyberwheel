@@ -38,14 +38,13 @@ class Network:
 
             subnet = subnets[i]
             subnet_name = "subnet" + str(i)
-            self.graph.add_node(subnet_name)
+
             network = ipaddress.IPv4Network(subnet, strict=False)
 
             for n in range(0,hosts_per_subnet): 
                 host_name = subnet_name + "host" + str(n)
 
                 self.graph.add_node(host_name)
-                self.graph.add_edge(subnet_name, host_name)
 
                 host = Host(host_name, subnet_name, "user", "Windows", random.sample(services, 3), network[n])
 
@@ -58,17 +57,26 @@ class Network:
             self.host_to_index[key] = index
             index += 1
 
+        # Connect all nodes on same subnet
         edges = [(node1, node2) for node1 in self.hosts.keys() for node2 in self.hosts.keys() if self.hosts[node1].subnet_name == self.hosts[node2].subnet_name]
         self.graph.add_edges_from(edges)
 
-        edges = [(node1, node2) for node1 in self.hosts.keys() for node2 in self.hosts.keys() if self.hosts[node1].subnet_name != self.hosts[node2].subnet_name and random.random() < .3]
+        # With some probability, connect nodes between subnets
+        edges = [(node1, node2) for node1 in self.hosts.keys() for node2 in self.hosts.keys() if self.hosts[node1].subnet_name != self.hosts[node2].subnet_name and random.random() < .01]
         self.graph.add_edges_from(edges)
-
-        # Assign 1 host as the target
-        self.target = random.choice(list(self.hosts.keys()))
 
         # Assign 1 host where red agent starts
         self.source = random.choice(list(self.hosts.keys()))
+
+        # Compute the shortest path lengths from source to all reachable nodes
+        length = nx.single_source_shortest_path_length(self.graph, self.source)
+
+        self.target = self.source
+        for node in length:
+            if length[node] > length[self.target]:
+                self.target = node 
+
+        #print(length[self.target])
 
         self.hosts[self.target].target = True
             

@@ -61,13 +61,17 @@ class Cyberwheel(gym.Env):
                 patched = False
 
             self.network.hosts[l[action-1].host_name].is_compromised = False
-            
-        self.observation_space = self._get_obs()
 
-        if self.red_agent.act(self.observation_space) == "owned":
+            self.observation_space = self._get_obs()
+
+        flag = self.red_agent.act(self.observation_space)
+
+        if flag == "owned":
             done = True
             reward = -100
         else: 
+            self.network.hosts[flag].is_compromised = True
+            self.observation_space = self._get_obs()
             done = False
 
         return self._get_obs(), reward, done, False, {}

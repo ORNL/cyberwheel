@@ -1,6 +1,7 @@
 import random
 import yaml
 from pyattck import Attck
+import requests
 
 def select_apt_crew():
     apt_crews = attack.enterprise.actors
@@ -23,12 +24,15 @@ def match_data_to_techniques(selected_techniques):
         description = technique.description
         kill_chain_phases = [phase.phase_name for phase in technique.kill_chain_phases]
         data_source_platforms = [source.platform for source in technique.data_sources]
+        external_id = technique.external_references[0].external_id
+
 
         matched_data[technique.name] = {
             "data_components": data_components,
             "description": description,
             "kill_chain_phases": kill_chain_phases,
-            "data_source_platforms": data_source_platforms
+            "data_source_platforms": data_source_platforms,
+            "external_id": external_id
         }
 
     return matched_data
@@ -37,15 +41,17 @@ def generate_campaign(apt_crew, num_techniques_per_stage):
     campaign = []
     
     # Select techniques for each stage of the kill chain
-    stages = ['initial-access', 'execution', 'persistence', 'privilege-escalation', 'defense-evasion', 'credential-access', 'discovery', 'collection', 'exfiltration', 'impact']
+    stages = ['reconnaissance', 'recource-development', 'initial-access', 'execution', 'persistence', 'privilege-escalation', 'defense-evasion', 'credential-access', 'discovery', 'lateral-movement', 'collection', 'command-and-control', 'exfiltration', 'impact']
     for stage in stages:
         selected_techniques = select_techniques_for_stage(apt_crew, stage, num_techniques_per_stage)
         if selected_techniques:
             for selected_technique in selected_techniques:
+
                 data_info = match_data_to_techniques([selected_technique])
                 campaign.append({
-                    "stage": stage,
                     "technique": selected_technique.name,
+                    "id": data_info[selected_technique.name]["external_id"],
+                    "stage": stage,
                     "data_components": data_info[selected_technique.name]["data_components"],
                     "description": data_info[selected_technique.name]["description"],
                     "kill_chain_phases": data_info[selected_technique.name]["kill_chain_phases"],

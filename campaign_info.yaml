@@ -1,477 +1,450 @@
-apt_crew: Ke3chang
+apt_crew: HEXANE
 campaign:
-- stage: initial-access
-  technique: Exploit Public-Facing Application
+- technique: Identify Roles
+  id: T1591.004
+  stage: reconnaissance
+  data_components: []
+  description: 'Adversaries may gather information about identities and roles within
+    the victim organization that can be used during targeting. Information about business
+    roles may reveal a variety of targetable details, including identifiable information
+    for key personnel as well as what data/resources they have access to.
+
+
+    Adversaries may gather this information in various ways, such as direct elicitation
+    via [Phishing for Information](https://attack.mitre.org/techniques/T1598). Information
+    about business roles may also be exposed to adversaries via online or other accessible
+    data sets (ex: [Social Media](https://attack.mitre.org/techniques/T1593/001) or
+    [Search Victim-Owned Websites](https://attack.mitre.org/techniques/T1594)).(Citation:
+    ThreatPost Broadvoice Leak) Gathering this information may reveal opportunities
+    for other forms of reconnaissance (ex: [Phishing for Information](https://attack.mitre.org/techniques/T1598)
+    or [Search Open Websites/Domains](https://attack.mitre.org/techniques/T1593)),
+    establishing operational resources (ex: [Establish Accounts](https://attack.mitre.org/techniques/T1585)
+    or [Compromise Accounts](https://attack.mitre.org/techniques/T1586)), and/or initial
+    access (ex: [Phishing](https://attack.mitre.org/techniques/T1566)).'
+  kill_chain_phases:
+  - reconnaissance
+  data_source_platforms: []
+- technique: Gather Victim Identity Information
+  id: T1589
+  stage: reconnaissance
   data_components:
   - Network Traffic Content
-  - Application Log Content
-  description: "Adversaries may attempt to exploit a weakness in an Internet-facing\
-    \ host or system to initially access a network. The weakness in the system can\
-    \ be a software bug, a temporary glitch, or a misconfiguration.\n\nExploited applications\
-    \ are often websites/web servers, but can also include databases (like SQL), standard\
-    \ services (like SMB or SSH), network device administration and management protocols\
-    \ (like SNMP and Smart Install), and any other system with Internet accessible\
-    \ open sockets.(Citation: NVD CVE-2016-6662)(Citation: CIS Multiple SMB Vulnerabilities)(Citation:\
-    \ US-CERT TA18-106A Network Infrastructure Devices 2018)(Citation: Cisco Blog\
-    \ Legacy Device Attacks)(Citation: NVD CVE-2014-7169) Depending on the flaw being\
-    \ exploited this may also involve [Exploitation for Defense Evasion](https://attack.mitre.org/techniques/T1211).\
-    \ \n\nIf an application is hosted on cloud-based infrastructure and/or is containerized,\
-    \ then exploiting it may lead to compromise of the underlying instance or container.\
-    \ This can allow an adversary a path to access the cloud or container APIs, exploit\
-    \ container host access via [Escape to Host](https://attack.mitre.org/techniques/T1611),\
-    \ or take advantage of weak identity and access management policies.\n\nAdversaries\
-    \ may also exploit edge network infrastructure and related appliances, specifically\
-    \ targeting devices that do not support robust host-based defenses.(Citation:\
-    \ Mandiant Fortinet Zero Day)(Citation: Wired Russia Cyberwar)\n\nFor websites\
-    \ and databases, the OWASP top 10 and CWE top 25 highlight the most common web-based\
-    \ vulnerabilities.(Citation: OWASP Top 10)(Citation: CWE top 25)"
+  description: 'Adversaries may gather information about the victim''s identity that
+    can be used during targeting. Information about identities may include a variety
+    of details, including personal data (ex: employee names, email addresses, etc.)
+    as well as sensitive details such as credentials.
+
+
+    Adversaries may gather this information in various ways, such as direct elicitation
+    via [Phishing for Information](https://attack.mitre.org/techniques/T1598). Information
+    about users could also be enumerated via other active means (i.e. [Active Scanning](https://attack.mitre.org/techniques/T1595))
+    such as probing and analyzing responses from authentication services that may
+    reveal valid usernames in a system.(Citation: GrimBlog UsernameEnum) Information
+    about victims may also be exposed to adversaries via online or other accessible
+    data sets (ex: [Social Media](https://attack.mitre.org/techniques/T1593/001) or
+    [Search Victim-Owned Websites](https://attack.mitre.org/techniques/T1594)).(Citation:
+    OPM Leak)(Citation: Register Deloitte)(Citation: Register Uber)(Citation: Detectify
+    Slack Tokens)(Citation: Forbes GitHub Creds)(Citation: GitHub truffleHog)(Citation:
+    GitHub Gitrob)(Citation: CNET Leaks)
+
+
+    Gathering this information may reveal opportunities for other forms of reconnaissance
+    (ex: [Search Open Websites/Domains](https://attack.mitre.org/techniques/T1593)
+    or [Phishing for Information](https://attack.mitre.org/techniques/T1598)), establishing
+    operational resources (ex: [Compromise Accounts](https://attack.mitre.org/techniques/T1586)),
+    and/or initial access (ex: [Phishing](https://attack.mitre.org/techniques/T1566)
+    or [Valid Accounts](https://attack.mitre.org/techniques/T1078)).'
   kill_chain_phases:
-  - initial-access
+  - reconnaissance
   data_source_platforms: []
-- stage: initial-access
-  technique: External Remote Services
+- technique: Scheduled Task
+  id: T1053.005
+  stage: execution
   data_components:
-  - Logon Session Metadata
-  - Application Log Content
-  - Network Traffic Content
-  - Network Traffic Flow
-  - Network Connection Creation
-  description: "Adversaries may leverage external-facing remote services to initially\
-    \ access and/or persist within a network. Remote services such as VPNs, Citrix,\
-    \ and other access mechanisms allow users to connect to internal enterprise network\
-    \ resources from external locations. There are often remote service gateways that\
-    \ manage connections and credential authentication for these services. Services\
-    \ such as [Windows Remote Management](https://attack.mitre.org/techniques/T1021/006)\
-    \ and [VNC](https://attack.mitre.org/techniques/T1021/005) can also be used externally.(Citation:\
-    \ MacOS VNC software for Remote Desktop)\n\nAccess to [Valid Accounts](https://attack.mitre.org/techniques/T1078)\
-    \ to use the service is often a requirement, which could be obtained through credential\
-    \ pharming or by obtaining the credentials from users after compromising the enterprise\
-    \ network.(Citation: Volexity Virtual Private Keylogging) Access to remote services\
-    \ may be used as a redundant or persistent access mechanism during an operation.\n\
-    \nAccess may also be gained through an exposed service that doesn\u2019t require\
-    \ authentication. In containerized environments, this may include an exposed Docker\
-    \ API, Kubernetes API server, kubelet, or web application such as the Kubernetes\
-    \ dashboard.(Citation: Trend Micro Exposed Docker Server)(Citation: Unit 42 Hildegard\
-    \ Malware)"
-  kill_chain_phases:
-  - persistence
-  - initial-access
-  data_source_platforms: []
-- stage: execution
-  technique: Windows Command Shell
-  data_components:
+  - File Modification
+  - Scheduled Job Creation
+  - Windows Registry Key Creation
   - Command Execution
   - Process Creation
-  description: 'Adversaries may abuse the Windows command shell for execution. The
-    Windows command shell ([cmd](https://attack.mitre.org/software/S0106)) is the
-    primary command prompt on Windows systems. The Windows command prompt can be used
-    to control almost any aspect of a system, with various permission levels required
-    for different subsets of commands. The command prompt can be invoked remotely
-    via [Remote Services](https://attack.mitre.org/techniques/T1021) such as [SSH](https://attack.mitre.org/techniques/T1021/004).(Citation:
-    SSH in Windows)
+  description: 'Adversaries may abuse the Windows Task Scheduler to perform task scheduling
+    for initial or recurring execution of malicious code. There are multiple ways
+    to access the Task Scheduler in Windows. The [schtasks](https://attack.mitre.org/software/S0111)
+    utility can be run directly on the command line, or the Task Scheduler can be
+    opened through the GUI within the Administrator Tools section of the Control Panel.
+    In some cases, adversaries have used a .NET wrapper for the Windows Task Scheduler,
+    and alternatively, adversaries have used the Windows netapi32 library to create
+    a scheduled task.
 
 
-    Batch files (ex: .bat or .cmd) also provide the shell with a list of sequential
-    commands to run, as well as normal scripting operations such as conditionals and
-    loops. Common uses of batch files include long or repetitive tasks, or the need
-    to run the same set of commands on multiple systems.
+    The deprecated [at](https://attack.mitre.org/software/S0110) utility could also
+    be abused by adversaries (ex: [At](https://attack.mitre.org/techniques/T1053/002)),
+    though <code>at.exe</code> can not access tasks created with <code>schtasks</code>
+    or the Control Panel.
 
 
-    Adversaries may leverage [cmd](https://attack.mitre.org/software/S0106) to execute
-    various commands and payloads. Common uses include [cmd](https://attack.mitre.org/software/S0106)
-    to execute a single command, or abusing [cmd](https://attack.mitre.org/software/S0106)
-    interactively with input and output forwarded over a command and control channel.'
+    An adversary may use Windows Task Scheduler to execute programs at system startup
+    or on a scheduled basis for persistence. The Windows Task Scheduler can also be
+    abused to conduct remote Execution as part of Lateral Movement and/or to run a
+    process under the context of a specified account (such as SYSTEM). Similar to
+    [System Binary Proxy Execution](https://attack.mitre.org/techniques/T1218), adversaries
+    have also abused the Windows Task Scheduler to potentially mask one-time execution
+    under signed/trusted system processes.(Citation: ProofPoint Serpent)
+
+
+    Adversaries may also create "hidden" scheduled tasks (i.e. [Hide Artifacts](https://attack.mitre.org/techniques/T1564))
+    that may not be visible to defender tools and manual queries used to enumerate
+    tasks. Specifically, an adversary may hide a task from `schtasks /query` and the
+    Task Scheduler by deleting the associated Security Descriptor (SD) registry value
+    (where deletion of this value must be completed using SYSTEM permissions).(Citation:
+    SigmaHQ)(Citation: Tarrask scheduled task) Adversaries may also employ alternate
+    methods to hide tasks, such as altering the metadata (e.g., `Index` value) within
+    associated registry keys.(Citation: Defending Against Scheduled Task Attacks in
+    Windows Environments) '
+  kill_chain_phases:
+  - execution
+  - persistence
+  - privilege-escalation
+  data_source_platforms: []
+- technique: Malicious File
+  id: T1204.002
+  stage: execution
+  data_components:
+  - Process Creation
+  - File Creation
+  description: "An adversary may rely upon a user opening a malicious file in order\
+    \ to gain execution. Users may be subjected to social engineering to get them\
+    \ to open a file that will lead to code execution. This user action will typically\
+    \ be observed as follow-on behavior from [Spearphishing Attachment](https://attack.mitre.org/techniques/T1566/001).\
+    \ Adversaries may use several types of files that require a user to execute them,\
+    \ including .doc, .pdf, .xls, .rtf, .scr, .exe, .lnk, .pif, and .cpl.\n\nAdversaries\
+    \ may employ various forms of [Masquerading](https://attack.mitre.org/techniques/T1036)\
+    \ and [Obfuscated Files or Information](https://attack.mitre.org/techniques/T1027)\
+    \ to increase the likelihood that a user will open and successfully execute a\
+    \ malicious file. These methods may include using a familiar naming convention\
+    \ and/or password protecting the file and supplying instructions to a user on\
+    \ how to open it.(Citation: Password Protected Word Docs) \n\nWhile [Malicious\
+    \ File](https://attack.mitre.org/techniques/T1204/002) frequently occurs shortly\
+    \ after Initial Access it may occur at other phases of an intrusion, such as when\
+    \ an adversary places a file in a shared directory or on a user's desktop hoping\
+    \ that a user will click on it. This activity may also be seen shortly after [Internal\
+    \ Spearphishing](https://attack.mitre.org/techniques/T1534)."
   kill_chain_phases:
   - execution
   data_source_platforms: []
-- stage: execution
-  technique: Service Execution
+- technique: Scheduled Task
+  id: T1053.005
+  stage: persistence
   data_components:
-  - Process Creation
-  - Service Creation
+  - File Modification
+  - Scheduled Job Creation
+  - Windows Registry Key Creation
   - Command Execution
-  - Windows Registry Key Modification
-  description: 'Adversaries may abuse the Windows service control manager to execute
-    malicious commands or payloads. The Windows service control manager (<code>services.exe</code>)
-    is an interface to manage and manipulate services.(Citation: Microsoft Service
-    Control Manager) The service control manager is accessible to users via GUI components
-    as well as system utilities such as <code>sc.exe</code> and [Net](https://attack.mitre.org/software/S0039).
+  - Process Creation
+  description: 'Adversaries may abuse the Windows Task Scheduler to perform task scheduling
+    for initial or recurring execution of malicious code. There are multiple ways
+    to access the Task Scheduler in Windows. The [schtasks](https://attack.mitre.org/software/S0111)
+    utility can be run directly on the command line, or the Task Scheduler can be
+    opened through the GUI within the Administrator Tools section of the Control Panel.
+    In some cases, adversaries have used a .NET wrapper for the Windows Task Scheduler,
+    and alternatively, adversaries have used the Windows netapi32 library to create
+    a scheduled task.
 
 
-    [PsExec](https://attack.mitre.org/software/S0029) can also be used to execute
-    commands or payloads via a temporary Windows service created through the service
-    control manager API.(Citation: Russinovich Sysinternals) Tools such as [PsExec](https://attack.mitre.org/software/S0029)
-    and <code>sc.exe</code> can accept remote servers as arguments and may be used
-    to conduct remote execution.
+    The deprecated [at](https://attack.mitre.org/software/S0110) utility could also
+    be abused by adversaries (ex: [At](https://attack.mitre.org/techniques/T1053/002)),
+    though <code>at.exe</code> can not access tasks created with <code>schtasks</code>
+    or the Control Panel.
 
 
-    Adversaries may leverage these mechanisms to execute malicious content. This can
-    be done by either executing a new or modified service. This technique is the execution
-    used in conjunction with [Windows Service](https://attack.mitre.org/techniques/T1543/003)
-    during service persistence or privilege escalation.'
+    An adversary may use Windows Task Scheduler to execute programs at system startup
+    or on a scheduled basis for persistence. The Windows Task Scheduler can also be
+    abused to conduct remote Execution as part of Lateral Movement and/or to run a
+    process under the context of a specified account (such as SYSTEM). Similar to
+    [System Binary Proxy Execution](https://attack.mitre.org/techniques/T1218), adversaries
+    have also abused the Windows Task Scheduler to potentially mask one-time execution
+    under signed/trusted system processes.(Citation: ProofPoint Serpent)
+
+
+    Adversaries may also create "hidden" scheduled tasks (i.e. [Hide Artifacts](https://attack.mitre.org/techniques/T1564))
+    that may not be visible to defender tools and manual queries used to enumerate
+    tasks. Specifically, an adversary may hide a task from `schtasks /query` and the
+    Task Scheduler by deleting the associated Security Descriptor (SD) registry value
+    (where deletion of this value must be completed using SYSTEM permissions).(Citation:
+    SigmaHQ)(Citation: Tarrask scheduled task) Adversaries may also employ alternate
+    methods to hide tasks, such as altering the metadata (e.g., `Index` value) within
+    associated registry keys.(Citation: Defending Against Scheduled Task Attacks in
+    Windows Environments) '
   kill_chain_phases:
   - execution
-  data_source_platforms: []
-- stage: persistence
-  technique: Cloud Accounts
-  data_components:
-  - Logon Session Metadata
-  - Logon Session Creation
-  - User Account Authentication
-  description: 'Adversaries may obtain and abuse credentials of a cloud account as
-    a means of gaining Initial Access, Persistence, Privilege Escalation, or Defense
-    Evasion. Cloud accounts are those created and configured by an organization for
-    use by users, remote support, services, or for administration of resources within
-    a cloud service provider or SaaS application. In some cases, cloud accounts may
-    be federated with traditional identity management systems, such as Windows Active
-    Directory.(Citation: AWS Identity Federation)(Citation: Google Federating GC)(Citation:
-    Microsoft Deploying AD Federation)
-
-
-    Compromised credentials for cloud accounts can be used to harvest sensitive data
-    from online storage accounts and databases. Access to cloud accounts can also
-    be abused to gain Initial Access to a network by abusing a [Trusted Relationship](https://attack.mitre.org/techniques/T1199).
-    Similar to [Domain Accounts](https://attack.mitre.org/techniques/T1078/002), compromise
-    of federated cloud accounts may allow adversaries to more easily move laterally
-    within an environment.
-
-
-    Once a cloud account is compromised, an adversary may perform [Account Manipulation](https://attack.mitre.org/techniques/T1098)
-    - for example, by adding [Additional Cloud Roles](https://attack.mitre.org/techniques/T1098/003)
-    - to maintain persistence and potentially escalate their privileges.'
-  kill_chain_phases:
-  - defense-evasion
   - persistence
   - privilege-escalation
-  - initial-access
   data_source_platforms: []
-- stage: persistence
-  technique: Registry Run Keys / Startup Folder
+- technique: Scheduled Task
+  id: T1053.005
+  stage: privilege-escalation
   data_components:
-  - Windows Registry Key Creation
-  - Windows Registry Key Modification
-  - Command Execution
-  - Process Creation
   - File Modification
-  description: 'Adversaries may achieve persistence by adding a program to a startup
-    folder or referencing it with a Registry run key. Adding an entry to the "run
-    keys" in the Registry or startup folder will cause the program referenced to be
-    executed when a user logs in.(Citation: Microsoft Run Key) These programs will
-    be executed under the context of the user and will have the account''s associated
-    permissions level.
-
-
-    Placing a program within a startup folder will also cause that program to execute
-    when a user logs in. There is a startup folder location for individual user accounts
-    as well as a system-wide startup folder that will be checked regardless of which
-    user account logs in. The startup folder path for the current user is <code>C:\Users\\[Username]\AppData\Roaming\Microsoft\Windows\Start
-    Menu\Programs\Startup</code>. The startup folder path for all users is <code>C:\ProgramData\Microsoft\Windows\Start
-    Menu\Programs\StartUp</code>.
-
-
-    The following run keys are created by default on Windows systems:
-
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run</code>
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce</code>
-
-    * <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run</code>
-
-    * <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunOnce</code>
-
-
-    Run keys may exist under multiple hives.(Citation: Microsoft Wow6432Node 2018)(Citation:
-    Malwarebytes Wow6432Node 2016) The <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunOnceEx</code>
-    is also available but is not created by default on Windows Vista and newer. Registry
-    run key entries can reference programs directly or list them as a dependency.(Citation:
-    Microsoft Run Key) For example, it is possible to load a DLL at logon using a
-    "Depend" key with RunOnceEx: <code>reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnceEx\0001\Depend
-    /v 1 /d "C:\temp\evil[.]dll"</code> (Citation: Oddvar Moe RunOnceEx Mar 2018)
-
-
-    The following Registry keys can be used to set startup folder items for persistence:
-
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User
-    Shell Folders</code>
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell
-    Folders</code>
-
-    * <code>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell
-    Folders</code>
-
-    * <code>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User
-    Shell Folders</code>
-
-
-    The following Registry keys can control automatic startup of services during boot:
-
-
-    * <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce</code>
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce</code>
-
-    * <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunServices</code>
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunServices</code>
-
-
-    Using policy settings to specify startup programs creates corresponding values
-    in either of two Registry keys:
-
-
-    * <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run</code>
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run</code>
-
-
-    The Winlogon key controls actions that occur when a user logs on to a computer
-    running Windows 7. Most of these actions are under the control of the operating
-    system, but you can also add custom actions here. The <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows
-    NT\CurrentVersion\Winlogon\Userinit</code> and <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows
-    NT\CurrentVersion\Winlogon\Shell</code> subkeys can automatically launch programs.
-
-
-    Programs listed in the load value of the registry key <code>HKEY_CURRENT_USER\Software\Microsoft\Windows
-    NT\CurrentVersion\Windows</code> run when any user logs on.
-
-
-    By default, the multistring <code>BootExecute</code> value of the registry key
-    <code>HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager</code>
-    is set to <code>autocheck autochk *</code>. This value causes Windows, at startup,
-    to check the file-system integrity of the hard disks if the system has been shut
-    down abnormally. Adversaries can add other programs or processes to this registry
-    value which will automatically launch at boot.
-
-
-    Adversaries can use these configuration locations to execute malware, such as
-    remote access tools, to maintain persistence through system reboots. Adversaries
-    may also use [Masquerading](https://attack.mitre.org/techniques/T1036) to make
-    the Registry entries look as if they are associated with legitimate programs.'
-  kill_chain_phases:
-  - persistence
-  - privilege-escalation
-  data_source_platforms: []
-- stage: privilege-escalation
-  technique: Windows Service
-  data_components:
-  - Process Creation
-  - Service Modification
+  - Scheduled Job Creation
   - Windows Registry Key Creation
-  - Driver Load
-  - Windows Registry Key Modification
-  - Service Creation
-  - Command Execution
-  - OS API Execution
-  description: "Adversaries may create or modify Windows services to repeatedly execute\
-    \ malicious payloads as part of persistence. When Windows boots up, it starts\
-    \ programs or applications called services that perform background system functions.(Citation:\
-    \ TechNet Services) Windows service configuration information, including the file\
-    \ path to the service's executable or recovery programs/commands, is stored in\
-    \ the Windows Registry.\n\nAdversaries may install a new service or modify an\
-    \ existing service to execute at startup in order to persist on a system. Service\
-    \ configurations can be set or modified using system utilities (such as sc.exe),\
-    \ by directly modifying the Registry, or by interacting directly with the Windows\
-    \ API. \n\nAdversaries may also use services to install and execute malicious\
-    \ drivers. For example, after dropping a driver file (ex: `.sys`) to disk, the\
-    \ payload can be loaded and registered via [Native API](https://attack.mitre.org/techniques/T1106)\
-    \ functions such as `CreateServiceW()` (or manually via functions such as `ZwLoadDriver()`\
-    \ and `ZwSetValueKey()`), by creating the required service Registry values (i.e.\
-    \ [Modify Registry](https://attack.mitre.org/techniques/T1112)), or by using command-line\
-    \ utilities such as `PnPUtil.exe`.(Citation: Symantec W.32 Stuxnet Dossier)(Citation:\
-    \ Crowdstrike DriveSlayer February 2022)(Citation: Unit42 AcidBox June 2020) Adversaries\
-    \ may leverage these drivers as [Rootkit](https://attack.mitre.org/techniques/T1014)s\
-    \ to hide the presence of malicious activity on a system. Adversaries may also\
-    \ load a signed yet vulnerable driver onto a compromised machine (known as \"\
-    Bring Your Own Vulnerable Driver\" (BYOVD)) as part of [Exploitation for Privilege\
-    \ Escalation](https://attack.mitre.org/techniques/T1068).(Citation: ESET InvisiMole\
-    \ June 2020)(Citation: Unit42 AcidBox June 2020)\n\nServices may be created with\
-    \ administrator privileges but are executed under SYSTEM privileges, so an adversary\
-    \ may also use a service to escalate privileges. Adversaries may also directly\
-    \ start services through [Service Execution](https://attack.mitre.org/techniques/T1569/002).\
-    \ To make detection analysis more challenging, malicious services may also incorporate\
-    \ [Masquerade Task or Service](https://attack.mitre.org/techniques/T1036/004)\
-    \ (ex: using a service and/or payload name related to a legitimate OS or benign\
-    \ software component)."
-  kill_chain_phases:
-  - persistence
-  - privilege-escalation
-  data_source_platforms: []
-- stage: privilege-escalation
-  technique: Registry Run Keys / Startup Folder
-  data_components:
-  - Windows Registry Key Creation
-  - Windows Registry Key Modification
   - Command Execution
   - Process Creation
-  - File Modification
-  description: 'Adversaries may achieve persistence by adding a program to a startup
-    folder or referencing it with a Registry run key. Adding an entry to the "run
-    keys" in the Registry or startup folder will cause the program referenced to be
-    executed when a user logs in.(Citation: Microsoft Run Key) These programs will
-    be executed under the context of the user and will have the account''s associated
-    permissions level.
+  description: 'Adversaries may abuse the Windows Task Scheduler to perform task scheduling
+    for initial or recurring execution of malicious code. There are multiple ways
+    to access the Task Scheduler in Windows. The [schtasks](https://attack.mitre.org/software/S0111)
+    utility can be run directly on the command line, or the Task Scheduler can be
+    opened through the GUI within the Administrator Tools section of the Control Panel.
+    In some cases, adversaries have used a .NET wrapper for the Windows Task Scheduler,
+    and alternatively, adversaries have used the Windows netapi32 library to create
+    a scheduled task.
 
 
-    Placing a program within a startup folder will also cause that program to execute
-    when a user logs in. There is a startup folder location for individual user accounts
-    as well as a system-wide startup folder that will be checked regardless of which
-    user account logs in. The startup folder path for the current user is <code>C:\Users\\[Username]\AppData\Roaming\Microsoft\Windows\Start
-    Menu\Programs\Startup</code>. The startup folder path for all users is <code>C:\ProgramData\Microsoft\Windows\Start
-    Menu\Programs\StartUp</code>.
+    The deprecated [at](https://attack.mitre.org/software/S0110) utility could also
+    be abused by adversaries (ex: [At](https://attack.mitre.org/techniques/T1053/002)),
+    though <code>at.exe</code> can not access tasks created with <code>schtasks</code>
+    or the Control Panel.
 
 
-    The following run keys are created by default on Windows systems:
+    An adversary may use Windows Task Scheduler to execute programs at system startup
+    or on a scheduled basis for persistence. The Windows Task Scheduler can also be
+    abused to conduct remote Execution as part of Lateral Movement and/or to run a
+    process under the context of a specified account (such as SYSTEM). Similar to
+    [System Binary Proxy Execution](https://attack.mitre.org/techniques/T1218), adversaries
+    have also abused the Windows Task Scheduler to potentially mask one-time execution
+    under signed/trusted system processes.(Citation: ProofPoint Serpent)
 
 
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run</code>
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce</code>
-
-    * <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run</code>
-
-    * <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunOnce</code>
-
-
-    Run keys may exist under multiple hives.(Citation: Microsoft Wow6432Node 2018)(Citation:
-    Malwarebytes Wow6432Node 2016) The <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunOnceEx</code>
-    is also available but is not created by default on Windows Vista and newer. Registry
-    run key entries can reference programs directly or list them as a dependency.(Citation:
-    Microsoft Run Key) For example, it is possible to load a DLL at logon using a
-    "Depend" key with RunOnceEx: <code>reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnceEx\0001\Depend
-    /v 1 /d "C:\temp\evil[.]dll"</code> (Citation: Oddvar Moe RunOnceEx Mar 2018)
-
-
-    The following Registry keys can be used to set startup folder items for persistence:
-
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User
-    Shell Folders</code>
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell
-    Folders</code>
-
-    * <code>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell
-    Folders</code>
-
-    * <code>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User
-    Shell Folders</code>
-
-
-    The following Registry keys can control automatic startup of services during boot:
-
-
-    * <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce</code>
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce</code>
-
-    * <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunServices</code>
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunServices</code>
-
-
-    Using policy settings to specify startup programs creates corresponding values
-    in either of two Registry keys:
-
-
-    * <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run</code>
-
-    * <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run</code>
-
-
-    The Winlogon key controls actions that occur when a user logs on to a computer
-    running Windows 7. Most of these actions are under the control of the operating
-    system, but you can also add custom actions here. The <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows
-    NT\CurrentVersion\Winlogon\Userinit</code> and <code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows
-    NT\CurrentVersion\Winlogon\Shell</code> subkeys can automatically launch programs.
-
-
-    Programs listed in the load value of the registry key <code>HKEY_CURRENT_USER\Software\Microsoft\Windows
-    NT\CurrentVersion\Windows</code> run when any user logs on.
-
-
-    By default, the multistring <code>BootExecute</code> value of the registry key
-    <code>HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager</code>
-    is set to <code>autocheck autochk *</code>. This value causes Windows, at startup,
-    to check the file-system integrity of the hard disks if the system has been shut
-    down abnormally. Adversaries can add other programs or processes to this registry
-    value which will automatically launch at boot.
-
-
-    Adversaries can use these configuration locations to execute malware, such as
-    remote access tools, to maintain persistence through system reboots. Adversaries
-    may also use [Masquerading](https://attack.mitre.org/techniques/T1036) to make
-    the Registry entries look as if they are associated with legitimate programs.'
+    Adversaries may also create "hidden" scheduled tasks (i.e. [Hide Artifacts](https://attack.mitre.org/techniques/T1564))
+    that may not be visible to defender tools and manual queries used to enumerate
+    tasks. Specifically, an adversary may hide a task from `schtasks /query` and the
+    Task Scheduler by deleting the associated Security Descriptor (SD) registry value
+    (where deletion of this value must be completed using SYSTEM permissions).(Citation:
+    SigmaHQ)(Citation: Tarrask scheduled task) Adversaries may also employ alternate
+    methods to hide tasks, such as altering the metadata (e.g., `Index` value) within
+    associated registry keys.(Citation: Defending Against Scheduled Task Attacks in
+    Windows Environments) '
   kill_chain_phases:
+  - execution
   - persistence
   - privilege-escalation
   data_source_platforms: []
-- stage: defense-evasion
-  technique: Valid Accounts
-  data_components:
-  - Logon Session Creation
-  - User Account Authentication
-  - Logon Session Metadata
-  description: 'Adversaries may obtain and abuse credentials of existing accounts
-    as a means of gaining Initial Access, Persistence, Privilege Escalation, or Defense
-    Evasion. Compromised credentials may be used to bypass access controls placed
-    on various resources on systems within the network and may even be used for persistent
-    access to remote systems and externally available services, such as VPNs, Outlook
-    Web Access, network devices, and remote desktop.(Citation: volexity_0day_sophos_FW)
-    Compromised credentials may also grant an adversary increased privilege to specific
-    systems or access to restricted areas of the network. Adversaries may choose not
-    to use malware or tools in conjunction with the legitimate access those credentials
-    provide to make it harder to detect their presence.
-
-
-    In some cases, adversaries may abuse inactive accounts: for example, those belonging
-    to individuals who are no longer part of an organization. Using these accounts
-    may allow the adversary to evade detection, as the original account user will
-    not be present to identify any anomalous activity taking place on their account.(Citation:
-    CISA MFA PrintNightmare)
-
-
-    The overlap of permissions for local, domain, and cloud accounts across a network
-    of systems is of concern because the adversary may be able to pivot across accounts
-    and systems to reach a high level of access (i.e., domain or enterprise administrator)
-    to bypass access controls set within the enterprise.(Citation: TechNet Credential
-    Theft)'
-  kill_chain_phases:
-  - defense-evasion
-  - persistence
-  - privilege-escalation
-  - initial-access
-  data_source_platforms: []
-- stage: defense-evasion
-  technique: Right-to-Left Override
+- technique: Command Obfuscation
+  id: T1027.010
+  stage: defense-evasion
   data_components:
   - File Metadata
-  description: 'Adversaries may abuse the right-to-left override (RTLO or RLO) character
-    (U+202E) to disguise a string and/or file name to make it appear benign. RTLO
-    is a non-printing Unicode character that causes the text that follows it to be
-    displayed in reverse. For example, a Windows screensaver executable named <code>March
-    25 \u202Excod.scr</code> will display as <code>March 25 rcs.docx</code>. A JavaScript
-    file named <code>photo_high_re\u202Egnp.js</code> will be displayed as <code>photo_high_resj.png</code>.(Citation:
-    Infosecinstitute RTLO Technique)
-
-
-    Adversaries may abuse the RTLO character as a means of tricking a user into executing
-    what they think is a benign file type. A common use of this technique is with
-    [Spearphishing Attachment](https://attack.mitre.org/techniques/T1566/001)/[Malicious
-    File](https://attack.mitre.org/techniques/T1204/002) since it can trick both end
-    users and defenders if they are not aware of how their tools display and render
-    the RTLO character. Use of the RTLO character has been seen in many targeted intrusion
-    attempts and criminal activity.(Citation: Trend Micro PLEAD RTLO)(Citation: Kaspersky
-    RTLO Cyber Crime) RTLO can be used in the Windows Registry as well, where regedit.exe
-    displays the reversed characters but the command line tool reg.exe does not by
-    default.'
+  - Command Execution
+  - Script Execution
+  description: "Adversaries may obfuscate content during command execution to impede\
+    \ detection. Command-line obfuscation is a method of making strings and patterns\
+    \ within commands and scripts more difficult to signature and analyze. This type\
+    \ of obfuscation can be included within commands executed by delivered payloads\
+    \ (e.g., [Phishing](https://attack.mitre.org/techniques/T1566) and [Drive-by Compromise](https://attack.mitre.org/techniques/T1189))\
+    \ or interactively via [Command and Scripting Interpreter](https://attack.mitre.org/techniques/T1059).(Citation:\
+    \ Akamai JS)(Citation: Malware Monday VBE)\n\nFor example, adversaries may abuse\
+    \ syntax that utilizes various symbols and escape characters (such as spacing,\
+    \  `^`, `+`. `$`, and `%`) to make commands difficult to analyze while maintaining\
+    \ the same intended functionality.(Citation: RC PowerShell) Many languages support\
+    \ built-in obfuscation in the form of base64 or URL encoding.(Citation: Microsoft\
+    \ PowerShellB64) Adversaries may also manually implement command obfuscation via\
+    \ string splitting (`\u201CWor\u201D+\u201Cd.Application\u201D`), order and casing\
+    \ of characters (`rev <<<'dwssap/cte/ tac'`), globing (`mkdir -p '/tmp/:&$NiA'`),\
+    \ as well as various tricks involving passing strings through tokens/environment\
+    \ variables/input streams.(Citation: Bashfuscator Command Obfuscators)(Citation:\
+    \ FireEye Obfuscation June 2017)\n\nAdversaries may also use tricks such as directory\
+    \ traversals to obfuscate references to the binary being invoked by a command\
+    \ (`C:\\voi\\pcw\\..\\..\\Windows\\tei\\qs\\k\\..\\..\\..\\system32\\erool\\..\\\
+    wbem\\wg\\je\\..\\..\\wmic.exe shadowcopy delete`).(Citation: Twitter Richard\
+    \ WMIC)\n\nTools such as <code>Invoke-Obfuscation</code> and <code>Invoke-DOSfucation</code>\
+    \ have also been used to obfuscate commands.(Citation: Invoke-DOSfuscation)(Citation:\
+    \ Invoke-Obfuscation)"
   kill_chain_phases:
   - defense-evasion
   data_source_platforms: []
-- stage: credential-access
-  technique: Keylogging
+- technique: Brute Force
+  id: T1110
+  stage: credential-access
+  data_components:
+  - Command Execution
+  - Application Log Content
+  - User Account Authentication
+  description: 'Adversaries may use brute force techniques to gain access to accounts
+    when passwords are unknown or when password hashes are obtained. Without knowledge
+    of the password for an account or set of accounts, an adversary may systematically
+    guess the password using a repetitive or iterative mechanism. Brute forcing passwords
+    can take place via interaction with a service that will check the validity of
+    those credentials or offline against previously acquired credential data, such
+    as password hashes.
+
+
+    Brute forcing credentials may take place at various points during a breach. For
+    example, adversaries may attempt to brute force access to [Valid Accounts](https://attack.mitre.org/techniques/T1078)
+    within a victim environment leveraging knowledge gathered from other post-compromise
+    behaviors such as [OS Credential Dumping](https://attack.mitre.org/techniques/T1003),
+    [Account Discovery](https://attack.mitre.org/techniques/T1087), or [Password Policy
+    Discovery](https://attack.mitre.org/techniques/T1201). Adversaries may also combine
+    brute forcing activity with behaviors such as [External Remote Services](https://attack.mitre.org/techniques/T1133)
+    as part of Initial Access.'
+  kill_chain_phases:
+  - credential-access
+  data_source_platforms: []
+- technique: Credentials from Web Browsers
+  id: T1555.003
+  stage: credential-access
+  data_components:
+  - Process Access
+  - File Access
+  - OS API Execution
+  - Command Execution
+  description: "Adversaries may acquire credentials from web browsers by reading files\
+    \ specific to the target browser.(Citation: Talos Olympic Destroyer 2018) Web\
+    \ browsers commonly save credentials such as website usernames and passwords so\
+    \ that they do not need to be entered manually in the future. Web browsers typically\
+    \ store the credentials in an encrypted format within a credential store; however,\
+    \ methods exist to extract plaintext credentials from web browsers.\n\nFor example,\
+    \ on Windows systems, encrypted credentials may be obtained from Google Chrome\
+    \ by reading a database file, <code>AppData\\Local\\Google\\Chrome\\User Data\\\
+    Default\\Login Data</code> and executing a SQL query: <code>SELECT action_url,\
+    \ username_value, password_value FROM logins;</code>. The plaintext password can\
+    \ then be obtained by passing the encrypted credentials to the Windows API function\
+    \ <code>CryptUnprotectData</code>, which uses the victim\u2019s cached logon credentials\
+    \ as the decryption key.(Citation: Microsoft CryptUnprotectData April 2018)\n\
+    \ \nAdversaries have executed similar procedures for common web browsers such\
+    \ as FireFox, Safari, Edge, etc.(Citation: Proofpoint Vega Credential Stealer\
+    \ May 2018)(Citation: FireEye HawkEye Malware July 2017) Windows stores Internet\
+    \ Explorer and Microsoft Edge credentials in Credential Lockers managed by the\
+    \ [Windows Credential Manager](https://attack.mitre.org/techniques/T1555/004).\n\
+    \nAdversaries may also acquire credentials by searching web browser process memory\
+    \ for patterns that commonly match credentials.(Citation: GitHub Mimikittenz July\
+    \ 2016)\n\nAfter acquiring credentials from web browsers, adversaries may attempt\
+    \ to recycle the credentials across different systems and/or accounts in order\
+    \ to expand access. This can result in significantly furthering an adversary's\
+    \ objective in cases where credentials gained from web browsers overlap with privileged\
+    \ accounts (e.g. domain administrator)."
+  kill_chain_phases:
+  - credential-access
+  data_source_platforms: []
+- technique: Internet Connection Discovery
+  id: T1016.001
+  stage: discovery
+  data_components:
+  - Process Creation
+  - Command Execution
+  description: 'Adversaries may check for Internet connectivity on compromised systems.
+    This may be performed during automated discovery and can be accomplished in numerous
+    ways such as using [Ping](https://attack.mitre.org/software/S0097), <code>tracert</code>,
+    and GET requests to websites.
+
+
+    Adversaries may use the results and responses from these requests to determine
+    if the system is capable of communicating with their C2 servers before attempting
+    to connect to them. The results may also be used to identify routes, redirectors,
+    and proxy servers.'
+  kill_chain_phases:
+  - discovery
+  data_source_platforms: []
+- technique: System Owner/User Discovery
+  id: T1033
+  stage: discovery
+  data_components:
+  - OS API Execution
+  - Process Access
+  - Windows Registry Key Access
+  - Active Directory Object Access
+  - Network Traffic Content
+  - File Access
+  - Process Creation
+  - Command Execution
+  - Network Traffic Flow
+  description: 'Adversaries may attempt to identify the primary user, currently logged
+    in user, set of users that commonly uses a system, or whether a user is actively
+    using the system. They may do this, for example, by retrieving account usernames
+    or by using [OS Credential Dumping](https://attack.mitre.org/techniques/T1003).
+    The information may be collected in a number of different ways using other Discovery
+    techniques, because user and username details are prevalent throughout a system
+    and include running process ownership, file/directory ownership, session information,
+    and system logs. Adversaries may use the information from [System Owner/User Discovery](https://attack.mitre.org/techniques/T1033)
+    during automated discovery to shape follow-on behaviors, including whether or
+    not the adversary fully infects the target and/or attempts specific actions.
+
+
+    Various utilities and commands may acquire this information, including <code>whoami</code>.
+    In macOS and Linux, the currently logged in user can be identified with <code>w</code>
+    and <code>who</code>. On macOS the <code>dscl . list /Users | grep -v ''_''</code>
+    command can also be used to enumerate user accounts. Environment variables, such
+    as <code>%USERNAME%</code> and <code>$USER</code>, may also be used to access
+    this information.
+
+
+    On network devices, [Network Device CLI](https://attack.mitre.org/techniques/T1059/008)
+    commands such as `show users` and `show ssh` can be used to display users currently
+    logged into the device.(Citation: show_ssh_users_cmd_cisco)(Citation: US-CERT
+    TA18-106A Network Infrastructure Devices 2018)'
+  kill_chain_phases:
+  - discovery
+  data_source_platforms: []
+- technique: Internal Spearphishing
+  id: T1534
+  stage: lateral-movement
+  data_components:
+  - Network Traffic Content
+  - Network Traffic Flow
+  - Application Log Content
+  description: 'Adversaries may use internal spearphishing to gain access to additional
+    information or exploit other users within the same organization after they already
+    have access to accounts or systems within the environment. Internal spearphishing
+    is multi-staged campaign where an email account is owned either by controlling
+    the user''s device with previously installed malware or by compromising the account
+    credentials of the user. Adversaries attempt to take advantage of a trusted internal
+    account to increase the likelihood of tricking the target into falling for the
+    phish attempt.(Citation: Trend Micro When Phishing Starts from the Inside 2017)
+
+
+    Adversaries may leverage [Spearphishing Attachment](https://attack.mitre.org/techniques/T1566/001)
+    or [Spearphishing Link](https://attack.mitre.org/techniques/T1566/002) as part
+    of internal spearphishing to deliver a payload or redirect to an external site
+    to capture credentials through [Input Capture](https://attack.mitre.org/techniques/T1056)
+    on sites that mimic email login interfaces.
+
+
+    There have been notable incidents where internal spearphishing has been used.
+    The Eye Pyramid campaign used phishing emails with malicious attachments for lateral
+    movement between victims, compromising nearly 18,000 email accounts in the process.(Citation:
+    Trend Micro When Phishing Starts from the Inside 2017) The Syrian Electronic Army
+    (SEA) compromised email accounts at the Financial Times (FT) to steal additional
+    account credentials. Once FT learned of the campaign and began warning employees
+    of the threat, the SEA sent phishing emails mimicking the Financial Times IT department
+    and were able to compromise even more users.(Citation: THE FINANCIAL TIMES LTD
+    2019.)'
+  kill_chain_phases:
+  - lateral-movement
+  data_source_platforms: []
+- technique: Remote Desktop Protocol
+  id: T1021.001
+  stage: lateral-movement
+  data_components:
+  - Network Connection Creation
+  - Process Creation
+  - Network Traffic Flow
+  - Logon Session Creation
+  description: "Adversaries may use [Valid Accounts](https://attack.mitre.org/techniques/T1078)\
+    \ to log into a computer using the Remote Desktop Protocol (RDP). The adversary\
+    \ may then perform actions as the logged-on user.\n\nRemote desktop is a common\
+    \ feature in operating systems. It allows a user to log into an interactive session\
+    \ with a system desktop graphical user interface on a remote system. Microsoft\
+    \ refers to its implementation of the Remote Desktop Protocol (RDP) as Remote\
+    \ Desktop Services (RDS).(Citation: TechNet Remote Desktop Services) \n\nAdversaries\
+    \ may connect to a remote system over RDP/RDS to expand access if the service\
+    \ is enabled and allows access to accounts with known credentials. Adversaries\
+    \ will likely use Credential Access techniques to acquire credentials to use with\
+    \ RDP. Adversaries may also use RDP in conjunction with the [Accessibility Features](https://attack.mitre.org/techniques/T1546/008)\
+    \ or [Terminal Services DLL](https://attack.mitre.org/techniques/T1505/005) for\
+    \ Persistence.(Citation: Alperovitch Malware)"
+  kill_chain_phases:
+  - lateral-movement
+  data_source_platforms: []
+- technique: Keylogging
+  id: T1056.001
+  stage: collection
   data_components:
   - OS API Execution
   - Windows Registry Key Modification
@@ -506,142 +479,74 @@ campaign:
   - collection
   - credential-access
   data_source_platforms: []
-- stage: credential-access
-  technique: Security Account Manager
+- technique: Bidirectional Communication
+  id: T1102.002
+  stage: command-and-control
   data_components:
-  - File Access
-  - Command Execution
-  - Windows Registry Key Access
-  description: "Adversaries may attempt to extract credential material from the Security\
-    \ Account Manager (SAM) database either through in-memory techniques or through\
-    \ the Windows Registry where the SAM database is stored. The SAM is a database\
-    \ file that contains local accounts for the host, typically those found with the\
-    \ <code>net user</code> command. Enumerating the SAM database requires SYSTEM\
-    \ level access.\n\nA number of tools can be used to retrieve the SAM file through\
-    \ in-memory techniques:\n\n* pwdumpx.exe\n* [gsecdump](https://attack.mitre.org/software/S0008)\n\
-    * [Mimikatz](https://attack.mitre.org/software/S0002)\n* secretsdump.py\n\nAlternatively,\
-    \ the SAM can be extracted from the Registry with Reg:\n\n* <code>reg save HKLM\\\
-    sam sam</code>\n* <code>reg save HKLM\\system system</code>\n\nCreddump7 can then\
-    \ be used to process the SAM database locally to retrieve hashes.(Citation: GitHub\
-    \ Creddump7)\n\nNotes: \n\n* RID 500 account is the local, built-in administrator.\n\
-    * RID 501 is the guest account.\n* User accounts start with a RID of 1,000+.\n"
+  - Network Traffic Flow
+  - Network Traffic Content
+  - Network Connection Creation
+  description: "Adversaries may use an existing, legitimate external Web service as\
+    \ a means for sending commands to and receiving output from a compromised system\
+    \ over the Web service channel. Compromised systems may leverage popular websites\
+    \ and social media to host command and control (C2) instructions. Those infected\
+    \ systems can then send the output from those commands back over that Web service\
+    \ channel. The return traffic may occur in a variety of ways, depending on the\
+    \ Web service being utilized. For example, the return traffic may take the form\
+    \ of the compromised system posting a comment on a forum, issuing a pull request\
+    \ to development project, updating a document hosted on a Web service, or by sending\
+    \ a Tweet. \n\nPopular websites and social media acting as a mechanism for C2\
+    \ may give a significant amount of cover due to the likelihood that hosts within\
+    \ a network are already communicating with them prior to a compromise. Using common\
+    \ services, such as those offered by Google or Twitter, makes it easier for adversaries\
+    \ to hide in expected noise. Web service providers commonly use SSL/TLS encryption,\
+    \ giving adversaries an added level of protection. "
   kill_chain_phases:
-  - credential-access
+  - command-and-control
   data_source_platforms: []
-- stage: discovery
-  technique: File and Directory Discovery
+- technique: Ingress Tool Transfer
+  id: T1105
+  stage: command-and-control
   data_components:
-  - OS API Execution
-  - Process Creation
-  - Command Execution
-  description: 'Adversaries may enumerate files and directories or may search in specific
-    locations of a host or network share for certain information within a file system.
-    Adversaries may use the information from [File and Directory Discovery](https://attack.mitre.org/techniques/T1083)
-    during automated discovery to shape follow-on behaviors, including whether or
-    not the adversary fully infects the target and/or attempts specific actions.
-
-
-    Many command shell utilities can be used to obtain this information. Examples
-    include <code>dir</code>, <code>tree</code>, <code>ls</code>, <code>find</code>,
-    and <code>locate</code>.(Citation: Windows Commands JPCERT) Custom tools may also
-    be used to gather file and directory information and interact with the [Native
-    API](https://attack.mitre.org/techniques/T1106). Adversaries may also leverage
-    a [Network Device CLI](https://attack.mitre.org/techniques/T1059/008) on network
-    devices to gather file and directory information (e.g. <code>dir</code>, <code>show
-    flash</code>, and/or <code>nvram</code>).(Citation: US-CERT-TA18-106A)'
-  kill_chain_phases:
-  - discovery
-  data_source_platforms: []
-- stage: discovery
-  technique: System Service Discovery
-  data_components:
-  - OS API Execution
-  - Command Execution
-  - Process Creation
-  description: 'Adversaries may try to gather information about registered local system
-    services. Adversaries may obtain information about services using tools as well
-    as OS utility commands such as <code>sc query</code>, <code>tasklist /svc</code>,
-    <code>systemctl --type=service</code>, and <code>net start</code>.
-
-
-    Adversaries may use the information from [System Service Discovery](https://attack.mitre.org/techniques/T1007)
-    during automated discovery to shape follow-on behaviors, including whether or
-    not the adversary fully infects the target and/or attempts specific actions.'
-  kill_chain_phases:
-  - discovery
-  data_source_platforms: []
-- stage: collection
-  technique: Archive Collected Data
-  data_components:
-  - Command Execution
+  - Network Traffic Flow
+  - Network Connection Creation
+  - Network Traffic Content
   - File Creation
-  - Process Creation
-  - Script Execution
-  description: 'An adversary may compress and/or encrypt data that is collected prior
-    to exfiltration. Compressing the data can help to obfuscate the collected data
-    and minimize the amount of data sent over the network. Encryption can be used
-    to hide information that is being exfiltrated from detection or make exfiltration
-    less conspicuous upon inspection by a defender.
-
-
-    Both compression and encryption are done prior to exfiltration, and can be performed
-    using a utility, 3rd party library, or custom method.'
+  description: "Adversaries may transfer tools or other files from an external system\
+    \ into a compromised environment. Tools or files may be copied from an external\
+    \ adversary-controlled system to the victim network through the command and control\
+    \ channel or through alternate protocols such as [ftp](https://attack.mitre.org/software/S0095).\
+    \ Once present, adversaries may also transfer/spread tools between victim devices\
+    \ within a compromised environment (i.e. [Lateral Tool Transfer](https://attack.mitre.org/techniques/T1570)).\
+    \ \n\nFiles can also be transferred using various [Web Service](https://attack.mitre.org/techniques/T1102)s\
+    \ as well as native or otherwise present tools on the victim system.(Citation:\
+    \ PTSecurity Cobalt Dec 2016)\n\nOn Windows, adversaries may use various utilities\
+    \ to download tools, such as `copy`, `finger`, [certutil](https://attack.mitre.org/software/S0160),\
+    \ and [PowerShell](https://attack.mitre.org/techniques/T1059/001) commands such\
+    \ as <code>IEX(New-Object Net.WebClient).downloadString()</code> and <code>Invoke-WebRequest</code>.\
+    \ On Linux and macOS systems, a variety of utilities also exist, such as `curl`,\
+    \ `scp`, `sftp`, `tftp`, `rsync`, `finger`, and `wget`.(Citation: t1105_lolbas)"
   kill_chain_phases:
-  - collection
+  - command-and-control
   data_source_platforms: []
-- stage: collection
-  technique: Data from Local System
+- technique: Exfiltration to Cloud Storage
+  id: T1567.002
+  stage: exfiltration
   data_components:
-  - Process Creation
   - Command Execution
-  - File Access
-  - Script Execution
-  - OS API Execution
-  description: 'Adversaries may search local system sources, such as file systems
-    and configuration files or local databases, to find files of interest and sensitive
-    data prior to Exfiltration.
-
-
-    Adversaries may do this using a [Command and Scripting Interpreter](https://attack.mitre.org/techniques/T1059),
-    such as [cmd](https://attack.mitre.org/software/S0106) as well as a [Network Device
-    CLI](https://attack.mitre.org/techniques/T1059/008), which have functionality
-    to interact with the file system to gather information.(Citation: show_run_config_cmd_cisco)
-    Adversaries may also use [Automated Collection](https://attack.mitre.org/techniques/T1119)
-    on the local system.
-
-    '
-  kill_chain_phases:
-  - collection
-  data_source_platforms: []
-- stage: exfiltration
-  technique: Exfiltration Over C2 Channel
-  data_components:
   - Network Traffic Content
-  - Network Traffic Flow
-  - File Access
-  - Network Connection Creation
-  - Command Execution
-  description: Adversaries may steal data by exfiltrating it over an existing command
-    and control channel. Stolen data is encoded into the normal communications channel
-    using the same protocol as command and control communications.
-  kill_chain_phases:
-  - exfiltration
-  data_source_platforms: []
-- stage: exfiltration
-  technique: Automated Exfiltration
-  data_components:
   - Network Connection Creation
   - Network Traffic Flow
-  - Network Traffic Content
-  - Command Execution
   - File Access
-  - Script Execution
-  description: "Adversaries may exfiltrate data, such as sensitive documents, through\
-    \ the use of automated processing after being gathered during Collection. \n\n\
-    When automated exfiltration is used, other exfiltration techniques likely apply\
-    \ as well to transfer the information out of the network, such as [Exfiltration\
-    \ Over C2 Channel](https://attack.mitre.org/techniques/T1041) and [Exfiltration\
-    \ Over Alternative Protocol](https://attack.mitre.org/techniques/T1048)."
+  description: 'Adversaries may exfiltrate data to a cloud storage service rather
+    than over their primary command and control channel. Cloud storage services allow
+    for the storage, edit, and retrieval of data from a remote cloud storage server
+    over the Internet.
+
+
+    Examples of cloud storage services include Dropbox and Google Docs. Exfiltration
+    to these cloud storage services can provide a significant amount of cover to the
+    adversary if hosts within the network are already communicating with the service. '
   kill_chain_phases:
   - exfiltration
   data_source_platforms: []

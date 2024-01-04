@@ -1,0 +1,80 @@
+import random
+import yaml
+from pyattck import Attck
+
+def select_apt_crew():
+    apt_crews = attack.enterprise.actors
+    selected_crew = random.choice(apt_crews)
+    return selected_crew
+
+def select_techniques_for_stage(apt_crew, stage, num_techniques):
+    techniques = apt_crew.techniques
+    selected_techniques = [technique for technique in techniques if stage in [p.phase_name.lower() for p in technique.kill_chain_phases]]
+    
+    # Randomly select up to num_techniques from the available techniques
+    selected_techniques = random.sample(selected_techniques, min(num_techniques, len(selected_techniques)))
+    
+    return selected_techniques
+
+def match_data_to_techniques(selected_techniques):
+    matched_data = {}
+    for technique in selected_techniques:
+        data_components = [dc.name for dc in technique.data_components]
+        description = technique.description
+        kill_chain_phases = [phase.phase_name for phase in technique.kill_chain_phases]
+        data_source_platforms = [source.platform for source in technique.data_sources]
+
+        matched_data[technique.name] = {
+            "data_components": data_components,
+            "description": description,
+            "kill_chain_phases": kill_chain_phases,
+            "data_source_platforms": data_source_platforms
+        }
+
+    return matched_data
+
+def generate_campaign(apt_crew, num_techniques_per_stage):
+    campaign = []
+    
+    # Select techniques for each stage of the kill chain
+    stages = ['initial-access', 'execution', 'persistence', 'privilege-escalation', 'defense-evasion', 'credential-access', 'discovery', 'collection', 'exfiltration', 'impact']
+    for stage in stages:
+        selected_techniques = select_techniques_for_stage(apt_crew, stage, num_techniques_per_stage)
+        if selected_techniques:
+            for selected_technique in selected_techniques:
+                data_info = match_data_to_techniques([selected_technique])
+                campaign.append({
+                    "stage": stage,
+                    "technique": selected_technique.name,
+                    "data_components": data_info[selected_technique.name]["data_components"],
+                    "description": data_info[selected_technique.name]["description"],
+                    "kill_chain_phases": data_info[selected_technique.name]["kill_chain_phases"],
+                    "data_source_platforms": data_info[selected_technique.name]["data_source_platforms"]
+                })
+
+    return campaign
+
+def main():
+    # Set the number of techniques to be selected from each stage
+    num_techniques_per_stage = 2
+
+    # Select an APT crew
+    selected_crew = select_apt_crew()
+
+    # Generate a campaign of attacks
+    campaign = generate_campaign(selected_crew, num_techniques_per_stage)
+
+    # Output the information in YAML format
+    output_data = {
+        "apt_crew": selected_crew.name,
+        "campaign": campaign
+    }
+
+    with open('campaign_info.yaml', 'w') as yaml_file:
+        yaml.dump(output_data, yaml_file, default_flow_style=False, sort_keys=False)
+
+    print("Campaign information YAML file created: campaign_info.yaml")
+
+if __name__ == "__main__":
+    attack = Attck()
+    main()

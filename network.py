@@ -63,7 +63,7 @@ class Network:
 
         # With some probability, connect nodes between subnets
         edges = [(node1, node2) for node1 in self.hosts.keys() for node2 in self.hosts.keys() if self.hosts[node1].subnet_name != self.hosts[node2].subnet_name and random.random() < .01]
-        print(edges)
+        
         self.graph.add_edges_from(edges)
 
         # Randomly assign 1 host where red agent starts

@@ -1,0 +1,181 @@
+{
+    "host_types": [
+      {
+        "type": "Web Server",
+        "services": [
+          {"name": "HTTP", "port": 80},
+          {"name": "HTTPS", "port": 443}
+        ]
+      },
+      {
+        "type": "Database Server",
+        "services": [
+          {"name": "MySQL", "port": 3306},
+          {"name": "PostgreSQL", "port": 5432}
+        ]
+      },
+      {
+        "type": "Mail Server",
+        "services": [
+          {"name": "SMTP", "port": 25},
+          {"name": "IMAP", "port": 143},
+          {"name": "POP3", "port": 110}
+        ]
+      },
+      {
+        "type": "File Server",
+        "services": [
+          {"name": "FTP", "port": 21},
+          {"name": "SFTP", "port": 22},
+          {"name": "SMB", "port": 445}
+        ]
+      },
+      {
+        "type": "DNS Server",
+        "services": [
+          {"name": "DNS", "port": 53}
+        ]
+      },
+      {
+        "type": "Proxy Server",
+        "services": [
+          {"name": "HTTP Proxy", "port": 8080},
+          {"name": "HTTPS Proxy", "port": 8443}
+        ]
+      },
+      {
+        "type": "Application Server",
+        "services": [
+          {"name": "Custom App A", "port": 8081},
+          {"name": "Custom App B", "port": 9090}
+        ]
+      },
+      {
+        "type": "Authentication Server",
+        "services": [
+          {"name": "LDAP", "port": 389},
+          {"name": "Kerberos", "port": 88}
+        ]
+      },
+      {
+        "type": "Monitoring Server",
+        "services": [
+          {"name": "SNMP", "port": 161},
+          {"name": "Syslog", "port": 514}
+        ]
+      },
+      {
+        "type": "Virtualization Host",
+        "services": [
+          {"name": "VMware ESXi", "port": 443},
+          {"name": "Hyper-V", "port": 2179}
+        ]
+      },
+      {
+        "type": "IoT Device",
+        "services": [
+          {"name": "MQTT", "port": 1883},
+          {"name": "CoAP", "port": 5683}
+        ]
+      },
+      {
+        "type": "VPN Server",
+        "services": [
+          {"name": "OpenVPN", "port": 1194},
+          {"name": "IPsec", "port": 500}
+        ]
+      },
+      {
+        "type": "Network Firewall",
+        "services": [
+          {"name": "SSH", "port": 22},
+          {"name": "Telnet", "port": 23}
+        ]
+      },
+      {
+        "type": "NTP Server",
+        "services": [
+          {"name": "NTP", "port": 123}
+        ]
+      },
+      {
+        "type": "Container Orchestration",
+        "services": [
+          {"name": "Kubernetes API", "port": 6443},
+          {"name": "Docker API", "port": 2375}
+        ]
+      },
+      {
+        "type": "VoIP Server",
+        "services": [
+          {"name": "SIP", "port": 5060},
+          {"name": "RTP", "port": 5004}
+        ]
+      },
+      {
+        "type": "Backup Server",
+        "services": [
+          {"name": "Rsync", "port": 873},
+          {"name": "Bacula", "port": 9101}
+        ]
+      },
+      {
+        "type": "Certificate Authority",
+        "services": [
+          {"name": "HTTPS", "port": 443},
+          {"name": "OCSP", "port": 80}
+        ]
+      },
+      {
+        "type": "Identity Provider",
+        "services": [
+          {"name": "SAML", "port": 443},
+          {"name": "OAuth", "port": 8080}
+        ]
+      },
+      {
+        "type": "User Workstation",
+        "services": [
+          {"name": "HTTP", "port": 80},
+          {"name": "HTTPS", "port": 443},
+          {"name": "SSH", "port": 22}
+        ]
+      },
+      {
+        "type": "Admin Workstation",
+        "services": [
+          {"name": "HTTP", "port": 80},
+          {"name": "HTTPS", "port": 443},
+          {"name": "SSH", "port": 22},
+          {"name": "RDP", "port": 3389}
+        ]
+      },
+      {
+        "type": "Researcher Workstation",
+        "services": [
+          {"name": "HTTP", "port": 80},
+          {"name": "HTTPS", "port": 443},
+          {"name": "SSH", "port": 22},
+          {"name": "VPN", "port": 1194}
+        ]
+      },
+      {
+        "type": "Boss Workstation",
+        "services": [
+          {"name": "HTTP", "port": 80},
+          {"name": "HTTPS", "port": 443},
+          {"name": "SSH", "port": 22},
+          {"name": "RDP", "port": 3389},
+          {"name": "Video Conference", "port": 9000}
+        ]
+      },
+      {
+        "type": "Contractor Workstation",
+        "services": [
+          {"name": "HTTP", "port": 80},
+          {"name": "SSH", "port": 22}
+        ]
+      }
+    ]
+  }
+  

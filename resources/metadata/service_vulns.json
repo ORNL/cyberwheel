@@ -1,0 +1,53 @@
+{
+    "services - The below is not accurate - just an example": { 
+      "Web Server": [
+        {
+          "service": "HTTP",
+          "port": 80,
+          "cves": ["CVE-2021-3456", "CVE-2019-6789", "CVE-2018-1234"],
+          "mitre_techniques": ["T1190", "T1059"]
+        },
+        {
+          "service": "HTTPS",
+          "port": 443,
+          "cves": ["CVE-2020-1111", "CVE-2017-2222", "CVE-2016-3333"],
+          "mitre_techniques": ["T1190", "T1059"]
+        }
+      ],
+      "Database Server": [
+        {
+          "service": "MySQL",
+          "port": 3306,
+          "cves": ["CVE-2018-8888", "CVE-2015-7777", "CVE-2014-6666"],
+          "mitre_techniques": ["T1059", "T1210"]
+        },
+        {
+          "service": "PostgreSQL",
+          "port": 5432,
+          "cves": ["CVE-2019-5555", "CVE-2016-4444", "CVE-2013-3333"],
+          "mitre_techniques": ["T1059", "T1210"]
+        }
+      ],
+      "Mail Server": [
+        {
+          "service": "SMTP",
+          "port": 25,
+          "cves": ["CVE-2020-2222", "CVE-2017-3333", "CVE-2015-4444"],
+          "mitre_techniques": ["T1114", "T1189"]
+        },
+        {
+          "service": "IMAP",
+          "port": 143,
+          "cves": ["CVE-2018-1111", "CVE-2016-5555", "CVE-2014-6666"],
+          "mitre_techniques": ["T1114", "T1189"]
+        },
+        {
+          "service": "POP3",
+          "port": 110,
+          "cves": ["CVE-2019-9999", "CVE-2017-8888", "CVE-2015-7777"],
+          "mitre_techniques": ["T1114", "T1189"]
+        }
+      ]
+    }
+  }
+  

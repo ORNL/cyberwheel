@@ -1,112 +1,158 @@
-apt_crew: HEXANE
+apt_crew: EXOTIC LILY
 campaign:
-- technique: Identify Roles
-  id: T1591.004
+- technique: Social Media
+  stixid: attack-pattern--bbe5b322-e2af-4a5e-9625-a4e62bf84ed3
+  external_id: T1593.001
   stage: reconnaissance
   data_components: []
-  description: 'Adversaries may gather information about identities and roles within
-    the victim organization that can be used during targeting. Information about business
-    roles may reveal a variety of targetable details, including identifiable information
-    for key personnel as well as what data/resources they have access to.
-
-
-    Adversaries may gather this information in various ways, such as direct elicitation
-    via [Phishing for Information](https://attack.mitre.org/techniques/T1598). Information
-    about business roles may also be exposed to adversaries via online or other accessible
-    data sets (ex: [Social Media](https://attack.mitre.org/techniques/T1593/001) or
-    [Search Victim-Owned Websites](https://attack.mitre.org/techniques/T1594)).(Citation:
-    ThreatPost Broadvoice Leak) Gathering this information may reveal opportunities
-    for other forms of reconnaissance (ex: [Phishing for Information](https://attack.mitre.org/techniques/T1598)
-    or [Search Open Websites/Domains](https://attack.mitre.org/techniques/T1593)),
-    establishing operational resources (ex: [Establish Accounts](https://attack.mitre.org/techniques/T1585)
-    or [Compromise Accounts](https://attack.mitre.org/techniques/T1586)), and/or initial
-    access (ex: [Phishing](https://attack.mitre.org/techniques/T1566)).'
+  description: "Adversaries may search social media for information about victims\
+    \ that can be used during targeting. Social media sites may contain various information\
+    \ about a victim organization, such as business announcements as well as information\
+    \ about the roles, locations, and interests of staff.\n\nAdversaries may search\
+    \ in different social media sites depending on what information they seek to gather.\
+    \ Threat actors may passively harvest data from these sites, as well as use information\
+    \ gathered to create fake profiles/groups to elicit victim\u2019s into revealing\
+    \ specific information (i.e. [Spearphishing Service](https://attack.mitre.org/techniques/T1598/001)).(Citation:\
+    \ Cyware Social Media) Information from these sources may reveal opportunities\
+    \ for other forms of reconnaissance (ex: [Phishing for Information](https://attack.mitre.org/techniques/T1598)\
+    \ or [Search Open Technical Databases](https://attack.mitre.org/techniques/T1596)),\
+    \ establishing operational resources (ex: [Establish Accounts](https://attack.mitre.org/techniques/T1585)\
+    \ or [Compromise Accounts](https://attack.mitre.org/techniques/T1586)), and/or\
+    \ initial access (ex: [Spearphishing via Service](https://attack.mitre.org/techniques/T1566/003))."
   kill_chain_phases:
   - reconnaissance
   data_source_platforms: []
-- technique: Gather Victim Identity Information
-  id: T1589
+  mitigations:
+  - course-of-action--78bb71be-92b4-46de-acd6-5f998fedf1cc
+- technique: Search Victim-Owned Websites
+  stixid: attack-pattern--16cdd21f-da65-4e4f-bc04-dd7d198c7b26
+  external_id: T1594
   stage: reconnaissance
   data_components:
-  - Network Traffic Content
-  description: 'Adversaries may gather information about the victim''s identity that
-    can be used during targeting. Information about identities may include a variety
-    of details, including personal data (ex: employee names, email addresses, etc.)
-    as well as sensitive details such as credentials.
+  - Application Log Content
+  description: 'Adversaries may search websites owned by the victim for information
+    that can be used during targeting. Victim-owned websites may contain a variety
+    of details, including names of departments/divisions, physical locations, and
+    data about key employees such as names, roles, and contact info (ex: [Email Addresses](https://attack.mitre.org/techniques/T1589/002)).
+    These sites may also have details highlighting business operations and relationships.(Citation:
+    Comparitech Leak)
 
 
-    Adversaries may gather this information in various ways, such as direct elicitation
-    via [Phishing for Information](https://attack.mitre.org/techniques/T1598). Information
-    about users could also be enumerated via other active means (i.e. [Active Scanning](https://attack.mitre.org/techniques/T1595))
-    such as probing and analyzing responses from authentication services that may
-    reveal valid usernames in a system.(Citation: GrimBlog UsernameEnum) Information
-    about victims may also be exposed to adversaries via online or other accessible
-    data sets (ex: [Social Media](https://attack.mitre.org/techniques/T1593/001) or
-    [Search Victim-Owned Websites](https://attack.mitre.org/techniques/T1594)).(Citation:
-    OPM Leak)(Citation: Register Deloitte)(Citation: Register Uber)(Citation: Detectify
-    Slack Tokens)(Citation: Forbes GitHub Creds)(Citation: GitHub truffleHog)(Citation:
-    GitHub Gitrob)(Citation: CNET Leaks)
-
-
-    Gathering this information may reveal opportunities for other forms of reconnaissance
-    (ex: [Search Open Websites/Domains](https://attack.mitre.org/techniques/T1593)
-    or [Phishing for Information](https://attack.mitre.org/techniques/T1598)), establishing
-    operational resources (ex: [Compromise Accounts](https://attack.mitre.org/techniques/T1586)),
-    and/or initial access (ex: [Phishing](https://attack.mitre.org/techniques/T1566)
-    or [Valid Accounts](https://attack.mitre.org/techniques/T1078)).'
+    Adversaries may search victim-owned websites to gather actionable information.
+    Information from these sources may reveal opportunities for other forms of reconnaissance
+    (ex: [Phishing for Information](https://attack.mitre.org/techniques/T1598) or
+    [Search Open Technical Databases](https://attack.mitre.org/techniques/T1596)),
+    establishing operational resources (ex: [Establish Accounts](https://attack.mitre.org/techniques/T1585)
+    or [Compromise Accounts](https://attack.mitre.org/techniques/T1586)), and/or initial
+    access (ex: [Trusted Relationship](https://attack.mitre.org/techniques/T1199)
+    or [Phishing](https://attack.mitre.org/techniques/T1566)).'
   kill_chain_phases:
   - reconnaissance
   data_source_platforms: []
-- technique: Scheduled Task
-  id: T1053.005
+  mitigations:
+  - course-of-action--78bb71be-92b4-46de-acd6-5f998fedf1cc
+- technique: Spearphishing Attachment
+  stixid: attack-pattern--2e34237d-8574-43f6-aace-ae2915de8597
+  external_id: T1566.001
+  stage: initial-access
+  data_components:
+  - Network Traffic Flow
+  - Application Log Content
+  - File Creation
+  - Network Traffic Content
+  description: 'Adversaries may send spearphishing emails with a malicious attachment
+    in an attempt to gain access to victim systems. Spearphishing attachment is a
+    specific variant of spearphishing. Spearphishing attachment is different from
+    other forms of spearphishing in that it employs the use of malware attached to
+    an email. All forms of spearphishing are electronically delivered social engineering
+    targeted at a specific individual, company, or industry. In this scenario, adversaries
+    attach a file to the spearphishing email and usually rely upon [User Execution](https://attack.mitre.org/techniques/T1204)
+    to gain execution. Spearphishing may also involve social engineering techniques,
+    such as posing as a trusted source.
+
+
+    There are many options for the attachment such as Microsoft Office documents,
+    executables, PDFs, or archived files. Upon opening the attachment (and potentially
+    clicking past protections), the adversary''s payload exploits a vulnerability
+    or directly executes on the user''s system. The text of the spearphishing email
+    usually tries to give a plausible reason why the file should be opened, and may
+    explain how to bypass system protections in order to do so. The email may also
+    contain instructions on how to decrypt an attachment, such as a zip file password,
+    in order to evade email boundary defenses. Adversaries frequently manipulate file
+    extensions and icons in order to make attached executables appear to be document
+    files, or files exploiting one application appear to be a file for a different
+    one. '
+  kill_chain_phases:
+  - initial-access
+  data_source_platforms: []
+  mitigations:
+  - course-of-action--12241367-a8b7-49b4-b86e-2236901ba50c
+  - course-of-action--21da4fd4-27ad-4e9c-b93d-0b9b14d02c96
+  - course-of-action--2a4f6c11-a4a7-4cb9-b0ef-6ae1bb3a718a
+  - course-of-action--a6a47a06-08fc-4ec4-bdc3-20373375ebb9
+  - course-of-action--b5dbb4c5-b0b1-40b1-80b6-e9e84ab90067
+- technique: Spearphishing via Service
+  stixid: attack-pattern--f6ad61ee-65f3-4bd0-a3f5-2f0accb36317
+  external_id: T1566.003
+  stage: initial-access
+  data_components:
+  - Network Traffic Content
+  - Application Log Content
+  - Network Traffic Flow
+  description: "Adversaries may send spearphishing messages via third-party services\
+    \ in an attempt to gain access to victim systems. Spearphishing via service is\
+    \ a specific variant of spearphishing. It is different from other forms of spearphishing\
+    \ in that it employs the use of third party services rather than directly via\
+    \ enterprise email channels. \n\nAll forms of spearphishing are electronically\
+    \ delivered social engineering targeted at a specific individual, company, or\
+    \ industry. In this scenario, adversaries send messages through various social\
+    \ media services, personal webmail, and other non-enterprise controlled services.\
+    \ These services are more likely to have a less-strict security policy than an\
+    \ enterprise. As with most kinds of spearphishing, the goal is to generate rapport\
+    \ with the target or get the target's interest in some way. Adversaries will create\
+    \ fake social media accounts and message employees for potential job opportunities.\
+    \ Doing so allows a plausible reason for asking about services, policies, and\
+    \ software that's running in an environment. The adversary can then send malicious\
+    \ links or attachments through these services.\n\nA common example is to build\
+    \ rapport with a target via social media, then send content to a personal webmail\
+    \ service that the target uses on their work computer. This allows an adversary\
+    \ to bypass some email restrictions on the work account, and the target is more\
+    \ likely to open the file since it's something they were expecting. If the payload\
+    \ doesn't work as expected, the adversary can continue normal communications and\
+    \ troubleshoot with the target on how to get it working."
+  kill_chain_phases:
+  - initial-access
+  data_source_platforms: []
+  mitigations:
+  - course-of-action--21da4fd4-27ad-4e9c-b93d-0b9b14d02c96
+  - course-of-action--2a4f6c11-a4a7-4cb9-b0ef-6ae1bb3a718a
+  - course-of-action--a6a47a06-08fc-4ec4-bdc3-20373375ebb9
+- technique: Malicious Link
+  stixid: attack-pattern--ef67e13e-5598-4adc-bdb2-998225874fa9
+  external_id: T1204.001
   stage: execution
   data_components:
-  - File Modification
-  - Scheduled Job Creation
-  - Windows Registry Key Creation
-  - Command Execution
-  - Process Creation
-  description: 'Adversaries may abuse the Windows Task Scheduler to perform task scheduling
-    for initial or recurring execution of malicious code. There are multiple ways
-    to access the Task Scheduler in Windows. The [schtasks](https://attack.mitre.org/software/S0111)
-    utility can be run directly on the command line, or the Task Scheduler can be
-    opened through the GUI within the Administrator Tools section of the Control Panel.
-    In some cases, adversaries have used a .NET wrapper for the Windows Task Scheduler,
-    and alternatively, adversaries have used the Windows netapi32 library to create
-    a scheduled task.
-
-
-    The deprecated [at](https://attack.mitre.org/software/S0110) utility could also
-    be abused by adversaries (ex: [At](https://attack.mitre.org/techniques/T1053/002)),
-    though <code>at.exe</code> can not access tasks created with <code>schtasks</code>
-    or the Control Panel.
-
-
-    An adversary may use Windows Task Scheduler to execute programs at system startup
-    or on a scheduled basis for persistence. The Windows Task Scheduler can also be
-    abused to conduct remote Execution as part of Lateral Movement and/or to run a
-    process under the context of a specified account (such as SYSTEM). Similar to
-    [System Binary Proxy Execution](https://attack.mitre.org/techniques/T1218), adversaries
-    have also abused the Windows Task Scheduler to potentially mask one-time execution
-    under signed/trusted system processes.(Citation: ProofPoint Serpent)
-
-
-    Adversaries may also create "hidden" scheduled tasks (i.e. [Hide Artifacts](https://attack.mitre.org/techniques/T1564))
-    that may not be visible to defender tools and manual queries used to enumerate
-    tasks. Specifically, an adversary may hide a task from `schtasks /query` and the
-    Task Scheduler by deleting the associated Security Descriptor (SD) registry value
-    (where deletion of this value must be completed using SYSTEM permissions).(Citation:
-    SigmaHQ)(Citation: Tarrask scheduled task) Adversaries may also employ alternate
-    methods to hide tasks, such as altering the metadata (e.g., `Index` value) within
-    associated registry keys.(Citation: Defending Against Scheduled Task Attacks in
-    Windows Environments) '
+  - File Creation
+  - Network Connection Creation
+  - Network Traffic Content
+  description: An adversary may rely upon a user clicking a malicious link in order
+    to gain execution. Users may be subjected to social engineering to get them to
+    click on a link that will lead to code execution. This user action will typically
+    be observed as follow-on behavior from [Spearphishing Link](https://attack.mitre.org/techniques/T1566/002).
+    Clicking on a link may also lead to other execution techniques such as exploitation
+    of a browser or application vulnerability via [Exploitation for Client Execution](https://attack.mitre.org/techniques/T1203).
+    Links may also lead users to download files that require execution via [Malicious
+    File](https://attack.mitre.org/techniques/T1204/002).
   kill_chain_phases:
   - execution
-  - persistence
-  - privilege-escalation
   data_source_platforms: []
+  mitigations:
+  - course-of-action--12241367-a8b7-49b4-b86e-2236901ba50c
+  - course-of-action--21da4fd4-27ad-4e9c-b93d-0b9b14d02c96
+  - course-of-action--2a4f6c11-a4a7-4cb9-b0ef-6ae1bb3a718a
 - technique: Malicious File
-  id: T1204.002
+  stixid: attack-pattern--232b7f21-adf9-4b42-b936-b9d6f7df856e
+  external_id: T1204.002
   stage: execution
   data_components:
   - Process Creation
@@ -131,422 +177,34 @@ campaign:
   kill_chain_phases:
   - execution
   data_source_platforms: []
-- technique: Scheduled Task
-  id: T1053.005
-  stage: persistence
-  data_components:
-  - File Modification
-  - Scheduled Job Creation
-  - Windows Registry Key Creation
-  - Command Execution
-  - Process Creation
-  description: 'Adversaries may abuse the Windows Task Scheduler to perform task scheduling
-    for initial or recurring execution of malicious code. There are multiple ways
-    to access the Task Scheduler in Windows. The [schtasks](https://attack.mitre.org/software/S0111)
-    utility can be run directly on the command line, or the Task Scheduler can be
-    opened through the GUI within the Administrator Tools section of the Control Panel.
-    In some cases, adversaries have used a .NET wrapper for the Windows Task Scheduler,
-    and alternatively, adversaries have used the Windows netapi32 library to create
-    a scheduled task.
-
-
-    The deprecated [at](https://attack.mitre.org/software/S0110) utility could also
-    be abused by adversaries (ex: [At](https://attack.mitre.org/techniques/T1053/002)),
-    though <code>at.exe</code> can not access tasks created with <code>schtasks</code>
-    or the Control Panel.
-
-
-    An adversary may use Windows Task Scheduler to execute programs at system startup
-    or on a scheduled basis for persistence. The Windows Task Scheduler can also be
-    abused to conduct remote Execution as part of Lateral Movement and/or to run a
-    process under the context of a specified account (such as SYSTEM). Similar to
-    [System Binary Proxy Execution](https://attack.mitre.org/techniques/T1218), adversaries
-    have also abused the Windows Task Scheduler to potentially mask one-time execution
-    under signed/trusted system processes.(Citation: ProofPoint Serpent)
-
-
-    Adversaries may also create "hidden" scheduled tasks (i.e. [Hide Artifacts](https://attack.mitre.org/techniques/T1564))
-    that may not be visible to defender tools and manual queries used to enumerate
-    tasks. Specifically, an adversary may hide a task from `schtasks /query` and the
-    Task Scheduler by deleting the associated Security Descriptor (SD) registry value
-    (where deletion of this value must be completed using SYSTEM permissions).(Citation:
-    SigmaHQ)(Citation: Tarrask scheduled task) Adversaries may also employ alternate
-    methods to hide tasks, such as altering the metadata (e.g., `Index` value) within
-    associated registry keys.(Citation: Defending Against Scheduled Task Attacks in
-    Windows Environments) '
-  kill_chain_phases:
-  - execution
-  - persistence
-  - privilege-escalation
-  data_source_platforms: []
-- technique: Scheduled Task
-  id: T1053.005
-  stage: privilege-escalation
-  data_components:
-  - File Modification
-  - Scheduled Job Creation
-  - Windows Registry Key Creation
-  - Command Execution
-  - Process Creation
-  description: 'Adversaries may abuse the Windows Task Scheduler to perform task scheduling
-    for initial or recurring execution of malicious code. There are multiple ways
-    to access the Task Scheduler in Windows. The [schtasks](https://attack.mitre.org/software/S0111)
-    utility can be run directly on the command line, or the Task Scheduler can be
-    opened through the GUI within the Administrator Tools section of the Control Panel.
-    In some cases, adversaries have used a .NET wrapper for the Windows Task Scheduler,
-    and alternatively, adversaries have used the Windows netapi32 library to create
-    a scheduled task.
-
-
-    The deprecated [at](https://attack.mitre.org/software/S0110) utility could also
-    be abused by adversaries (ex: [At](https://attack.mitre.org/techniques/T1053/002)),
-    though <code>at.exe</code> can not access tasks created with <code>schtasks</code>
-    or the Control Panel.
-
-
-    An adversary may use Windows Task Scheduler to execute programs at system startup
-    or on a scheduled basis for persistence. The Windows Task Scheduler can also be
-    abused to conduct remote Execution as part of Lateral Movement and/or to run a
-    process under the context of a specified account (such as SYSTEM). Similar to
-    [System Binary Proxy Execution](https://attack.mitre.org/techniques/T1218), adversaries
-    have also abused the Windows Task Scheduler to potentially mask one-time execution
-    under signed/trusted system processes.(Citation: ProofPoint Serpent)
-
-
-    Adversaries may also create "hidden" scheduled tasks (i.e. [Hide Artifacts](https://attack.mitre.org/techniques/T1564))
-    that may not be visible to defender tools and manual queries used to enumerate
-    tasks. Specifically, an adversary may hide a task from `schtasks /query` and the
-    Task Scheduler by deleting the associated Security Descriptor (SD) registry value
-    (where deletion of this value must be completed using SYSTEM permissions).(Citation:
-    SigmaHQ)(Citation: Tarrask scheduled task) Adversaries may also employ alternate
-    methods to hide tasks, such as altering the metadata (e.g., `Index` value) within
-    associated registry keys.(Citation: Defending Against Scheduled Task Attacks in
-    Windows Environments) '
-  kill_chain_phases:
-  - execution
-  - persistence
-  - privilege-escalation
-  data_source_platforms: []
-- technique: Command Obfuscation
-  id: T1027.010
-  stage: defense-evasion
-  data_components:
-  - File Metadata
-  - Command Execution
-  - Script Execution
-  description: "Adversaries may obfuscate content during command execution to impede\
-    \ detection. Command-line obfuscation is a method of making strings and patterns\
-    \ within commands and scripts more difficult to signature and analyze. This type\
-    \ of obfuscation can be included within commands executed by delivered payloads\
-    \ (e.g., [Phishing](https://attack.mitre.org/techniques/T1566) and [Drive-by Compromise](https://attack.mitre.org/techniques/T1189))\
-    \ or interactively via [Command and Scripting Interpreter](https://attack.mitre.org/techniques/T1059).(Citation:\
-    \ Akamai JS)(Citation: Malware Monday VBE)\n\nFor example, adversaries may abuse\
-    \ syntax that utilizes various symbols and escape characters (such as spacing,\
-    \  `^`, `+`. `$`, and `%`) to make commands difficult to analyze while maintaining\
-    \ the same intended functionality.(Citation: RC PowerShell) Many languages support\
-    \ built-in obfuscation in the form of base64 or URL encoding.(Citation: Microsoft\
-    \ PowerShellB64) Adversaries may also manually implement command obfuscation via\
-    \ string splitting (`\u201CWor\u201D+\u201Cd.Application\u201D`), order and casing\
-    \ of characters (`rev <<<'dwssap/cte/ tac'`), globing (`mkdir -p '/tmp/:&$NiA'`),\
-    \ as well as various tricks involving passing strings through tokens/environment\
-    \ variables/input streams.(Citation: Bashfuscator Command Obfuscators)(Citation:\
-    \ FireEye Obfuscation June 2017)\n\nAdversaries may also use tricks such as directory\
-    \ traversals to obfuscate references to the binary being invoked by a command\
-    \ (`C:\\voi\\pcw\\..\\..\\Windows\\tei\\qs\\k\\..\\..\\..\\system32\\erool\\..\\\
-    wbem\\wg\\je\\..\\..\\wmic.exe shadowcopy delete`).(Citation: Twitter Richard\
-    \ WMIC)\n\nTools such as <code>Invoke-Obfuscation</code> and <code>Invoke-DOSfucation</code>\
-    \ have also been used to obfuscate commands.(Citation: Invoke-DOSfuscation)(Citation:\
-    \ Invoke-Obfuscation)"
-  kill_chain_phases:
-  - defense-evasion
-  data_source_platforms: []
-- technique: Brute Force
-  id: T1110
-  stage: credential-access
-  data_components:
-  - Command Execution
-  - Application Log Content
-  - User Account Authentication
-  description: 'Adversaries may use brute force techniques to gain access to accounts
-    when passwords are unknown or when password hashes are obtained. Without knowledge
-    of the password for an account or set of accounts, an adversary may systematically
-    guess the password using a repetitive or iterative mechanism. Brute forcing passwords
-    can take place via interaction with a service that will check the validity of
-    those credentials or offline against previously acquired credential data, such
-    as password hashes.
-
-
-    Brute forcing credentials may take place at various points during a breach. For
-    example, adversaries may attempt to brute force access to [Valid Accounts](https://attack.mitre.org/techniques/T1078)
-    within a victim environment leveraging knowledge gathered from other post-compromise
-    behaviors such as [OS Credential Dumping](https://attack.mitre.org/techniques/T1003),
-    [Account Discovery](https://attack.mitre.org/techniques/T1087), or [Password Policy
-    Discovery](https://attack.mitre.org/techniques/T1201). Adversaries may also combine
-    brute forcing activity with behaviors such as [External Remote Services](https://attack.mitre.org/techniques/T1133)
-    as part of Initial Access.'
-  kill_chain_phases:
-  - credential-access
-  data_source_platforms: []
-- technique: Credentials from Web Browsers
-  id: T1555.003
-  stage: credential-access
-  data_components:
-  - Process Access
-  - File Access
-  - OS API Execution
-  - Command Execution
-  description: "Adversaries may acquire credentials from web browsers by reading files\
-    \ specific to the target browser.(Citation: Talos Olympic Destroyer 2018) Web\
-    \ browsers commonly save credentials such as website usernames and passwords so\
-    \ that they do not need to be entered manually in the future. Web browsers typically\
-    \ store the credentials in an encrypted format within a credential store; however,\
-    \ methods exist to extract plaintext credentials from web browsers.\n\nFor example,\
-    \ on Windows systems, encrypted credentials may be obtained from Google Chrome\
-    \ by reading a database file, <code>AppData\\Local\\Google\\Chrome\\User Data\\\
-    Default\\Login Data</code> and executing a SQL query: <code>SELECT action_url,\
-    \ username_value, password_value FROM logins;</code>. The plaintext password can\
-    \ then be obtained by passing the encrypted credentials to the Windows API function\
-    \ <code>CryptUnprotectData</code>, which uses the victim\u2019s cached logon credentials\
-    \ as the decryption key.(Citation: Microsoft CryptUnprotectData April 2018)\n\
-    \ \nAdversaries have executed similar procedures for common web browsers such\
-    \ as FireFox, Safari, Edge, etc.(Citation: Proofpoint Vega Credential Stealer\
-    \ May 2018)(Citation: FireEye HawkEye Malware July 2017) Windows stores Internet\
-    \ Explorer and Microsoft Edge credentials in Credential Lockers managed by the\
-    \ [Windows Credential Manager](https://attack.mitre.org/techniques/T1555/004).\n\
-    \nAdversaries may also acquire credentials by searching web browser process memory\
-    \ for patterns that commonly match credentials.(Citation: GitHub Mimikittenz July\
-    \ 2016)\n\nAfter acquiring credentials from web browsers, adversaries may attempt\
-    \ to recycle the credentials across different systems and/or accounts in order\
-    \ to expand access. This can result in significantly furthering an adversary's\
-    \ objective in cases where credentials gained from web browsers overlap with privileged\
-    \ accounts (e.g. domain administrator)."
-  kill_chain_phases:
-  - credential-access
-  data_source_platforms: []
-- technique: Internet Connection Discovery
-  id: T1016.001
-  stage: discovery
-  data_components:
-  - Process Creation
-  - Command Execution
-  description: 'Adversaries may check for Internet connectivity on compromised systems.
-    This may be performed during automated discovery and can be accomplished in numerous
-    ways such as using [Ping](https://attack.mitre.org/software/S0097), <code>tracert</code>,
-    and GET requests to websites.
-
-
-    Adversaries may use the results and responses from these requests to determine
-    if the system is capable of communicating with their C2 servers before attempting
-    to connect to them. The results may also be used to identify routes, redirectors,
-    and proxy servers.'
-  kill_chain_phases:
-  - discovery
-  data_source_platforms: []
-- technique: System Owner/User Discovery
-  id: T1033
-  stage: discovery
-  data_components:
-  - OS API Execution
-  - Process Access
-  - Windows Registry Key Access
-  - Active Directory Object Access
-  - Network Traffic Content
-  - File Access
-  - Process Creation
-  - Command Execution
-  - Network Traffic Flow
-  description: 'Adversaries may attempt to identify the primary user, currently logged
-    in user, set of users that commonly uses a system, or whether a user is actively
-    using the system. They may do this, for example, by retrieving account usernames
-    or by using [OS Credential Dumping](https://attack.mitre.org/techniques/T1003).
-    The information may be collected in a number of different ways using other Discovery
-    techniques, because user and username details are prevalent throughout a system
-    and include running process ownership, file/directory ownership, session information,
-    and system logs. Adversaries may use the information from [System Owner/User Discovery](https://attack.mitre.org/techniques/T1033)
-    during automated discovery to shape follow-on behaviors, including whether or
-    not the adversary fully infects the target and/or attempts specific actions.
-
-
-    Various utilities and commands may acquire this information, including <code>whoami</code>.
-    In macOS and Linux, the currently logged in user can be identified with <code>w</code>
-    and <code>who</code>. On macOS the <code>dscl . list /Users | grep -v ''_''</code>
-    command can also be used to enumerate user accounts. Environment variables, such
-    as <code>%USERNAME%</code> and <code>$USER</code>, may also be used to access
-    this information.
-
-
-    On network devices, [Network Device CLI](https://attack.mitre.org/techniques/T1059/008)
-    commands such as `show users` and `show ssh` can be used to display users currently
-    logged into the device.(Citation: show_ssh_users_cmd_cisco)(Citation: US-CERT
-    TA18-106A Network Infrastructure Devices 2018)'
-  kill_chain_phases:
-  - discovery
-  data_source_platforms: []
-- technique: Internal Spearphishing
-  id: T1534
-  stage: lateral-movement
-  data_components:
-  - Network Traffic Content
-  - Network Traffic Flow
-  - Application Log Content
-  description: 'Adversaries may use internal spearphishing to gain access to additional
-    information or exploit other users within the same organization after they already
-    have access to accounts or systems within the environment. Internal spearphishing
-    is multi-staged campaign where an email account is owned either by controlling
-    the user''s device with previously installed malware or by compromising the account
-    credentials of the user. Adversaries attempt to take advantage of a trusted internal
-    account to increase the likelihood of tricking the target into falling for the
-    phish attempt.(Citation: Trend Micro When Phishing Starts from the Inside 2017)
-
-
-    Adversaries may leverage [Spearphishing Attachment](https://attack.mitre.org/techniques/T1566/001)
-    or [Spearphishing Link](https://attack.mitre.org/techniques/T1566/002) as part
-    of internal spearphishing to deliver a payload or redirect to an external site
-    to capture credentials through [Input Capture](https://attack.mitre.org/techniques/T1056)
-    on sites that mimic email login interfaces.
-
-
-    There have been notable incidents where internal spearphishing has been used.
-    The Eye Pyramid campaign used phishing emails with malicious attachments for lateral
-    movement between victims, compromising nearly 18,000 email accounts in the process.(Citation:
-    Trend Micro When Phishing Starts from the Inside 2017) The Syrian Electronic Army
-    (SEA) compromised email accounts at the Financial Times (FT) to steal additional
-    account credentials. Once FT learned of the campaign and began warning employees
-    of the threat, the SEA sent phishing emails mimicking the Financial Times IT department
-    and were able to compromise even more users.(Citation: THE FINANCIAL TIMES LTD
-    2019.)'
-  kill_chain_phases:
-  - lateral-movement
-  data_source_platforms: []
-- technique: Remote Desktop Protocol
-  id: T1021.001
-  stage: lateral-movement
-  data_components:
-  - Network Connection Creation
-  - Process Creation
-  - Network Traffic Flow
-  - Logon Session Creation
-  description: "Adversaries may use [Valid Accounts](https://attack.mitre.org/techniques/T1078)\
-    \ to log into a computer using the Remote Desktop Protocol (RDP). The adversary\
-    \ may then perform actions as the logged-on user.\n\nRemote desktop is a common\
-    \ feature in operating systems. It allows a user to log into an interactive session\
-    \ with a system desktop graphical user interface on a remote system. Microsoft\
-    \ refers to its implementation of the Remote Desktop Protocol (RDP) as Remote\
-    \ Desktop Services (RDS).(Citation: TechNet Remote Desktop Services) \n\nAdversaries\
-    \ may connect to a remote system over RDP/RDS to expand access if the service\
-    \ is enabled and allows access to accounts with known credentials. Adversaries\
-    \ will likely use Credential Access techniques to acquire credentials to use with\
-    \ RDP. Adversaries may also use RDP in conjunction with the [Accessibility Features](https://attack.mitre.org/techniques/T1546/008)\
-    \ or [Terminal Services DLL](https://attack.mitre.org/techniques/T1505/005) for\
-    \ Persistence.(Citation: Alperovitch Malware)"
-  kill_chain_phases:
-  - lateral-movement
-  data_source_platforms: []
-- technique: Keylogging
-  id: T1056.001
-  stage: collection
-  data_components:
-  - OS API Execution
-  - Windows Registry Key Modification
-  - Driver Load
-  description: 'Adversaries may log user keystrokes to intercept credentials as the
-    user types them. Keylogging is likely to be used to acquire credentials for new
-    access opportunities when [OS Credential Dumping](https://attack.mitre.org/techniques/T1003)
-    efforts are not effective, and may require an adversary to intercept keystrokes
-    on a system for a substantial period of time before credentials can be successfully
-    captured.
-
-
-    Keylogging is the most prevalent type of input capture, with many different ways
-    of intercepting keystrokes.(Citation: Adventures of a Keystroke) Some methods
-    include:
-
-
-    * Hooking API callbacks used for processing keystrokes. Unlike [Credential API
-    Hooking](https://attack.mitre.org/techniques/T1056/004), this focuses solely on
-    API functions intended for processing keystroke data.
-
-    * Reading raw keystroke data from the hardware buffer.
-
-    * Windows Registry modifications.
-
-    * Custom drivers.
-
-    * [Modify System Image](https://attack.mitre.org/techniques/T1601) may provide
-    adversaries with hooks into the operating system of network devices to read raw
-    keystrokes for login sessions.(Citation: Cisco Blog Legacy Device Attacks) '
-  kill_chain_phases:
-  - collection
-  - credential-access
-  data_source_platforms: []
-- technique: Bidirectional Communication
-  id: T1102.002
+  mitigations:
+  - course-of-action--2a4f6c11-a4a7-4cb9-b0ef-6ae1bb3a718a
+  - course-of-action--47e0e9fe-96ce-4f65-8bb1-8be1feacb5db
+  - course-of-action--90f39ee1-d5a3-4aaa-9f28-3b42815b0d46
+- technique: Web Service
+  stixid: attack-pattern--830c9528-df21-472c-8c14-a036bf17d665
+  external_id: T1102
   stage: command-and-control
   data_components:
-  - Network Traffic Flow
-  - Network Traffic Content
   - Network Connection Creation
-  description: "Adversaries may use an existing, legitimate external Web service as\
-    \ a means for sending commands to and receiving output from a compromised system\
-    \ over the Web service channel. Compromised systems may leverage popular websites\
-    \ and social media to host command and control (C2) instructions. Those infected\
-    \ systems can then send the output from those commands back over that Web service\
-    \ channel. The return traffic may occur in a variety of ways, depending on the\
-    \ Web service being utilized. For example, the return traffic may take the form\
-    \ of the compromised system posting a comment on a forum, issuing a pull request\
-    \ to development project, updating a document hosted on a Web service, or by sending\
-    \ a Tweet. \n\nPopular websites and social media acting as a mechanism for C2\
-    \ may give a significant amount of cover due to the likelihood that hosts within\
-    \ a network are already communicating with them prior to a compromise. Using common\
-    \ services, such as those offered by Google or Twitter, makes it easier for adversaries\
-    \ to hide in expected noise. Web service providers commonly use SSL/TLS encryption,\
-    \ giving adversaries an added level of protection. "
+  - Network Traffic Content
+  - Network Traffic Flow
+  description: 'Adversaries may use an existing, legitimate external Web service as
+    a means for relaying data to/from a compromised system. Popular websites and social
+    media acting as a mechanism for C2 may give a significant amount of cover due
+    to the likelihood that hosts within a network are already communicating with them
+    prior to a compromise. Using common services, such as those offered by Google
+    or Twitter, makes it easier for adversaries to hide in expected noise. Web service
+    providers commonly use SSL/TLS encryption, giving adversaries an added level of
+    protection.
+
+
+    Use of Web services may also protect back-end C2 infrastructure from discovery
+    through malware binary analysis while also enabling operational resiliency (since
+    this infrastructure may be dynamically changed).'
   kill_chain_phases:
   - command-and-control
   data_source_platforms: []
-- technique: Ingress Tool Transfer
-  id: T1105
-  stage: command-and-control
-  data_components:
-  - Network Traffic Flow
-  - Network Connection Creation
-  - Network Traffic Content
-  - File Creation
-  description: "Adversaries may transfer tools or other files from an external system\
-    \ into a compromised environment. Tools or files may be copied from an external\
-    \ adversary-controlled system to the victim network through the command and control\
-    \ channel or through alternate protocols such as [ftp](https://attack.mitre.org/software/S0095).\
-    \ Once present, adversaries may also transfer/spread tools between victim devices\
-    \ within a compromised environment (i.e. [Lateral Tool Transfer](https://attack.mitre.org/techniques/T1570)).\
-    \ \n\nFiles can also be transferred using various [Web Service](https://attack.mitre.org/techniques/T1102)s\
-    \ as well as native or otherwise present tools on the victim system.(Citation:\
-    \ PTSecurity Cobalt Dec 2016)\n\nOn Windows, adversaries may use various utilities\
-    \ to download tools, such as `copy`, `finger`, [certutil](https://attack.mitre.org/software/S0160),\
-    \ and [PowerShell](https://attack.mitre.org/techniques/T1059/001) commands such\
-    \ as <code>IEX(New-Object Net.WebClient).downloadString()</code> and <code>Invoke-WebRequest</code>.\
-    \ On Linux and macOS systems, a variety of utilities also exist, such as `curl`,\
-    \ `scp`, `sftp`, `tftp`, `rsync`, `finger`, and `wget`.(Citation: t1105_lolbas)"
-  kill_chain_phases:
-  - command-and-control
-  data_source_platforms: []
-- technique: Exfiltration to Cloud Storage
-  id: T1567.002
-  stage: exfiltration
-  data_components:
-  - Command Execution
-  - Network Traffic Content
-  - Network Connection Creation
-  - Network Traffic Flow
-  - File Access
-  description: 'Adversaries may exfiltrate data to a cloud storage service rather
-    than over their primary command and control channel. Cloud storage services allow
-    for the storage, edit, and retrieval of data from a remote cloud storage server
-    over the Internet.
-
-
-    Examples of cloud storage services include Dropbox and Google Docs. Exfiltration
-    to these cloud storage services can provide a significant amount of cover to the
-    adversary if hosts within the network are already communicating with the service. '
-  kill_chain_phases:
-  - exfiltration
-  data_source_platforms: []
+  mitigations:
+  - course-of-action--12241367-a8b7-49b4-b86e-2236901ba50c
+  - course-of-action--21da4fd4-27ad-4e9c-b93d-0b9b14d02c96

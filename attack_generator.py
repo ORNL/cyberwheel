@@ -1,3 +1,6 @@
+'''
+750 techniques, 267 mitigations, and 105 data components in enterprise.json
+'''
 import random
 import yaml
 from pyattck import Attck
@@ -39,6 +42,7 @@ def match_data_to_techniques(selected_techniques):
 
 def generate_campaign(apt_crew, num_techniques_per_stage):
     campaign = []
+    technique_to_mitigations = map_mitigations_to_techniques()
     
     # Select techniques for each stage of the kill chain
     stages = ['reconnaissance', 'recource-development', 'initial-access', 'execution', 'persistence', 'privilege-escalation', 'defense-evasion', 'credential-access', 'discovery', 'lateral-movement', 'collection', 'command-and-control', 'exfiltration', 'impact']
@@ -50,15 +54,41 @@ def generate_campaign(apt_crew, num_techniques_per_stage):
                 data_info = match_data_to_techniques([selected_technique])
                 campaign.append({
                     "technique": selected_technique.name,
-                    "id": data_info[selected_technique.name]["external_id"],
+                    "stixid": selected_technique.id,
+                    "external_id": data_info[selected_technique.name]["external_id"],
                     "stage": stage,
                     "data_components": data_info[selected_technique.name]["data_components"],
                     "description": data_info[selected_technique.name]["description"],
                     "kill_chain_phases": data_info[selected_technique.name]["kill_chain_phases"],
-                    "data_source_platforms": data_info[selected_technique.name]["data_source_platforms"]
+                    "data_source_platforms": data_info[selected_technique.name]["data_source_platforms"],
+                    "mitigations": technique_to_mitigations[selected_technique.id]
                 })
 
     return campaign
+
+# 750 techniques
+# 267 total mitigations
+def map_mitigations_to_techniques():
+
+    count = 0
+    components = []
+    for technique in attack.enterprise.techniques:
+        for component in technique.data_components:
+            if component not in components:
+                components.append(component)
+        count+= 1
+
+    mapping = {}
+    count = 0
+    for mitigation in attack.enterprise.mitigations:
+        count += 1
+        for technique in mitigation.techniques:
+            if technique.id not in mapping:
+                mapping[technique.id] = [mitigation.id]
+            else:
+                mapping[technique.id].append(mitigation.id)
+
+    return mapping
 
 def main():
     # Set the number of techniques to be selected from each stage
@@ -82,5 +112,9 @@ def main():
     print("Campaign information YAML file created: campaign_info.yaml")
 
 if __name__ == "__main__":
-    attack = Attck()
+    attack = Attck(
+    nested_techniques=True,
+    enterprise_attck_json="./pyattck/merged_enterprise_attck_v1.json",
+    pre_attck_json="./pyattck/merged_pre_attck_v1.json"
+    )
     main()

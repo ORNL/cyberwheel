@@ -1,0 +1,106 @@
+Data Component,Number of Techniques
+Command Execution,268
+Process Creation,226
+Network Traffic Content,108
+File Modification,104
+OS API Execution,94
+File Creation,91
+Network Traffic Flow,86
+Application Log Content,72
+Windows Registry Key Modification,65
+Network Connection Creation,61
+Module Load,54
+File Access,47
+File Metadata,44
+Logon Session Creation,37
+Script Execution,30
+Response Content,26
+User Account Authentication,26
+Windows Registry Key Creation,22
+Process Access,21
+Host Status,18
+Active Directory Object Modification,16
+Process Metadata,15
+Service Creation,14
+Driver Load,14
+File Deletion,13
+Logon Session Metadata,11
+Service Metadata,11
+User Account Modification,11
+Windows Registry Key Access,10
+Process Modification,10
+Firmware Modification,9
+Active Directory Credential Request,8
+Malware Metadata,7
+Scheduled Job Creation,6
+Response Metadata,6
+Drive Modification,6
+Service Modification,6
+Container Creation,6
+Group Enumeration,6
+Web Credential Usage,6
+User Account Creation,6
+User Account Metadata,6
+Network Share Access,6
+Active DNS,5
+Passive DNS,5
+Instance Metadata,5
+Drive Access,5
+Instance Creation,5
+Active Directory Object Creation,5
+Firewall Rule Modification,5
+Drive Creation,5
+Windows Registry Key Deletion,5
+WMI Creation,4
+Active Directory Object Access,4
+Domain Registration,4
+Instance Start,4
+Image Metadata,4
+Malware Content,4
+Social Media,4
+Cloud Service Modification,4
+Scheduled Job Modification,4
+Image Creation,4
+Snapshot Creation,3
+Snapshot Deletion,3
+Snapshot Metadata,3
+Instance Deletion,3
+Kernel Module Load,3
+Process Termination,3
+Cloud Storage Access,3
+Firewall Disable,3
+Container Start,3
+User Account Deletion,3
+Instance Modification,2
+Instance Stop,2
+Volume Modification,2
+Snapshot Modification,2
+Volume Deletion,2
+Group Metadata,2
+Certificate Registration,2
+Web Credential Creation,2
+Cloud Service Disable,2
+Scheduled Job Metadata,2
+Cloud Storage Enumeration,2
+Active Directory Object Deletion,2
+Driver Metadata,2
+Group Modification,2
+Cloud Storage Modification,2
+Firewall Metadata,2
+Firewall Enumeration,2
+Cloud Storage Deletion,2
+Cloud Service Enumeration,2
+Container Enumeration,1
+Pod Enumeration,1
+Volume Metadata,1
+Volume Creation,1
+Image Modification,1
+Pod Modification,1
+Pod Creation,1
+Volume Enumeration,1
+Snapshot Enumeration,1
+Instance Enumeration,1
+Named Pipe Metadata,1
+Image Deletion,1
+Cloud Storage Creation,1
+Cloud Storage Metadata,1

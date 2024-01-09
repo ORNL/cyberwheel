@@ -76,7 +76,6 @@ class Cyberwheel(gym.Env):
             done = False
 
         return self._get_obs(), reward, done, False, {}
-        #return observation, reward, done, info
 
     def reset(self, seed=None, options=None):
 

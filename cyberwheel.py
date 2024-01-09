@@ -1,6 +1,6 @@
 import gymnasium as gym
 from gymnasium import spaces
-from network import *
+from network.network_random import RandomNetwork
 from redagents.shortestpath import ShortestPathRedAgent
 import numpy as np
 
@@ -8,42 +8,29 @@ class Cyberwheel(gym.Env):
 
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, number_hosts, number_subnets,number_targets):
+    def __init__(self, number_hosts, number_subnets,connect_subnets_probability):
         super(Cyberwheel, self).__init__()
         # Define action and observation space
         # They must be gym.spaces objects
         self.number_hosts = number_hosts
         self.number_subnets = number_subnets
-        self.number_targets = number_targets
+        self.connect_subnets_probability = connect_subnets_probability
 
-        self.network = Network(number_hosts,number_subnets,number_targets)
-
-        self.network_size = number_hosts*number_subnets
+        self.network = RandomNetwork(number_hosts,number_subnets,connect_subnets_probability)
 
         # Action space: 0 for no action, 1 to N for restore action on the corresponding host
-        self.action_space = spaces.Discrete(self.network_size + 1)
+        self.action_space = spaces.Discrete(self.network.get_action_space_size())
 
         # Observation space: Binary vector indicating whether each host is compromised or not
-        self.observation_space = spaces.MultiBinary(self.network_size)
+        self.observation_space = spaces.MultiBinary(self.network.get_action_space_size()-1)
 
-        self.red_agent = ShortestPathRedAgent(self.observation_space, self.network.graph, self.network.source, self.network.target, self.network.host_to_index)
+        self.red_agent = ShortestPathRedAgent(self.network)
 
     # private method that converts state into observation 
     # convert the dictionary of Host objects into the observation vector
     def _get_obs(self):
-        
-        observation_vector = np.zeros(self.network_size, dtype=np.int8)
-        
-        n = 0
-        for host_id, host_object in self.network.hosts.items():
 
-            # Check if the host is compromised and update the corresponding element in the observation vector
-            if host_object.is_compromised:
-                observation_vector[n] = 1
-            
-            n+=1
-
-        return observation_vector.astype(np.int8)
+        return self.network.generate_observation_vector()
 
     def step(self, action):
 
@@ -51,35 +38,24 @@ class Cyberwheel(gym.Env):
 
         # Example logic: If the action is to restore a host, set the corresponding element in the state to 1
         if action > 0:
-            # since action is integer and key is string need a list of values
-            l = list(self.network.hosts.values())
-
-            # more actions than hosts by 1 since 0 is do nothing
-            if l[action-1].is_compromised:
-                patched = True
+            
+            if self.network.take_action(action):
                 reward = 10
-            else:
-                patched = False
 
-            self.network.hosts[l[action-1].host_name].is_compromised = False
-
-            self.observation_space = self._get_obs()
-
-        flag = self.red_agent.act(self.observation_space)
+        flag = self.red_agent.act()
 
         if flag == "owned":
             done = True
             reward = -100
         else: 
-            self.network.hosts[flag].is_compromised = True
-            self.observation_space = self._get_obs()
             done = False
 
         return self._get_obs(), reward, done, False, {}
 
     def reset(self, seed=None, options=None):
 
-        self.network = Network(self.number_hosts,self.number_subnets,self.number_targets)
+        self.network = RandomNetwork(self.number_hosts,self.number_subnets,self.connect_subnets_probability)
+        self.red_agent = ShortestPathRedAgent(self.network)
         
         return self._get_obs(), {} # observation, info
 

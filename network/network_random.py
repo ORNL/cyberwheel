@@ -31,13 +31,14 @@ class RandomNetwork(Network):
                 services = self.generate_random_services()
                 host = Host(host_name, host_type, services, host_ip, "Windows")
                 self.add_host(host)
-                self.connect_host_to_subnet(host, subnet_name)
+                self.connect_host_to_subnet(host.name, subnet.name)
 
         # Connect subnets randomly
-        for subnet1 in subnets:
-            for subnet2 in subnets:
-                if subnet1 != subnet2 and random.random() < self.connect_subnets_probability:
-                    self.connect_subnets(subnet1, subnet2)
+        for i in range(0, len(subnets)-1):
+                #if subnet1 != subnet2 and random.random() < self.connect_subnets_probability:
+            self.connect_subnets(subnets[i].name, subnets[i+1].name)
+
+        self.draw()
 
     def generate_random_services(self):
         num_services = random.randint(1, 5)  # Generate a random number of services

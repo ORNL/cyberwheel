@@ -16,7 +16,7 @@ def make_env(env_id: str, rank: int, seed: int = 0):
     :param rank: index of the subprocess
     """
     def _init():
-        env = Cyberwheel(2,2,1)
+        env = Cyberwheel(50,1,1)
         env.reset(seed=seed + rank)
         env = Monitor(env, 'monitor_logs/')
         return env

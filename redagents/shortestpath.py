@@ -9,30 +9,16 @@ class ShortestPathRedAgent(RedAgentBase):
         super().__init__()
         self.network = network
         self.source = self.network.get_random_host()
-        self.target = self.get_target()
-        self.path = nx.shortest_path(self.network, source=self.source, target=self.target)
+        self.target = self.network.find_host_with_longest_path(self.source)
 
-    def get_target(self): 
+    def act(self):
 
-        # Compute the shortest path lengths from source to all reachable nodes
-        length = self.network.single_source_shortest_path_length(self.graph, self.source)
+        # update this in case network object has been modified
+        path = self.network.find_path_between_hosts(self.source, self.target)
 
-        # Set the target to one of the nodes that is furthest away
-        target = self.source
-        for node in length:
-            if length[node] > length[target]:
-                target = node 
+        for node in path:
+            if not self.network.check_compromised_status(node):
+                self.network.update_host_compromised_status(node, True)  # Set is_compromised to True
+                break
 
-        return target
-
-    def act(self, observation_space):
-
-        node_captured = False 
-        for node in self.path:
-            if observation_space[self.host_to_index[node]] != 1:
-                observation_space[self.host_to_index[node]] == 1
-                node_captured = True
-                return node 
-        
-        if not node_captured:
-            return "owned"
+        return "owned" if all(self.network.check_compromised_status(n) for n in path) else None

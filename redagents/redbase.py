@@ -8,5 +8,5 @@ class RedAgentBase(ABC):
         pass
 
     @abstractmethod
-    def act(self, observation_space):
+    def act(self):
         pass

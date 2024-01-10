@@ -1,0 +1,68 @@
+# Network Configuration
+network:
+  name: MyNetwork
+
+# Topology Definition
+topology:
+  - MainRouter:
+      - SubnetA:
+          - Host1
+          - Host2
+      - SubnetB
+      - SubnetARouter:
+          - SubnetC:
+              - Host3
+              - Host4
+
+# Routers
+routers:
+  - name: MainRouter
+    firewall:
+      outbound_allow: true
+      inbound_rules:
+        - source_subnet: SubnetA
+          allow_ports: [80, 443]  # Allow HTTP (port 80) and HTTPS (port 443) traffic
+        - source_subnet: SubnetB
+          allow_services: [SSH, FTP]  # Allow SSH and FTP services
+
+# Child Router (nested under MainRouter)
+  - name: SubnetARouter
+    firewall:
+      outbound_allow: true
+      inbound_rules:
+        - source_subnet: SubnetA
+          allow_ports: [80, 443]  # Allow HTTP (port 80) and HTTPS (port 443) traffic
+        - source_subnet: SubnetB
+          allow_services: [SSH, FTP]  # Allow SSH and FTP services
+
+# Subnets
+subnets:
+  - name: SubnetA
+    router: MainRouter
+    ip_range: 192.168.1.0/24
+
+  - name: SubnetB
+    router: MainRouter
+    ip_range: 192.168.2.0/24
+
+  - name: SubnetC
+    router: SubnetARouter
+    ip_range: 192.168.3.0/24
+
+# Hosts
+hosts:
+  - name: Host1
+    type: Server
+    subnet: SubnetA
+
+  - name: Host2
+    type: Workstation
+    subnet: SubnetA
+
+  - name: Host3
+    type: Workstation
+    subnet: SubnetC
+
+  - name: Host4
+    type: Printer
+    subnet: SubnetC

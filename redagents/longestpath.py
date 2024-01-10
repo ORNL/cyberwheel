@@ -3,7 +3,10 @@ import numpy as np
 import random
 from .redbase import *
 
-class ShortestPathRedAgent(RedAgentBase):
+'''
+Selects a random host as the starting point and then chooses as target the host that is furthest away
+'''
+class LongestPathRedAgent(RedAgentBase):
 
     def __init__(self, network):
         super().__init__()

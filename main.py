@@ -49,17 +49,28 @@ def main():
     # Load the trained model
     #loaded_model = PPO.load("test")
 
-    obs = vec_env.reset()
-    for _ in range(1000):
-        action, _states = model.predict(obs)
-        obs, rewards, dones, info = vec_env.step(action)
-        #vec_env.render()
+    # Initialize variables
+    num_episodes = 10  # Number of episodes for testing
+    total_reward = 0
 
-        # Check if all environments are done
-        if np.all(dones):
-            # Print rewards for each environment in the vector
-            for i, reward in enumerate(rewards):
-                print(f"Environment {i}: Reward: {reward}")
+    # Testing loop
+    for episode in range(num_episodes):
+        obs = vec_env.reset()  # Reset the environment for a new episode
+        episode_reward = 0
+
+        while True:
+            actions, _ = model.predict(obs)  # Get the model's action predictions
+            obs, rewards, dones, _ = vec_env.step(actions)  # Execute the actions in the environment
+            episode_reward += rewards[0]  # Assuming a single environment in the VecEnv
+
+            if dones[0]:
+                break
+
+        total_reward += episode_reward
+        print(f"Episode {episode + 1}: Total Reward: {episode_reward}")
+
+    average_reward = total_reward / num_episodes
+    print(f"Average Reward over {num_episodes} Episodes: {average_reward}")
 
 if __name__ == '__main__':
     main()

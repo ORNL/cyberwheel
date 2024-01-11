@@ -1,8 +1,8 @@
-questions:
-  - How do we feel about this CamelCase? (I generally prefer CamelCase for classes and snake_case for most everything else, but that's just my $0.02)
-  - I 86'd the inbound/outbound distinction under the router firewall rules. Anyone think we need that?
-  - I added protocol to the services. Is this too superflous? (i.e. tcp/udp)
-  - Should defaults always be explicit or can we write the defaults into the code and override as needed?
+#questions:
+#  - How do we feel about this CamelCase? (I generally prefer CamelCase for classes and snake_case for most everything else, but that's just my $0.02)
+#  - I 86'd the inbound/outbound distinction under the router firewall rules. Anyone think we need that?
+#  - I added protocol to the services. Is this too superflous? (i.e. tcp/udp)
+#  - Should defaults always be explicit or can we write the defaults into the code and override as needed?
 
 # Network Configuration
 network:
@@ -111,6 +111,11 @@ hosts:
   - name: Host3
     type: Workstation
     subnet: SubnetC
+    firewall:
+      - name: allow custom service not in service definitions
+        port: 54321
+        proto: tcp
+        src: []    # if src undefined default to allow all
 
   - name: Host4
     type: Printer

@@ -1,6 +1,7 @@
 import gymnasium as gym
 from gymnasium import spaces
 from network.network_random import RandomNetwork
+from network.network_base import Network
 from redagents.longestpath import LongestPathRedAgent
 import numpy as np
 
@@ -16,7 +17,9 @@ class Cyberwheel(gym.Env):
         self.number_subnets = number_subnets
         self.connect_subnets_probability = connect_subnets_probability
 
-        self.network = RandomNetwork(number_hosts,number_subnets,connect_subnets_probability)
+        #self.network = RandomNetwork(number_hosts,number_subnets,connect_subnets_probability)
+        self.network = Network.create_network_from_yaml('network/config.yaml')
+        self.network.draw()
 
         # Action space: 0 for no action, 1 to N for restore action on the corresponding host
         self.action_space = spaces.Discrete(self.network.get_action_space_size())
@@ -54,7 +57,8 @@ class Cyberwheel(gym.Env):
 
     def reset(self, seed=None, options=None):
 
-        self.network = RandomNetwork(self.number_hosts,self.number_subnets,self.connect_subnets_probability)
+        #self.network = RandomNetwork(self.number_hosts,self.number_subnets,self.connect_subnets_probability)
+        self.network = Network.create_network_from_yaml('network/config.yaml')
         self.red_agent = LongestPathRedAgent(self.network)
         
         return self._get_obs(), {} # observation, info

@@ -3,29 +3,65 @@ import random
 import ipaddress
 import math
 import numpy as np
-from .host import Host
 import matplotlib.pyplot as plt
+import yaml
+
+from .subnet import Subnet
+from .host import Host
+from .router import Router
 
 class Network:
     
     def __init__(self):
-        pass
-
-class Network:
-    def __init__(self):
         self.graph = nx.Graph()
 
     def add_subnet(self, subnet):
-        self.graph.add_node(subnet.name, data = subnet)
+        self.graph.add_node(subnet.name, data=subnet)
+
+    def add_router(self, router):
+        self.graph.add_node(router.name, data=router)
 
     def add_host(self, host):
-        self.graph.add_node(host.name, data = host)
+        self.graph.add_node(host.name, data=host)
 
     def connect_subnets(self, subnet1, subnet2):
-        self.graph.add_edge(subnet1, subnet2)
+        self.graph.add_edge(subnet1.name, subnet2.name)
+
+    def connect_router_to_subnet(self, router, subnet):
+        self.graph.add_edge(router.name, subnet.name)
 
     def connect_host_to_subnet(self, host, subnet):
-        self.graph.add_edge(host, subnet)
+        self.graph.add_edge(host.name, subnet.name)
+
+    def define_routing_rules(self, router, routes):
+        if router.name in self.graph.nodes:
+            data_object = self.graph.nodes[router.name]['data']
+            if isinstance(data_object, Router):
+                data_object.routes = routes
+
+    def define_firewall_rules(self, router, firewall_rules):
+        if router.name in self.graph.nodes:
+            data_object = self.graph.nodes[router.name]['data']
+            if isinstance(data_object, Router):
+                data_object.firewall_rules = firewall_rules
+
+    def define_subnet_routing_rules(self, subnet, routes):
+        if subnet.name in self.graph.nodes:
+            data_object = self.graph.nodes[subnet.name]['data']
+            if isinstance(data_object, Subnet):
+                data_object.routes = routes
+
+    def define_subnet_firewall_rules(self, subnet, firewall_rules):
+        if subnet.name in self.graph.nodes:
+            data_object = self.graph.nodes[subnet.name]['data']
+            if isinstance(data_object, Subnet):
+                data_object.firewall_rules = firewall_rules
+
+    def define_host_firewall_rules(self, host, firewall_rules):
+        if host.name in self.graph.nodes:
+            data_object = self.graph.nodes[host.name]['data']
+            if isinstance(data_object, Host):
+                data_object.firewall_rules = firewall_rules
 
     def is_subnet_reachable(self, subnet1, subnet2):
         return nx.has_path(self.graph, subnet1.name, subnet2.name)
@@ -34,10 +70,6 @@ class Network:
         all_hosts = [node_name for node_name, data_object in self.graph.nodes(data='data') if isinstance(data_object, Host)]
 
         return random.choice(all_hosts)
-
-    def update_host_compromised_status(self, host, is_compromised):
-        if host in self.graph.nodes:
-            host.is_compromised = is_compromised
 
     def update_host_compromised_status(self, host, is_compromised):
         if host in self.graph.nodes:
@@ -53,7 +85,6 @@ class Network:
         return None  # Return None if host not found or not an instance of Host
 
     def find_path_between_hosts(self, source_host, target_host):
-
         if source_host not in self.graph or target_host not in self.graph:
             return None  # Source or target not found in the network
 
@@ -139,6 +170,83 @@ class Network:
 
         # Display the graph
         plt.savefig("networkx_graph.png", format="png")
+
+    @classmethod
+    def create_network_from_yaml(cls, config_file_path):
+        # Create an instance of the Network class
+        network = cls()
+
+        # Define dictionaries to store created instances for quick access
+        subnets_dict = {}
+        routers_dict = {}
+        hosts_dict = {}
+
+        # Load the YAML config file
+        with open(config_file_path, 'r') as yaml_file:
+            config_data = yaml.safe_load(yaml_file)
+
+        # Iterate over the config data and create network elements
+        for element in config_data.get('subnets', []):
+            subnet = Subnet(
+                name=element['name'],
+                default_route=element['default_route'],
+                ip_range=element['ip_range']
+            )
+            network.add_subnet(subnet)
+            subnets_dict[subnet.name] = subnet  # Use subnet name as the key
+
+        for element in config_data.get('routers', []):
+            router = Router(
+                name=element['name'],
+                default_route=element['default_route']
+            )
+            network.add_router(router)
+            routers_dict[router.name] = router  # Use router name as the key
+
+        for element in config_data.get('hosts', []):
+            host_subnet_name = element['subnet']  # Get the subnet name for the host
+            subnet = subnets_dict.get(host_subnet_name)  # Retrieve the subnet instance
+            if subnet:
+                host = Host(
+                    name=element['name'],
+                    type=element['type'],
+                    subnet=subnet  # Pass the subnet instance to the host
+                )
+                network.add_host(host)
+                hosts_dict[host.name] = host  # Use host name as the key
+
+        for element in config_data.get('topology', []):
+            for router_name, connections in element.items():
+                router = routers_dict.get(router_name)
+                if router:
+                    for connection in connections:
+                        # If the connection is a string, it could be a subnet or a router
+                        if isinstance(connection, str):  
+                            # Check if it's a subnet and connect it
+                            if connection in subnets_dict:
+                                subnet = subnets_dict[connection]
+                                network.connect_router_to_subnet(router, subnet)
+                            # Check if it's a router and connect it to the main router
+                            elif connection in routers_dict:
+                                other_router = routers_dict[connection]
+                                # Assuming there is a method to connect routers
+                                network.connect_routers(router, other_router)
+                        # If the connection is a dictionary, it's a subnet with hosts
+                        elif isinstance(connection, dict):  
+                            for subnet_name, hosts in connection.items():
+                                subnet = subnets_dict.get(subnet_name)
+                                if subnet:
+                                    network.connect_router_to_subnet(router, subnet)
+                                    for host_name in hosts:
+                                        host = hosts_dict.get(host_name)
+                                        if host:
+                                            network.connect_host_to_subnet(host, subnet)
+
+        # Define routing rules and firewall rules based on the config data
+        # (You'll need to implement this part based on your config structure)
+
+        # Return the created network
+        return network
 
 
 

@@ -17,6 +17,8 @@ A simulation environment for training autonomous cyber defense agents based on t
 #### ToDos
 
 - Network code - create base config files for different common topologies and modify network class so we can scale / randomize the exact layout if desired from the base topology definition
+- Create class structure for detectors and red agent actions such that red agent could be RL-based. Map detectors back to observation space. Create heuristic based red agents. 
+- Design red agent observation space / red agent and blue agent interaction
 
 #### Ideas
 

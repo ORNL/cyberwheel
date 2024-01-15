@@ -9,6 +9,11 @@ A simulation environment for training autonomous cyber defense agents based on t
 - The cyberwheel class that inherits from gym should contain minimal code to keep it clean. If you find yourself writing long code blocks in this file, consider whether they should be moved into another module or class. The same thing goes for the main class --- keep it clean. If you want to add 30 command line args, maybe find a way to parse them using a helper class just to keep that file clean. 
 - Be creative and have fun!
 
+#### Ideas
+
+- Both red agent and blue agent practice deception - red agent can distract you or leverage automated response for DoS attack / segment network in useful way (when it looks like campaign X is happening, do this set of things - very reactive, assumes campaign happening). How to account for deception? Could AI pick up on that?
+- 
+
 #### Running on CDAT 
 
 - To use the GPU, run with ```CUDA_VISIBLE_DEVICES="0" python main.py``` and set to desired CUDA device.

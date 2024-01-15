@@ -1,49 +1,42 @@
 # Network Configuration
 network:
   name: network_foo
-  desc: A network that has 6 subnets with 5 hosts each
+  desc: A network that foos all the bars
 
 # Topology Definition
 topology:
   - MainRouter:
-      - wan_subnet
-      - SubnetA:
-        - Host1
-        - Host2
-        - Host3
-        - Host4
-        - Host5
-      - SubnetB:
-        - Host6
-        - Host7
-        - Host8
-        - Host9
-        - Host10
-      - SubnetCRouter:
-        - SubnetC:
-          - Host11
-          - Host12
-          - Host13
-          - Host14
-          - Host15
-      - SubnetD:
-        - Host16
-        - Host17
-        - Host18
-        - Host19
-        - Host20
-      - SubnetE:
-        - Host21
-        - Host22
-        - Host23
-        - Host24
-        - Host25
-      - SubnetF:
-        - Host26
-        - Host27
-        - Host28
-        - Host29
-        - Host30
+    - SubnetA:
+      - HostA1
+      - HostA2
+      - HostA3
+      - HostA4
+      - HostA5
+    - SubnetB:
+      - HostB1
+      - HostB2
+      - HostB3
+      - HostB4
+      - HostB5
+    - SubnetCRouter:
+      - SubnetC:
+        - HostC1
+        - HostC2
+        - HostC3
+        - HostC4
+        - HostC5
+    - SubnetD:
+      - HostD1
+      - HostD2
+      - HostD3
+      - HostD4
+      - HostD5
+    - SubnetE:
+      - HostE1
+      - HostE2
+      - HostE3
+      - HostE4
+      - HostE5
 
 # Routers
 routers:
@@ -53,76 +46,32 @@ routers:
       - SubnetA
       - SubnetB
       - SubnetCRouter
-      - SubnetD
-      - SubnetE
-      - SubnetF
     firewall:
       - src_subnet: SubnetA
         src_hosts:
-          - Host1
-          - Host2
-          - Host3
-          - Host4
-          - Host5
+          - HostA1
+          - HostA2
         dest_subnet: SubnetB
         dest_hosts:
-          - Host6
-          - Host7
-          - Host8
-          - Host9
-          - Host10
+          - HostB1
         allow_ports:
           - 80: tcp
           - 443: tcp
-      - src_subnet: SubnetB
-        allow_services:
-          - SSH
-          - FTP
-          - ICMP
-      - src_subnet: SubnetC
-        src_hosts:
-          - Host11
-          - Host12
-          - Host13
-          - Host14
-          - Host15
-        dest_subnet: SubnetD
-        dest_hosts:
-          - Host16
-          - Host17
-          - Host18
-          - Host19
-          - Host20
+
+  - name: SubnetCRouter
+    default_route: MainRouter
+    routes:
+      - SubnetC
+    firewall:
+      - source_subnet: SubnetA
         allow_ports:
           - 80: tcp
           - 443: tcp
           - 123: udp
-      - src_subnet: SubnetD
-        allow_services:
-          - SSH
-          - FTP
-          - ICMP
-      - src_subnet: SubnetE
-        src_hosts:
-          - Host21
-          - Host22
-          - Host23
-          - Host24
-          - Host25
-        dest_subnet: SubnetF
+      - source_subnet: SubnetB
         dest_hosts:
-          - Host26
-          - Host27
-          - Host28
-          - Host29
-          - Host30
-        allow_ports:
-          - 80: tcp
-          - 443: tcp
-      - src_subnet: SubnetF
-        allow_services:
-          - SSH
-          - FTP
+          - HostB1
+        allow_services: [SSH, FTP]
 
 # Subnets
 subnets:
@@ -135,7 +84,7 @@ subnets:
     ip_range: 192.168.2.0/24
 
   - name: SubnetC
-    default_route: MainRouter
+    default_route: SubnetCRouter
     ip_range: 192.168.3.0/24
 
   - name: SubnetD
@@ -146,128 +95,104 @@ subnets:
     default_route: MainRouter
     ip_range: 192.168.5.0/24
 
-  - name: SubnetF
-    default_route: MainRouter
-    ip_range: 192.168.6.0/24
-
 # Hosts
 hosts:
-  - name: Host1
+  - name: HostA1
     type: Server
     subnet: SubnetA
 
-  - name: Host2
+  - name: HostA2
     type: Workstation
     subnet: SubnetA
 
-  - name: Host3
+  - name: HostA3
     type: Workstation
     subnet: SubnetA
 
-  - name: Host4
-    type: Workstation
+  - name: HostA4
+    type: Printer
     subnet: SubnetA
 
-  - name: Host5
-    type: Workstation
+  - name: HostA5
+    type: Server
     subnet: SubnetA
 
-  - name: Host6
+  - name: HostB1
     type: Server
     subnet: SubnetB
 
-  - name: Host7
+  - name: HostB2
     type: Workstation
     subnet: SubnetB
 
-  - name: Host8
+  - name: HostB3
     type: Workstation
     subnet: SubnetB
 
-  - name: Host9
-    type: Workstation
+  - name: HostB4
+    type: Printer
     subnet: SubnetB
 
-  - name: Host10
-    type: Workstation
+  - name: HostB5
+    type: Server
     subnet: SubnetB
 
-  - name: Host11
+  - name: HostC1
     type: Server
     subnet: SubnetC
 
-  - name: Host12
+  - name: HostC2
     type: Workstation
     subnet: SubnetC
 
-  - name: Host13
+  - name: HostC3
     type: Workstation
     subnet: SubnetC
 
-  - name: Host14
-    type: Workstation
+  - name: HostC4
+    type: Printer
     subnet: SubnetC
 
-  - name: Host15
-    type: Workstation
+  - name: HostC5
+    type: Server
     subnet: SubnetC
 
-  - name: Host16
+  - name: HostD1
     type: Server
     subnet: SubnetD
 
-  - name: Host17
+  - name: HostD2
     type: Workstation
     subnet: SubnetD
 
-  - name: Host18
+  - name: HostD3
     type: Workstation
     subnet: SubnetD
 
-  - name: Host19
-    type: Workstation
+  - name: HostD4
+    type: Printer
     subnet: SubnetD
 
-  - name: Host20
-    type: Workstation
+  - name: HostD5
+    type: Server
     subnet: SubnetD
 
-  - name: Host21
+  - name: HostE1
     type: Server
     subnet: SubnetE
 
-  - name: Host22
+  - name: HostE2
     type: Workstation
     subnet: SubnetE
 
-  - name: Host23
+  - name: HostE3
     type: Workstation
     subnet: SubnetE
 
-  - name: Host24
-    type: Workstation
+  - name: HostE4
+    type: Printer
     subnet: SubnetE
 
-  - name: Host25
-    type: Workstation
-    subnet: SubnetE
-
-  - name: Host26
+  - name: HostE5
     type: Server
-    subnet: SubnetF
-
-  - name: Host27
-    type: Workstation
-    subnet: SubnetF
-
-  - name: Host28
-    type: Workstation
-    subnet: SubnetF
-
-  - name: Host29
-    type: Workstation
-    subnet: SubnetF
-
-  - name: Host30
-    type: Workstation
-    subnet: SubnetF
+    subnet: SubnetE

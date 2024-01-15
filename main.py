@@ -4,6 +4,8 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.vec_env import VecMonitor
+from stable_baselines3.common.evaluation import evaluate_policy
 
 
 def make_env(env_id: str, rank: int, seed: int = 0):
@@ -16,29 +18,28 @@ def make_env(env_id: str, rank: int, seed: int = 0):
     :param rank: index of the subprocess
     """
     def _init():
-        env = Cyberwheel(50,1,1)
-        env.reset(seed=seed + rank)
-        env = Monitor(env, 'monitor_logs/')
+        env = Cyberwheel(50,1,1)  # Create an instance of the Cyberwheel environment
+        env.reset(seed=seed + rank)  # Reset the environment with a specific seed
+        log_file = f'monitor_vecenv_logs/{env_id}_{rank}'
+        env = Monitor(env, log_file, allow_early_resets=True)
         return env
 
-    set_random_seed(seed)
+    set_random_seed(seed)  # Set the random seed for reproducibility
     return _init
 
-def main():
-
-    num_cpus = 1
-
-    vec_env = SubprocVecEnv([make_env("cyberwheel", i) for i in range(num_cpus)])
-
-    #env = Cyberwheel(50,5,1)
-
-
+def debug_env(env):
     # It will check your custom environment and output additional warnings if needed
     # Use this to debug changes but not when running - it can cause some meaningless errors on reset()
-    # check_env(env)
+    env = Cyberwheel(50,1,1)
+    check_env(env)
+
+def main():
+    num_cpus = 128  # Number of CPUs to use for parallel environments
+
+    vec_env = SubprocVecEnv([make_env("cyberwheel", i) for i in range(num_cpus)])  # Create a vectorized environment with multiple instances of the Cyberwheel environment
 
     # Create the PPO model
-    model = PPO("MlpPolicy", vec_env, verbose=1, n_steps=100)
+    model = PPO("MlpPolicy", vec_env)
 
     # Training the PPO model (you may need to adjust the number of steps and other hyperparameters)
     model.learn(total_timesteps=10000)
@@ -49,28 +50,12 @@ def main():
     # Load the trained model
     #loaded_model = PPO.load("test")
 
-    # Initialize variables
-    num_episodes = 10  # Number of episodes for testing
-    total_reward = 0
+    # Create a new environment to evaluate the trained model
+    # evaluate_policy cannot use vectorized environments
+    env = Monitor(Cyberwheel(50,1,1), 'monitor_logs/')
 
-    # Testing loop
-    for episode in range(num_episodes):
-        obs = vec_env.reset()  # Reset the environment for a new episode
-        episode_reward = 0
-
-        while True:
-            actions, _ = model.predict(obs)  # Get the model's action predictions
-            obs, rewards, dones, _ = vec_env.step(actions)  # Execute the actions in the environment
-            episode_reward += rewards[0]  # Assuming a single environment in the VecEnv
-
-            if dones[0]:
-                break
-
-        total_reward += episode_reward
-        print(f"Episode {episode + 1}: Total Reward: {episode_reward}")
-
-    average_reward = total_reward / num_episodes
-    print(f"Average Reward over {num_episodes} Episodes: {average_reward}")
+    mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
+    print(f"Mean reward: {mean_reward} +/- {std_reward}")
 
 if __name__ == '__main__':
     main()

@@ -201,26 +201,44 @@ class Network:
 
         # Parse topology
         for router_name, router_config in config['topology'][0].items():
+            # Iterate over each item in the router configuration
             for item in router_config:
+                # If the item is a dictionary, it represents a connection to another router or a subnet
                 if isinstance(item, dict):
+                    # If any key in the dictionary contains "Router", it represents a connection to another router
                     if any("Router" in key for key in item):
+                        # Iterate over each child router and its connected subnets
                         for child_router_name, subnets in item.items():
+                            # Connect the current router to the child router
                             network.connect_nodes(routers_dict[router_name], routers_dict[child_router_name])
+                            # Iterate over each subnet connected to the child router
                             for subnet in subnets:
+                                # If the subnet is a dictionary, it represents a subnet with connected hosts
                                 if isinstance(subnet, dict):
+                                    # Iterate over each subnet and its connected hosts
                                     for subnet_name, hosts in subnet.items():
+                                        # Connect the child router to the subnet
                                         network.connect_nodes(routers_dict[child_router_name], subnets_dict[subnet_name])
+                                        # Connect each host to the subnet
                                         for host_name in hosts: 
                                             network.connect_nodes(hosts_dict[host_name], subnets_dict[subnet_name])
                                 else: 
+                                    # If the subnet is not a dictionary, it represents a subnet without connected hosts
+                                    # Connect the current router to the subnet
                                     network.connect_nodes(routers_dict[router_name], subnets_dict[subnet])
                     else:
+                        # If the item is a dictionary but does not contain "Router", it represents a subnet with connected hosts
                         if isinstance(item, dict):
+                            # Iterate over each subnet and its connected hosts
                             for subnet_name, hosts in item.items():
+                                # Connect the current router to the subnet
                                 network.connect_nodes(routers_dict[router_name], subnets_dict[subnet_name])
+                                # Connect each host to the subnet
                                 for host_name in hosts: 
                                     network.connect_nodes(hosts_dict[host_name], subnets_dict[subnet_name])
                 else: 
+                    # If the item is not a dictionary, it represents a subnet without connected hosts
+                    # Connect the current router to the subnet
                     network.connect_nodes(routers_dict[router_name], subnets_dict[item])
 
         return network

@@ -1,6 +1,5 @@
 import gymnasium as gym
 from gymnasium import spaces
-from network.network_random import RandomNetwork
 from network.network_base import Network
 from redagents.longestpath import LongestPathRedAgent
 import numpy as np
@@ -17,6 +16,8 @@ class Cyberwheel(gym.Env):
         self.number_subnets = number_subnets
         self.connect_subnets_probability = connect_subnets_probability
 
+        self.max_steps = 100
+
         #self.network = RandomNetwork(number_hosts,number_subnets,connect_subnets_probability)
         self.network = Network.create_network_from_yaml('network/config.yaml')
         self.network.draw()
@@ -26,6 +27,8 @@ class Cyberwheel(gym.Env):
 
         # Observation space: Binary vector indicating whether each host is compromised or not
         self.observation_space = spaces.MultiBinary(self.network.get_action_space_size()-1)
+
+        self.current_step = 0
 
         self.red_agent = LongestPathRedAgent(self.network)
 
@@ -50,12 +53,18 @@ class Cyberwheel(gym.Env):
         if flag == "owned":
             done = True
             reward = -100
+        elif self.current_step >= self.max_steps: # Maximal number of steps
+            done = True
         else: 
             done = False
+
+        self.current_step += 1
 
         return self._get_obs(), reward, done, False, {}
 
     def reset(self, seed=None, options=None):
+
+        self.current_step = 0
 
         #self.network = RandomNetwork(self.number_hosts,self.number_subnets,self.connect_subnets_probability)
         self.network = Network.create_network_from_yaml('network/config.yaml')

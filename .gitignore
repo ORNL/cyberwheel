@@ -1,5 +1,6 @@
 **/__pycache__/
 monitor_logs/
+monitor_vecenv_logs/
 networkx_graph.png
 
 # Created by https://www.toptal.com/developers/gitignore/api/python

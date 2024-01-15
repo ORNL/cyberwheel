@@ -78,6 +78,7 @@ class Network:
                 return data_object.is_compromised
         return None  # Return None if host not found or not an instance of Host
 
+    # TODO - This method is not working properly
     def find_path_between_hosts(self, source_host, target_host):
         if source_host not in self.graph or target_host not in self.graph:
             return None  # Source or target not found in the network

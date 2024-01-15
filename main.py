@@ -6,7 +6,7 @@ from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import VecMonitor
 from stable_baselines3.common.evaluation import evaluate_policy
-
+from stable_baselines3.common.callbacks import EvalCallback
 
 def make_env(env_id: str, rank: int, seed: int = 0):
     """
@@ -39,10 +39,16 @@ def main():
     vec_env = SubprocVecEnv([make_env("cyberwheel", i) for i in range(num_cpus)])  # Create a vectorized environment with multiple instances of the Cyberwheel environment
 
     # Create the PPO model
-    model = PPO("MlpPolicy", vec_env)
+    model = PPO("MlpPolicy", vec_envenv)
+
+    #eval_callback = EvalCallback(env, best_model_save_path="best_model/",
+     #                         log_path="monitor_eval_logs/", eval_freq=max(5000 // num_training_envs, 1),
+      #                        n_eval_episodes=5, deterministic=True,
+       #                       render=False)
 
     # Training the PPO model (you may need to adjust the number of steps and other hyperparameters)
     model.learn(total_timesteps=10000)
+    #, callback=eval_callback)
 
     # Save the trained model
     #model.save("test")

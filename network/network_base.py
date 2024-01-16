@@ -150,14 +150,26 @@ class Network:
                 n += 1
         return n
 
-    def take_action(self, action):
+    def is_any_subnet_fully_compromised(self):
+        # Iterate over all nodes in the graph
+        for node_name, data_object in self.graph.nodes(data='data'):
+            # Check if the node is a Subnet
+            if isinstance(data_object, Subnet):
+                # Get all hosts connected to the subnet
+                hosts = [self.graph.nodes[neighbor]['data'] for neighbor in self.graph.neighbors(node_name) if isinstance(self.graph.nodes[neighbor]['data'], Host)]
+                # Check if all hosts are compromised
+                if all(host.is_compromised for host in hosts):
+                    return True
+                    
+        return False
+
+    def set_host_compromised(self, host_id, compromised):
         hosts = [data_object for node_name, data_object in self.graph.nodes(data='data') if isinstance(data_object, Host)]
-        if action >= 1 and action <= len(hosts):
-            host_to_modify = hosts[action - 1]  # Adjust the index to match the list
-            current_state = host_to_modify.is_compromised 
-            host_to_modify.is_compromised = False  # Set is_compromised to False for the selected host
-            
-            return current_state
+        host_to_modify = hosts[host_id]  # Adjust the index to match the list
+        current_state = host_to_modify.is_compromised 
+        host_to_modify.is_compromised = compromised  # Set is_compromised to False for the selected host
+        
+        return current_state
 
     # For debugging to view the network being generated
     def draw(self):

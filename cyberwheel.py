@@ -45,7 +45,7 @@ class Cyberwheel(gym.Env):
         # Example logic: If the action is to restore a host, set the corresponding element in the state to 1
         if action > 0:
             
-            if self.network.take_action(action):
+            if self.network.set_host_compromised(action-1,False):
                 reward = 10
 
         flag = self.red_agent.act()

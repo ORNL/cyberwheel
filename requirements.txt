@@ -3,3 +3,4 @@ ipaddress
 gymnasium
 stable-baselines3
 pyattck
+pettingzoo

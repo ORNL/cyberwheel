@@ -4,3 +4,5 @@ gymnasium
 stable-baselines3
 pyattck
 pettingzoo
+argparse
+ray[rllib]

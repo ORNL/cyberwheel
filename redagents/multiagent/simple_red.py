@@ -9,7 +9,7 @@ class SimpleRedAgent:
             self.network.set_host_compromised(action-1, True)
         
         if self.is_finished():
-            return -100, True
+            return 1000, True # Reward red agent for winning and finish game
 
         return 0, False
     

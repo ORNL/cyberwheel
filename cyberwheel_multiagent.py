@@ -24,6 +24,10 @@ class MultiagentCyberwheel(ParallelEnv):
         self.agent_name_to_agent['red_agent'] = SimpleRedAgent(self.network)
         self.agent_name_to_agent['blue_agent'] = SimpleBlueAgent(self.network)
 
+        # Initialize observation_spaces and action_spaces dictionaries
+        self.observation_spaces = {'red_agent': self.observation_space('red_agent'), 'blue_agent': self.observation_space('blue_agent')}
+        self.action_spaces = {'red_agent': self.action_space('red_agent'), 'blue_agent': self.action_space('blue_agent')}
+
         self.timestep = 0
 
     def _get_obs(self, agent):

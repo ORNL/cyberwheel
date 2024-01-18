@@ -1,22 +1,27 @@
 from pettingzoo import ParallelEnv
-from network.network_base import Network
+#from network.network_base import Network
+from cyberwheel import Cyberwheel
 from redagents.multiagent.simple_red import SimpleRedAgent
 from blueagents.simple_blue import SimpleBlueAgent
 from gymnasium.spaces import Discrete, MultiBinary
 import functools
 from copy import copy
 
-class MultiagentCyberwheel(ParallelEnv):
+class MultiagentCyberwheel(ParallelEnv, Cyberwheel):
 
     metadata = {'render.modes': ['human']}
 
-    def __init__(self):
-        super(MultiagentCyberwheel, self).__init__()
+    def __init__(self, **kwargs):
+        #super(MultiagentCyberwheel, self).__init__()
+        # use config_file_path kwarg if supplied, otherwise use default
+        config_file_path = kwargs.get('config_file_path', 'network/config.yaml')
+        super().__init__(config_file_path=config_file_path)
 
         self.max_steps = 100
 
-        self.network = Network.create_network_from_yaml('network/config.yaml')
-        self.network.draw()
+        ## self.network is now instantiated in the Cyberwheel class
+        #self.network = Network.create_network_from_yaml('network/config.yaml')
+        #self.network.draw()
 
         self.possible_agents = ['red_agent', 'blue_agent']
         self.agent_name_to_agent = {}
@@ -30,9 +35,9 @@ class MultiagentCyberwheel(ParallelEnv):
 
         self.timestep = 0
 
-    def _get_obs(self, agent):
-        # this should be specific to each agent...
-        return self.network.generate_observation_vector()
+    #def _get_obs(self, agent):
+    #    # this should be specific to each agent...
+    #    return self.network.generate_observation_vector()
 
     def step(self, actions):
         rewards = {}

@@ -140,8 +140,6 @@ class Network:
             observation_vector[index] = 1 if is_compromised else 0
             index += 1
 
-        return observation_vector
-
     def get_action_space_size(self):
         # TODO: could we just `return len(self.get_all_hosts())` here?
         n = 1  # do nothing action

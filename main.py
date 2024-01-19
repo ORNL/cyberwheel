@@ -1,4 +1,4 @@
-from cyberwheel import *
+from cyberwheel_singleagent import *
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv
@@ -18,7 +18,7 @@ def make_env(env_id: str, rank: int, seed: int = 0):
     :param rank: index of the subprocess
     """
     def _init():
-        env = Cyberwheel(50,1,1)  # Create an instance of the Cyberwheel environment
+        env = SingleAgentCyberwheel(50,1,1)  # Create an instance of the Cyberwheel environment
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         log_file = f'monitor_vecenv_logs/{env_id}_{rank}'
         env = Monitor(env, log_file, allow_early_resets=True)
@@ -30,7 +30,7 @@ def make_env(env_id: str, rank: int, seed: int = 0):
 def debug_env(env):
     # It will check your custom environment and output additional warnings if needed
     # Use this to debug changes but not when running - it can cause some meaningless errors on reset()
-    env = Cyberwheel(50,1,1)
+    env = SingleAgentCyberwheel(50,1,1)
     check_env(env)
 
 def main():
@@ -39,7 +39,7 @@ def main():
     vec_env = SubprocVecEnv([make_env("cyberwheel", i) for i in range(num_cpus)])  # Create a vectorized environment with multiple instances of the Cyberwheel environment
 
     # Create the PPO model
-    model = PPO("MlpPolicy", vec_envenv)
+    model = PPO("MlpPolicy", vec_env)
 
     #eval_callback = EvalCallback(env, best_model_save_path="best_model/",
      #                         log_path="monitor_eval_logs/", eval_freq=max(5000 // num_training_envs, 1),
@@ -58,7 +58,7 @@ def main():
 
     # Create a new environment to evaluate the trained model
     # evaluate_policy cannot use vectorized environments
-    env = Monitor(Cyberwheel(50,1,1), 'monitor_logs/')
+    env = Monitor(SingleAgentCyberwheel(50,1,1), 'monitor_logs/')
 
     mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
     print(f"Mean reward: {mean_reward} +/- {std_reward}")

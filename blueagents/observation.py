@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import List
 import numpy as np
 
@@ -20,3 +20,17 @@ class AlertsConversion():
     
     def set_network(self, network: Network)-> None:
         self.network = network
+
+class AlertsToVector(AlertsConversion):
+    def create_obs_vector(self, alerts: List[Alert]) -> List:
+        num_hosts = sum(isinstance(data_object, Host) for _, data_object in self.network.graph.nodes(data='data'))
+        observation_vector = np.zeros(num_hosts, dtype=np.int8)
+
+        index = 0
+        for _, data_object in self.network.graph.nodes(data='data'):
+            if isinstance(data_object, Host):
+                is_compromised = data_object.is_compromised
+                observation_vector[index] = 1 if is_compromised else 0
+                index += 1
+
+        return observation_vector

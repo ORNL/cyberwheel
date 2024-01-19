@@ -2,8 +2,7 @@ import json
 from typing import List
 
 def generate_art_techniques():
-    scripts = """from typing import List
-from Technique import Technique, AtomicTest
+    scripts = """from Technique import Technique
 """
     path_to_combined_art_techniques = "../metadata/combined_art_techniques.json"
     art_techniques = {}
@@ -23,15 +22,18 @@ from Technique import Technique, AtomicTest
         atomic_tests = t["atomic_tests"]
         scripts += f"""
 class {name_trunc}(Technique):
-    mitre_id : str = "{mitre_id}"
-    name : str = "{name}"
-    technique_id : str = "{technique_id}"
-    data_components : List[str] = {data_components}
-    kill_chain_phases : List[str] = {kill_chain_phases}
-    data_source_platforms : List[str] = {data_source_platforms}
-    mitigations : List[str] = {mitigations}
-    description : str = "{description}"
-    atomic_tests : List[AtomicTest] = [AtomicTest(at) for at in {atomic_tests}]
+    def __init__(self):
+        super().__init__(
+            mitre_id="{mitre_id}",
+            name="{name}",
+            technique_id="{technique_id}",
+            data_components={data_components},
+            kill_chain_phases={kill_chain_phases},
+            data_source_platforms={data_source_platforms},
+            mitigations={mitigations},
+            description=b"{"".join(c for c in description if ord(c)<128)}",
+            atomic_tests={atomic_tests}
+        )
 """
         with open('temp_techniques.py', 'w') as f:
             f.write(scripts)

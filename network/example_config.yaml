@@ -1,14 +1,11 @@
-#questions:
-#  - How do we feel about this CamelCase? (I generally prefer CamelCase for classes and snake_case for most everything else, but that's just my $0.02)
-#  - I 86'd the inbound/outbound distinction under the router firewall rules. Anyone think we need that?
-#  - I added protocol to the services. Is this too superflous? (i.e. tcp/udp)
-#  - Should defaults always be explicit or can we write the defaults into the code and override as needed?
-
 # Network Configuration
 network:
   name: network_foo
   desc: A network that foos all the bars
 
+# TODO: I'm no longer using this summary view of the topology in any of the network code
+    # it seemed easier to parse if I just pulled from the detailed config below this block.
+    # This summary 'topology:' block may be useful for humans though..?
 # Topology Definition
 topology:
   - MainRouter:
@@ -24,15 +21,15 @@ topology:
         - Host5
     - SubnetD
     - SubnetE
-  - MainRouter:
-    type: router
-    subnets:
-      - subnetA
-      - subnetB
-  - subnetCRouter:
-    type: router
-    subnets:
-      - subnetC
+  #MainRouter:
+  #  type: router
+  #  subnets:
+  #    - subnetA
+  #    - subnetB
+  #subnetCRouter:
+  #  type: router
+  #  subnets:
+  #    - subnetC
 
 
 # Routers

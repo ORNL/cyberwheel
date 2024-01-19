@@ -12,7 +12,7 @@ network:
 # Topology Definition
 topology:
   - MainRouter:
-    - wan_subnet    # adding this so the MainRouter can have a sane default route
+    #- wan_subnet    # adding this so the MainRouter can have a sane default route
     - SubnetA:
       - Host1
       - Host2
@@ -24,10 +24,20 @@ topology:
         - Host5
     - SubnetD
     - SubnetE
+  - MainRouter:
+    type: router
+    subnets:
+      - subnetA
+      - subnetB
+  - subnetCRouter:
+    type: router
+    subnets:
+      - subnetC
+
 
 # Routers
 routers:
-  - name: MainRouter
+  MainRouter:
     # represents the state of the routing table or subnets this router "knows" about
     default_route: wan_subnet
     routes:
@@ -38,24 +48,21 @@ routers:
                          # has that route defined
       #- SubnetD    # if subnet not defined in "routes" assume no route to said subnet?
     firewall:
-      - src_subnet: SubnetA
-        src_hosts:    # if src_hosts is undefined default to all hosts on src subnet?
-          - Host1
-          - Host2
-        dest_subnet: SubnetB
-        dest_hosts:    # if dest_hosts is undefined default to all hosts on dest subnet?
+      - https:    # service name as key?
+        port: 443
+        proto: tcp
+        src:        # default to allow any src if not defined?
+          - Host2   # would be nice to have the ability to specify hosts and/or subnets here
           - Host3
-        #allow_ports: [80, 443]  # Allow HTTP (port 80) and HTTPS (port 443) traffic
-        allow_ports:    # Do we want to specify protocol? (i.e. tcp/udp)
-          - 80: tcp
-          - 443: tcp
-      - src_subnet: SubnetB
-        allow_services: [SSH, FTP, ICMP]  # Allow SSH, FTP, and ping
-      - src_subnet: SubnetC    # if no rules defined for subnet, assume allow all?
-      #- src_subnet: subnet_not_listed_in_fw_rules    # if subnet not defined, assume allow all?
+          - SubnetA
+        desc: optional description
+      - second_service:
+        port: 12345
+        proto: tcp
+        src: []    # src not defined so assume "allow any source"
 
 # Child Router (nested under MainRouter)
-  - name: SubnetCRouter
+  SubnetCRouter:
     default_route: MainRouter    # ability to use either subnet or router to specify default route
                                  # this gives us the freedom to not have to define networks between routers
                                  # i.e. MainRouter <--> SubnetARouter
@@ -76,47 +83,48 @@ routers:
 
 # Subnets
 subnets:
-  - name: SubnetA
+  SubnetA:
     default_route: MainRouter
     ip_range: 192.168.1.0/24
 
-  - name: SubnetB
+  SubnetB:
     default_route: MainRouter
     ip_range: 192.168.2.0/24
 
-  - name: SubnetC
+  SubnetC:
     default_route: SubnetCRouter
     ip_range: 192.168.3.0/24
 
 # Hosts
 hosts:
-  - name: Host1
+  Host1:
     type: Server
     subnet: SubnetA
     # host based firewall
     firewall:
-      - allow_icmp: true    # this should prob be the default
-      - name: allow foo service
-        service: foo    # must be defined in service definitions to use this key
-        port: 12345     # ability to override default port for defined service?
-        src: [Host2, Host3, SubnetA]    # default to "allow all" if not defined?
-                                        # would be nice to have the ability to specify hosts and/or subnets here
+      - https:    # service name as key?
+        port: 443
+        proto: tcp
+        src:        # default to allow any src if not defined?
+          - Host2   # would be nice to have the ability to specify hosts and/or subnets here
+          - Host3
+          - SubnetA
+        desc: optional description
+      - second_service:
+        port: 12345
+        proto: tcp
+        src: []    # src not defined so assume "allow any source"
 
-  - name: Host2
+  Host2:
     type: Workstation
     subnet: SubnetA
     firewall:    # if firewall not defined or empty assume "allow all" for ease of use?
-                 # or maybe default to allowing all defined services for the host type?
+               # or maybe default to allowing all defined services for the host type?
 
-  - name: Host3
+  Host3:
     type: Workstation
     subnet: SubnetC
-    firewall:
-      - name: allow custom service not in service definitions
-        port: 54321
-        proto: tcp
-        src: []    # if src undefined default to allow all
 
-  - name: Host4
+  Host4:
     type: Printer
     subnet: SubnetC

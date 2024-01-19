@@ -1,4 +1,5 @@
 from cyberwheel_singleagent import *
+import os
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv
@@ -18,7 +19,8 @@ def make_env(env_id: str, rank: int, seed: int = 0):
     :param rank: index of the subprocess
     """
     def _init():
-        env = SingleAgentCyberwheel(50,1,1)  # Create an instance of the Cyberwheel environment
+        #env = SingleAgentCyberwheel(50,1,1)  # Create an instance of the Cyberwheel environment
+        env = SingleAgentCyberwheel.create_from_yaml('network/example_config.yaml')
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         log_file = f'monitor_vecenv_logs/{env_id}_{rank}'
         env = Monitor(env, log_file, allow_early_resets=True)
@@ -34,7 +36,8 @@ def debug_env(env):
     check_env(env)
 
 def main():
-    num_cpus = 128  # Number of CPUs to use for parallel environments
+    #num_cpus = 128  # Number of CPUs to use for parallel environments
+    num_cpus = os.cpu_count()
 
     vec_env = SubprocVecEnv([make_env("cyberwheel", i) for i in range(num_cpus)])  # Create a vectorized environment with multiple instances of the Cyberwheel environment
 

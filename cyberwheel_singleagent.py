@@ -1,6 +1,6 @@
 import gymnasium as gym
 from gymnasium import spaces
-#from network.network_base import Network
+from network.network_base import Network
 from cyberwheel import Cyberwheel
 from redagents.longestpath import LongestPathRedAgent
 #import numpy as np
@@ -10,16 +10,17 @@ class SingleAgentCyberwheel(gym.Env, Cyberwheel):
 
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, number_hosts, number_subnets, connect_subnets_probability, **kwargs):
+    #def __init__(self, number_hosts, number_subnets, connect_subnets_probability, **kwargs):
+    def __init__(self, **kwargs):
         #super(SingleAgentCyberwheel, self).__init__()
         # use config_file_path kwarg if supplied, otherwise use default
         config_file_path = kwargs.get('config_file_path', 'network/config.yaml')
         super().__init__(config_file_path=config_file_path)
-        # Define action and observation space
-        # They must be gym.spaces objects
-        self.number_hosts = number_hosts
-        self.number_subnets = number_subnets
-        self.connect_subnets_probability = connect_subnets_probability
+        ## Define action and observation space
+        ## They must be gym.spaces objects
+        #self.number_hosts = number_hosts
+        #self.number_subnets = number_subnets
+        #self.connect_subnets_probability = connect_subnets_probability
 
         self.max_steps = 100
 
@@ -42,24 +43,6 @@ class SingleAgentCyberwheel(gym.Env, Cyberwheel):
     ## convert the dictionary of Host objects into the observation vector
     #def _get_obs(self):
     #    return self.network.generate_observation_vector()
-
-
-    @classmethod
-    def create_from_yaml(cls, config_file_path):
-        # get info needed to instantiate from config file
-        with open(config_file_path) as f:
-            config = yaml.safe_load(f)
-
-        num_hosts = len(config['hosts'])
-        num_subnets = len(config['subnets'])
-
-        # default to '1' if this key isn't defined
-        connect_subnets_prob = config.get('connect_subnets_probability', 1)
-
-        return cls(num_hosts,
-                   num_subnets,
-                   connect_subnets_prob,
-                   config_file_path=config_file_path)
 
 
     def step(self, action):
@@ -91,7 +74,7 @@ class SingleAgentCyberwheel(gym.Env, Cyberwheel):
         self.current_step = 0
 
         #self.network = RandomNetwork(self.number_hosts,self.number_subnets,self.connect_subnets_probability)
-        self.network = Network.create_network_from_yaml('network/config.yaml')
+        self.network = Network.create_network_from_yaml(self.config_file_path)
         self.red_agent = LongestPathRedAgent(self.network)
         
         return self._get_obs(), {} # observation, info

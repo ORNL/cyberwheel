@@ -1,9 +1,4 @@
-import gymnasium as gym
-from gymnasium import spaces
 from network.network_base import Network
-from redagents.longestpath import LongestPathRedAgent
-import numpy as np
-import yaml
 
 class Cyberwheel:
 
@@ -23,3 +18,8 @@ class Cyberwheel:
 
         return self.network.generate_observation_vector()
 
+
+    @classmethod
+    def create_from_yaml(cls, config_file_path):
+
+        return cls(config_file_path=config_file_path)

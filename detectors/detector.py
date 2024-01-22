@@ -9,10 +9,6 @@ from alert import Alert
 # Detector converts the state change resulting from a red action into an alert. I don't know what red actions will return right now,
 # but currently their result is saved in a network object. So, I'll just use that for now
 class Detector:
-
-    def __init__(self, name: str):
-        self.name = name
-
     # This should be called to make the alerts that will be passed on to become blue observations.
     # It'll chose which alerts to keep or throw out.
     # Input is subject to change based on red action work.
@@ -32,9 +28,6 @@ class Detector:
 
 class CoinFlipDetector(Detector):
     """Example detector that keeps everything or throws away everything with 50/50 odds."""
-    def __init__(self):
-        super.__init__("CoinFlip")
-        random.seed()
 
     def obs(self, network_state:Network)-> List[Alert]:
         perfect_alert = self.examine_network_state(network_state)
@@ -42,6 +35,18 @@ class CoinFlipDetector(Detector):
         if flip:
             return perfect_alert
         return []
+    
+    def examine_network_state(self, network_state: Network) -> List[Alert]:
+        compromised_hosts = [host for host in network_state.get_hosts() if host.is_compromised]
+        alerts = []
+        for compromised_host in compromised_hosts:
+            alerts.append(Alert(compromised_host, None, None, None)) # Last 3 args are not implemented yet.
+        return alerts
+    
+
+class PerfectDetector(Detector):
+    def obs(self, network_state:Network) -> List[Alert]:
+        return self.examine_network_state(network_state)
     
     def examine_network_state(self, network_state: Network) -> List[Alert]:
         compromised_hosts = [host for host in network_state.get_hosts() if host.is_compromised]

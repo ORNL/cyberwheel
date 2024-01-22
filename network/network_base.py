@@ -62,7 +62,7 @@ class Network:
         return random.choice(all_hosts)
     
     def get_hosts(self):
-        return [node_name for node_name, data_object in self.graph.nodes(data='data') if isinstance(data_object, Host)]
+        return [data_object for node_name, data_object in self.graph.nodes(data='data') if isinstance(data_object, Host)]
 
     def update_host_compromised_status(self, host: str, is_compromised: bool):
         try:

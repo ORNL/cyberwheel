@@ -4,13 +4,14 @@ from copy import deepcopy
 from network.host import Host
 from network.service import Service
 
-#TODO rewrite to conform to current network. 
+# TODO Needs to be updated as the network implementation changes.
 class Alert():
-    # This list isn't complete. If it is reasonable for a detector to detect it, then add it here
     FIELD_NAMES = set(['src_host', 'dst_hosts', 'local_services', 'remote_services'])
     def __init__(self, src_host: Host, dst_hosts: List[Host], local_services:List[Service], remote_services: List[Service]):
         self.src_host: Host = src_host
         self.dst_hosts: List[Host] = dst_hosts
+
+        # TODO Right now, services appear to not do anything. 
         self.local_services: List[Service] = local_services
         self.remote_services: List[Service] = remote_services
 

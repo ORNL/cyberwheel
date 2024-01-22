@@ -5,7 +5,8 @@ class Cyberwheel:
     def __init__(self, **kwargs):
         super().__init__()
         # use config_file_path kwarg if supplied
-        self.config_file_path = kwargs.get('config_file_path', 'network/config.yaml')
+        # self.config_file_path = kwargs.get('config_file_path', 'network/config.yaml')
+        self.config_file_path = kwargs.get('config_file_path')
 
         #self.network = RandomNetwork(number_hosts,number_subnets,connect_subnets_probability)
         self.network = Network.create_network_from_yaml(self.config_file_path)

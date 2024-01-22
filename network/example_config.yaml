@@ -36,7 +36,8 @@ topology:
 routers:
   MainRouter:
     # represents the state of the routing table or subnets this router "knows" about
-    default_route: wan_subnet
+    #default_route: wan_subnet
+    default_route:
     routes:
       - SubnetA
       - SubnetB

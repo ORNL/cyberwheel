@@ -1,5 +1,5 @@
 class Router:
-    def __init__(self, name, default_route, routes=[], firewall_rules={}):
+    def __init__(self, name, default_route=None, routes=[], firewall_rules={}):
         '''
         :param str name: name of router
         :param str default_route: name of router that provides default route

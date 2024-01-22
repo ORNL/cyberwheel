@@ -36,8 +36,8 @@ def debug_env(env):
     check_env(env)
 
 def main():
-    #num_cpus = 128  # Number of CPUs to use for parallel environments
-    num_cpus = os.cpu_count()
+    num_cpus = 1  # Number of CPUs to use for parallel environments
+    #num_cpus = os.cpu_count()
 
     vec_env = SubprocVecEnv([make_env("cyberwheel", i) for i in range(num_cpus)])  # Create a vectorized environment with multiple instances of the Cyberwheel environment
 

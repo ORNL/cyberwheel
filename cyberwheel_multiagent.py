@@ -14,7 +14,7 @@ class MultiagentCyberwheel(ParallelEnv, Cyberwheel):
     def __init__(self, **kwargs):
         #super(MultiagentCyberwheel, self).__init__()
         # use config_file_path kwarg if supplied, otherwise use default
-        config_file_path = kwargs.get('config_file_path', 'network/config.yaml')
+        config_file_path = kwargs.get('config_file_path', 'network/example_config.yaml')
         super().__init__(config_file_path=config_file_path)
 
         self.max_steps = 100
@@ -72,7 +72,7 @@ class MultiagentCyberwheel(ParallelEnv, Cyberwheel):
     def reset(self, seed=None, options=None):
         self.agents = copy(self.possible_agents)
         self.timestep = 0
-        self.network = Network.create_network_from_yaml('network/config.yaml')
+        self.network = Network.create_network_from_yaml(self.config_file_path)
         self.agent_name_to_agent['red_agent'] = SimpleRedAgent(self.network)
         self.agent_name_to_agent['blue_agent'] = SimpleBlueAgent(self.network)
 

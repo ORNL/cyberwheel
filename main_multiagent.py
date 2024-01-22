@@ -6,7 +6,7 @@ without any direct communication or coordination with other agents.
 https://github.com/ray-project/ray/blob/master/rllib/examples/multi_agent_independent_learning.py#L26
 '''
 from pettingzoo.test import parallel_api_test
-from cyberwheel_multiagent import MultiagentCyberwheel
+from cyberwheel_envs.cyberwheel_multiagent import MultiagentCyberwheel
 
 import argparse
 from ray import air, tune

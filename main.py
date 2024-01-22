@@ -1,4 +1,4 @@
-from cyberwheel_singleagent import *
+from cyberwheel_envs.cyberwheel_singleagent import *
 import os
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3 import PPO
@@ -32,7 +32,7 @@ def make_env(env_id: str, rank: int, seed: int = 0):
 def debug_env(env):
     # It will check your custom environment and output additional warnings if needed
     # Use this to debug changes but not when running - it can cause some meaningless errors on reset()
-    env = SingleAgentCyberwheel(50,1,1)
+    env = SingleAgentCyberwheel.create_from_yaml('network/example_config.yaml')
     check_env(env)
 
 def main():
@@ -61,7 +61,7 @@ def main():
 
     # Create a new environment to evaluate the trained model
     # evaluate_policy cannot use vectorized environments
-    env = Monitor(SingleAgentCyberwheel(50,1,1), 'monitor_logs/')
+    env = Monitor(SingleAgentCyberwheel.create_from_yaml('network/example_config.yaml'), 'monitor_logs/')
 
     mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
     print(f"Mean reward: {mean_reward} +/- {std_reward}")

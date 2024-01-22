@@ -12,13 +12,11 @@ class Cyberwheel:
         self.network = Network.create_network_from_yaml(self.config_file_path)
         self.network.draw()
 
-
     # private method that converts state into observation 
     # convert the dictionary of Host objects into the observation vector
     def _get_obs(self):
 
         return self.network.generate_observation_vector()
-
 
     @classmethod
     def create_from_yaml(cls, config_file_path):

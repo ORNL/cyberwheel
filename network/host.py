@@ -51,7 +51,6 @@ class Host(NetworkObject):
         '''
         self.ip_address = ip
 
-
     def set_dns(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
         '''
         Manually set IP address of host
@@ -116,3 +115,8 @@ class Host(NetworkObject):
         
         # update services
         self.services = updated_services
+
+    def __eq__(self, __value: object) -> bool:
+        if self.name == __value.name:
+            return True
+        return False

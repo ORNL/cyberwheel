@@ -5,3 +5,8 @@ class Service:
         self.protocol = protocol # i.e. tcp, udp, or icmp
         self.version = version
         self.vulnerabilities = vulnerabilities
+
+    def __eq__(self, __value: object) -> bool:
+        if self.name == __value.name:
+            return True
+        return False

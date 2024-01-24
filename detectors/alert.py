@@ -25,3 +25,8 @@ class Alert():
                 d.pop(k)
         return d
     
+    def __eq__(self, __value: object) -> bool:
+        if self.src_host == __value.src_host and self.dst_hosts == __value.dst_hosts and self.local_services == __value.local_services and self.remote_services == __value.remote_services:
+            return True
+        return False 
+    

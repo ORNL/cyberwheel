@@ -25,4 +25,4 @@ class CoinFlipDetector(Detector):
 
 class PerfectDetector(Detector):
     def obs(self, perfect_alert:Alert) -> List[Alert]:
-        return perfect_alert
+        return [perfect_alert]

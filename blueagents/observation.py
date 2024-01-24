@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List
+from typing import Iterable
 import numpy as np
 
 from network.network_base import Network
@@ -14,7 +14,7 @@ class AlertsConversion():
     Hopefully, this can be used to create different observation vectors easily. 
     """
     @abstractmethod
-    def create_obs_vector(self, alerts: List[Alert])-> List:
+    def create_obs_vector(self, alerts: Iterable[Alert])-> Iterable:
         """create_obs_vector() maps alerts to the blue observation space represented by a vector"""
         pass
     
@@ -22,17 +22,11 @@ class AlertsConversion():
         self.network = network
 
 class TestObservation(AlertsConversion):
-    def create_obs_vector(self, alerts: List[Alert]) -> List:
+    def create_obs_vector(self, alerts: Iterable) -> Iterable:
         num_hosts = sum(isinstance(data_object, Host) for _, data_object in self.network.graph.nodes(data='data'))
         observation_vector = np.zeros(num_hosts, dtype=np.int8)
 
         index = 0
-        # for _, data_object in self.network.graph.nodes(data='data'):
-        #     if isinstance(data_object, Host):
-        #         is_compromised = data_object.is_compromised
-        #         observation_vector[index] = 1 if is_compromised else 0
-        #         index += 1
-
         for _, data_object in self.network.graph.nodes(data='data'):
             if not isinstance(data_object, Host):
                 index += 1

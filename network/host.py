@@ -6,17 +6,19 @@ class Host(NetworkObject):
         :param str name: name of host
         :param str type: type of host
         :param str subnet: subnet to be connected to
-        :param dict: firewall_rules: firewall rules dict (emtpy rules = allow all)
+        :param list[dict] firewall_rules: list of firewall rules (emtpy rules = allow all)
                 Example:
                 [
                     {
-                        'src': 'some_subnet':
+                        'name': 'https',
+                        'src': 'some_subnet'
                         'port': 443,
                         'proto': 'tcp',
                         'desc': 'Allow all src to all dest on dest port 443'
                     },
                     {
-                        'src': 'some_host':
+                        'name': 'foo'
+                        'src': 'some_host'
                         'port': 3128,
                         'proto': 'tcp',
                         'desc': 'Allow some_host to use foo service'

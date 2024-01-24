@@ -4,6 +4,29 @@ from .network_object import NetworkObject
 
 class Subnet(NetworkObject):
     def __init__(self, name, default_route, ip_range, firewall_rules=[]):
+        '''
+        :param str name: name of router
+        :param str default_route: name of router that provides default route
+        :param str ip_range: cidr IP range (i.e. 192.168.0.0/24)
+        :param list[dict] firewall_rules: list offirewall rules (emtpy rules = allow all)
+                Example:
+                [
+                    {
+                        'name': 'https',
+                        'src': 'some_subnet'
+                        'port': 443,
+                        'proto': 'tcp',
+                        'desc': 'Allow all src to all dest on dest port 443'
+                    },
+                    {
+                        'name': 'foo'
+                        'src': 'some_host'
+                        'port': 3128,
+                        'proto': 'tcp',
+                        'desc': 'Allow some_host to use foo service'
+                    }
+                ]
+        '''
         super().__init__(name, firewall_rules)
         self.default_route = default_route
         self.network = ipaddress.IPv4Network(f"{ip_range}", strict=False)

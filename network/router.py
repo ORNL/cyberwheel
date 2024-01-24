@@ -8,19 +8,24 @@ class Router(NetworkObject):
         :param str default_route: name of router that provides default route
         :param list[str] routes: additional routes in the routing table
                 (abstracted to router or subnet names)
-        :param dict: firewall_rules: firewall rules dict (emtpy rules = allow all)
+        :param list[dict] firewall_rules: list offirewall rules (emtpy rules = allow all)
                 Example:
-                {'service-name':
-                    {'port': 443,
-                     'proto': 'tcp',
-                     'desc': 'Allow all src to all dest on dest port 443'},
-                 'foo service':
-                    {'port': 3128,
-                     'proto': 'tcp',
-                     'src': ['subnet_a', 'subnet_b'],
-                     'desc': 'Allow only subnet_a and subnet_b to use foo service'
-                     }
-                }
+                [
+                    {
+                        'name': 'https',
+                        'src': 'some_subnet'
+                        'port': 443,
+                        'proto': 'tcp',
+                        'desc': 'Allow all src to all dest on dest port 443'
+                    },
+                    {
+                        'name': 'foo'
+                        'src': 'some_host'
+                        'port': 3128,
+                        'proto': 'tcp',
+                        'desc': 'Allow some_host to use foo service'
+                    }
+                ]
         '''
         super().__init__(name, firewall_rules)
         self.default_route = default_route

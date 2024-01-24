@@ -12,6 +12,7 @@ class NetworkObject:
         Checks host's firewall to see if network traffic should be allowed
 
         :param str src: source subnet or host of traffic
+        :param str dest: destination subnet or host of traffic
         :param int port: destination port
         :param str proto: protocol (i.e. tcp/udp, default = tcp)
         '''
@@ -24,17 +25,18 @@ class NetworkObject:
         except NameError:
             return True
 
+        # TODO: catch any common exceptions (KeyError, etc.)
         # loop over each rule/element in firewall_rules
         for rule in self.firewall_rules:
 
             # does src subnet/host match?
             # or is src None? (if src == None assume allow all src)
-            if 'src' not in rule or \
+            if 'src' not in rule or rule['src'] is None or \
                 src in rule['src'] or 'all' in rule['src']:
 
                 # does dest subnet/host match?
                 # or is dest None? (if dest == None assume allow all dest)
-                if 'dest' not in rule or \
+                if 'dest' not in rule or rule['dest'] is None or \
                         dest in rule['dest'] or 'all' in rule['dest']:
 
                     # does port match?
@@ -55,18 +57,21 @@ class NetworkObject:
                 Example:
                 [
                     {
-                        'src': 'some_subnet':
+                        'name': 'https',
+                        'src': 'some_subnet',
                         'port': 443,
                         'proto': 'tcp',
                         'desc': 'Allow some_subnet to all dest on dest port 443/tcp'
                     },
                     {
-                        'src': 'some_host':
+                        'name': 'squid-proxy',
+                        'src': 'some_host',
                         'port': 3128,
                         'proto': 'tcp',
                         'desc': 'Allow some_host to all dest hosts on dest port 3128/tcp'
                     },
                     {
+                        'name': 'foo service',
                         'port': 1234,
                         'proto': 'tcp',
                         'desc': 'Allow all src to all dest on port 1234/tcp'
@@ -80,10 +85,12 @@ class NetworkObject:
         '''
         Removes an existing firewall rule
 
-        :param str rule_name: service name of existing fw rule
+        :param str rule_name: name of existing fw rule
         '''
-        try:
-            self.firewall_rules.pop(rule_name)
-        except KeyError as e:
-            # TODO: raise custom exception here?
-            raise e
+        # iterate over existing rules and discard rule if rule['name'] equals
+        # the rule_name param
+        updated_rules = [rule for rule in self.firewall_rules if
+                rule.get('name') != rule_name]
+
+        # update firewall rules
+        self.firewall_rules = updated_rules

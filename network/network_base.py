@@ -166,13 +166,15 @@ class Network:
         return current_state
 
     # For debugging to view the network being generated
-    def draw(self):
+    def draw(self, **kwargs):
+        labels: bool = kwargs.get('labels', False)
+        filename: str = kwargs.get('filename', 'networkx_graph.png')
 
         plt.clf() # clear
-        nx.draw(self.graph, with_labels=False, node_color='skyblue', node_size=30, font_size=12, font_color='black', font_weight='bold', edge_color='black')
+        nx.draw(self.graph, with_labels=labels, node_color='skyblue', node_size=30, font_size=12, font_color='black', font_weight='bold', edge_color='black')
 
         # Display the graph
-        plt.savefig("networkx_graph.png", format="png")
+        plt.savefig(filename, format="png")
 
     @classmethod
     def create_network_from_yaml(cls, config_file_path):
@@ -191,7 +193,8 @@ class Network:
         # Parse routers
         for key, val in config['routers'].items():
             router = Router(key,
-                            val['default_route'],
+                            # using '.get()' here in case default_route isn't defined
+                            val.get('default_route'),
                             val['routes'],
                             val.get('firewall', None))
             routers_dict[router.name] = router

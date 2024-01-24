@@ -1,8 +1,10 @@
 import ipaddress
+from .network_object import NetworkObject
 
-class Subnet:
-    def __init__(self, name, default_route, ip_range):
-        self.name = name
+
+class Subnet(NetworkObject):
+    def __init__(self, name, default_route, ip_range, firewall_rules=[]):
+        super().__init__(name, firewall_rules)
         self.default_route = default_route
         self.network = ipaddress.IPv4Network(f"{ip_range}", strict=False)
         ## not sure if subnets should have routes at this point

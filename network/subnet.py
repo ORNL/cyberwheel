@@ -62,7 +62,7 @@ class Subnet(NetworkObject):
         return self.available_ips
 
 
-    def get_num_unassigned_ips(self):
+    def get_num_unassigned_ips(self) -> int:
         return len(self.available_ips)
 
 

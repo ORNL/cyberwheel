@@ -36,5 +36,14 @@ class Host(NetworkObject):
 
 
     def set_ip(self, ip: Union[IPv4Address, IPv6Address]):
+        '''
+        Manually set IP address of host
+
+        :param (IPv4Address | IPv6Address) ip: IP object
+        '''
         self.ip_address = ip
+
+
+    def get_dhcp_lease(self):
+        self.ip_address = self.subnet.get_dhcp_lease()
 

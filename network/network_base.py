@@ -218,7 +218,8 @@ class Network:
                     network.add_host(host)
 
                     # get next IP from subnet
-                    host.set_ip(subnet.get_dhcp_lease())
+                    #host.set_ip(subnet.get_dhcp_lease())
+                    host.get_dhcp_lease()
 
         # Parse topology
         for node, data in network.graph.nodes(data='data'):

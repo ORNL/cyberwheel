@@ -11,7 +11,7 @@ from .host import Host
 from .router import Router
 
 class Network:
-    
+
     def __init__(self):
         self.graph = nx.Graph()
 
@@ -103,9 +103,9 @@ class Network:
                     new_path.append(node)
 
             return new_path
-        except: 
+        except:
             return None
-    
+
     def find_host_with_longest_path(self, source_host):
         all_hosts = [node_name for node_name, data_object in self.graph.nodes(data='data') if isinstance(data_object, Host)]
 
@@ -154,15 +154,15 @@ class Network:
                 # Check if all hosts are compromised
                 if all(host.is_compromised for host in hosts):
                     return True
-                    
+
         return False
 
     def set_host_compromised(self, host_id, compromised):
         hosts = [data_object for node_name, data_object in self.graph.nodes(data='data') if isinstance(data_object, Host)]
         host_to_modify = hosts[host_id]  # Adjust the index to match the list
-        current_state = host_to_modify.is_compromised 
+        current_state = host_to_modify.is_compromised
         host_to_modify.is_compromised = compromised  # Set is_compromised to False for the selected host
-        
+
         return current_state
 
     # For debugging to view the network being generated
@@ -181,41 +181,44 @@ class Network:
         # Create an instance of the Network class
         network = cls()
 
-        # Define dictionaries to store created instances for quick access
-        subnets_dict = {}
-        routers_dict = {}
-        hosts_dict = {}
-
         # Load the YAML config file
         with open(config_file_path, 'r') as yaml_file:
             config = yaml.safe_load(yaml_file)
 
-        # Parse routers
+        # parse routers
         for key, val in config['routers'].items():
             router = Router(key,
                             # using '.get()' here in case default_route isn't defined
                             val.get('default_route'),
                             val['routes'],
-                            val.get('firewall', None))
-            routers_dict[router.name] = router
+                            val.get('firewall'))
+            # add router to network graph
             network.add_router(router)
 
-        # Parse subnets
+        # parse subnets
         for key, val in config['subnets'].items():
             subnet = Subnet(key,
                             val['default_route'],
-                            val['ip_range'])
-            subnets_dict[subnet.name] = subnet
+                            val['ip_range'],
+                            val.get('firewall'))
+            # add subnet to network graph
             network.add_subnet(subnet)
 
-        # Parse hosts
-        for key, val in config['hosts'].items():
-            host = Host(key,
-                        val['type'],
-                        val['subnet'],
-                        val.get('firewall', None))
-            hosts_dict[host.name] = host
-            network.add_host(host)
+            # instantiate hosts for this subnet
+            for key, val in config['hosts'].items():
+
+                # is host attached to this subnet?
+                if val['subnet'] == subnet.name:
+                    host = Host(key,
+                                val['type'],
+                                subnet,
+                                val.get('firewall'))
+
+                    # add host to network graph
+                    network.add_host(host)
+
+                    # get next IP from subnet
+                    host.set_ip(subnet.get_dhcp_lease())
 
         # Parse topology
         for node, data in network.graph.nodes(data='data'):

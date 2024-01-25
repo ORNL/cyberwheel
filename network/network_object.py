@@ -9,7 +9,7 @@ class NetworkObject:
 
     def is_traffic_allowed(self, src, dest, port, proto='tcp') -> bool:
         '''
-        Checks host's firewall to see if network traffic should be allowed
+        Checks object's firewall to see if network traffic should be allowed
 
         :param str src: source subnet or host of traffic
         :param str dest: destination subnet or host of traffic

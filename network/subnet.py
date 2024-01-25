@@ -29,11 +29,15 @@ class Subnet(NetworkObject):
         '''
         super().__init__(name, firewall_rules)
         self.default_route = default_route
-        self.network = ipaddress.IPv4Network(f"{ip_range}", strict=False)
-        ## not sure if subnets should have routes at this point
-        #self.routes = []  # List of routes to other subnets or routers
-        ## currently I think only routers and hosts should have ACLs
-        #self.firewall_rules = {}  # List of firewall rules specific to this subnet
+        #self.network = ipaddress.IPv4Network(f"{ip_range}", strict=False)
+        try:
+            # this should allow IPv4 or IPv6
+            self.network = ipaddress.ip_network(f"{ip_range}", strict=False)
+        except ValueError as e:
+            print('ip_range does not represent a valid IPv4 or IPv6 address')
+            raise e
+        self.available_ips = [ip for ip in self.network.hosts()]
+
 
     def get_network_address(self) -> str:
         '''
@@ -41,6 +45,7 @@ class Subnet(NetworkObject):
             i.e. '192.168.0.0'
         '''
         return str(self.network.network_address)
+
 
     def get_prefix_length(self) -> int:
         return self.network.prefixlen
@@ -51,3 +56,17 @@ class Subnet(NetworkObject):
         Returns number of usable IP address in subnet.
         '''
         return self.network.num_addresses - 2
+
+
+    def get_unassigned_ips(self) -> list:
+        return self.available_ips
+
+
+    def get_num_unassigned_ips(self):
+        return len(self.available_ips)
+
+
+    def get_dhcp_lease(self):
+        return self.available_ips.pop(0)
+
+

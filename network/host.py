@@ -1,11 +1,15 @@
+from ipaddress import IPv4Address, IPv6Address
+from typing import Union
 from .network_object import NetworkObject
+from .subnet import Subnet
+
 
 class Host(NetworkObject):
-    def __init__(self, name, type, subnet, firewall_rules=[]):
+    def __init__(self, name, type, subnet: Subnet, firewall_rules=[]):
         '''
         :param str name: name of host
         :param str type: type of host
-        :param str subnet: subnet to be connected to
+        :param Subnet subnet: subnet to be connected to
         :param list[dict] firewall_rules: list of firewall rules (emtpy rules = allow all)
                 Example:
                 [
@@ -29,3 +33,8 @@ class Host(NetworkObject):
         self.type = type
         self.subnet = subnet
         self.is_compromised = False  # Default to not compromised
+
+
+    def set_ip(self, ip: Union[IPv4Address, IPv6Address]):
+        self.ip_address = ip
+

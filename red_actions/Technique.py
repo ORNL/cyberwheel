@@ -40,9 +40,9 @@ class Technique():
 
         mitre_to_cwe = {}
         cwe_to_cve = {}
-        with open('../resources/metadata/attack_to_cwe.json', 'r') as f:
+        with open('resources/metadata/attack_to_cwe.json', 'r') as f:
             mitre_to_cwe = json.load(f)
-        with open('../resources/metadata/cwe_to_cve.json', 'r') as f:
+        with open('resources/metadata/cwe_to_cve.json', 'r') as f:
             cwe_to_cve = json.load(f)
 
         mid = self.mitre_id.replace("T", "")

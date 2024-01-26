@@ -6,16 +6,19 @@ from network.service import Service
 
 # TODO Needs to be updated as the network implementation changes.
 class Alert():
-    FIELD_NAMES = set(['src_host', 'dst_hosts', 'local_services', 'remote_services'])
-    def __init__(self, src_host: Host, dst_hosts: List[Host], local_services:List[Service], remote_services: List[Service]):
+    FIELD_NAMES = set(['src_host', 'dst_hosts', 'services'])
+    def __init__(self, src_host: Host = None, dst_hosts: List[Host] = [], services: List[Service]=[]):
         self.src_host: Host = src_host
         self.dst_hosts: List[Host] = dst_hosts
+        self.services: List[Service] = services
 
-        # TODO Right now, services appear to not do anything. 
-        self.local_services: List[Service] = local_services
-        self.remote_services: List[Service] = remote_services
+    def add_dst_host(self, host: Host) -> None:
+        self.dst_hosts.append(host)
 
-    def set_detector(self, detector_name)-> None:
+    def add_service(self, service: Service) -> None:
+        self.services.append(service)
+
+    def set_detector(self, detector_name) -> None:
         self.detector = detector_name
 
     def to_dict(self)-> Dict:
@@ -26,7 +29,18 @@ class Alert():
         return d
     
     def __eq__(self, __value: object) -> bool:
-        if self.src_host == __value.src_host and self.dst_hosts == __value.dst_hosts and self.local_services == __value.local_services and self.remote_services == __value.remote_services:
+        src_host = True if self.src_host == __value.src_host else False
+        dst_hosts = True if len(self.dst_hosts) == len(__value.dst_hosts) else False
+        if dst_hosts:
+            for host in self.dst_hosts:
+                if host not in __value.dst_hosts:
+                    dst_hosts = False
+        services = True if len(self.services) == len(__value.services) else False
+        if services:
+            for service in self.services:
+                if service not in __value.services:
+                    services = False
+        if src_host and dst_hosts and services:
             return True
         return False 
     

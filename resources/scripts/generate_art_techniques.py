@@ -6,6 +6,7 @@ def generate_art_techniques():
 """
     path_to_combined_art_techniques = "../metadata/combined_art_techniques.json"
     art_techniques = {}
+    temp_list = []
     with open(path_to_combined_art_techniques, 'r') as f:
         art_techniques = json.load(f)
     for key in list(art_techniques.keys()):
@@ -13,6 +14,7 @@ def generate_art_techniques():
         name = t["name"]
         name_trunc = name.replace(" ", "").replace("/","").replace("-","").replace("(", "").replace(")", "")
         mitre_id = t["external_id"]
+        temp_list.append(mitre_id)
         technique_id = t["technique_id"]
         data_components = t["data_components"]
         kill_chain_phases = t["kill_chain_phases"]
@@ -35,7 +37,8 @@ class {name_trunc}(Technique):
             atomic_tests={atomic_tests}
         )
 """
-        with open('temp_techniques.py', 'w') as f:
-            f.write(scripts)
+        with open('temp_techniques_list.json', 'w') as f:
+           json.dump(list(set(temp_list)), f)
+
 if __name__ == "__main__":
     generate_art_techniques()

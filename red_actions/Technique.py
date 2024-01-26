@@ -14,6 +14,10 @@ class Technique():
     mitigations : List[str]
     description : str
     atomic_tests : List[AtomicTest]
+    cwe_list : List[str]
+    cve_list : List[str]
+    is_subtechnique : bool
+    parent_technique : str
 
     def __init__(self, mitre_id, name, technique_id, data_components, kill_chain_phases, data_source_platforms, mitigations, description, atomic_tests):
         self.mitre_id = mitre_id
@@ -25,43 +29,51 @@ class Technique():
         self.mitigations = mitigations
         self.description = description.decode('utf-8')
         self.atomic_tests = [AtomicTest(at) for at in atomic_tests]
+        self.is_subtechnique = "." in self.mitre_id
+        self.parent_technique = self.mitre_id.split(".")[0] if self.is_subtechnique else self.mitre_id
+        self.load_mappings()
+
+
+    def load_mappings(self):
+        self.cwe_list = []
+        self.cve_list = []
+
+        mitre_to_cwe = {}
+        cwe_to_cve = {}
+        with open('../resources/metadata/attack_to_cwe.json', 'r') as f:
+            mitre_to_cwe = json.load(f)
+        with open('../resources/metadata/cwe_to_cve.json', 'r') as f:
+            cwe_to_cve = json.load(f)
+
+        mid = self.mitre_id.replace("T", "")
+        pid = self.get_parent_technique().replace("T", "")
+
+        if mid in list(mitre_to_cwe.keys()):
+            self.cwe_list = mitre_to_cwe[mid]
+            temp_cve_list = []
+            for cwe in self.cwe_list:
+                if cwe in list(cwe_to_cve.keys()):
+                    temp_cve_list.extend(cwe_to_cve[cwe])
+            if len(temp_cve_list) > 0:
+                self.cve_list = list(set(temp_cve_list))
+        elif pid in list(mitre_to_cwe.keys()):
+            self.cwe_list = mitre_to_cwe[pid]
+            temp_cve_list = []
+            for cwe in self.cwe_list:
+                if cwe in list(cwe_to_cve.keys()):
+                    temp_cve_list.extend(cwe_to_cve[cwe])
+            if len(temp_cve_list) > 0:
+                self.cve_list = list(set(temp_cve_list))
 
     def get_parent_technique(self) -> str:
-        if "." in self.name:
-            return self.name.split(".")[0]
-        else:
-            return ""
+        return self.parent_technique
+        
+    def get_vulnerabilities(self):
+        return self.cve_list
+
+    def get_weaknesses(self):
+        return self.cwe_list
 
     def __str__(self):
         obj = jsonpickle.encode(self)
         return json.dumps(json.loads(obj), indent=4)
-    
-    
-    
-
-
-"""
-Technique Information:
-    Name: {self.name}
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    Description: {self.description}
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    Mitre ID: {self.mitre_id}
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    Technique ID: {self.technique_id}
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    Data Components: 
-    {self.data_components}
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    Killchain Phases: 
-    {self.kill_chain_phases}
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    Data Source Platforms: 
-    {self.data_source_platforms}
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    Mitigations: 
-    {self.mitigations}
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    Atomic Tests: 
-    {[pformat(str(at)) for at in self.atomic_tests]}")
-    ------------------------------------------------------------------------------------------------------------------------------------------------------"""

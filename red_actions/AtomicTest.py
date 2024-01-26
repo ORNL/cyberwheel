@@ -36,9 +36,9 @@ class Executor():
     def __init__(self, name : str = "", command : str = "", cleanup_command : str = "", elevation_required=True):
         self.name = name
         self.elevation_required = elevation_required
-        if command != "":
+        if command != "" and command != None:
             self.command = command.strip().split("\n")
-        if cleanup_command != "":
+        if cleanup_command != "" and cleanup_command != None:
             self.cleanup_command = cleanup_command.strip().split("\n")
 
 class InputArgument():

@@ -21,8 +21,6 @@ class CoinFlipDetector(Detector):
             return [perfect_alert]
         return []
 
-    
-
 class PerfectDetector(Detector):
     def obs(self, perfect_alert:Alert) -> Iterable[Alert]:
         return [perfect_alert]

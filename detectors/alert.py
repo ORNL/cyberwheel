@@ -4,6 +4,7 @@ from copy import deepcopy
 from network.host import Host
 from network.service import Service
 
+
 # TODO Needs to be updated as the network implementation changes.
 class Alert():
     FIELD_NAMES = set(['src_host', 'dst_hosts', 'services'])
@@ -18,8 +19,14 @@ class Alert():
     def add_service(self, service: Service) -> None:
         self.services.append(service)
 
-    def set_detector(self, detector_name) -> None:
-        self.detector = detector_name
+    def remove_dst_host(self, host: Host) -> None:
+        if host in self.dst_hosts:
+            self.dst_hosts.remove(host)
+    
+    def remove_service(self, service: Service) -> None:
+        if service  in self.services:
+            self.services.remove(service)
+
 
     def to_dict(self)-> Dict:
         d = deepcopy(self.__dict__)

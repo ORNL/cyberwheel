@@ -27,8 +27,8 @@ class TestRedActionResult(unittest.TestCase):
         self.action_result.modify_alert(self.service)
         self.assertEqual(self.action_result.detector_alert, self.alert)
 
-    def test_red_action_result_add_successful_attack(self):
-        self.action_result.add_successful_attack(self.host)
+    def test_red_action_result_add_successful_action(self):
+        self.action_result.add_successful_action(self.host)
         self.assertListEqual(self.action_result.attack_success, [self.host])
 
 class TestRedAction(unittest.TestCase):
@@ -43,7 +43,7 @@ class TestRedAction(unittest.TestCase):
         action_result = self.attack.sim_execute()
         true_result = RedActionResults()
         true_result.add_host(self.host)
-        true_result.add_successful_attack(self.host)
+        true_result.add_successful_action(self.host)
         true_result.modify_alert(self.host)
         true_result.modify_alert(self.service)
         self.assertEqual(action_result, true_result)

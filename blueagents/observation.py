@@ -25,11 +25,9 @@ class TestObservation(AlertsConversion):
     def create_obs_vector(self, alerts: Iterable) -> Iterable:
         num_hosts = sum(isinstance(data_object, Host) for _, data_object in self.network.graph.nodes(data='data'))
         observation_vector = np.zeros(num_hosts, dtype=np.int8)
-
         index = 0
         for _, data_object in self.network.graph.nodes(data='data'):
             if not isinstance(data_object, Host):
-                index += 1
                 continue
             for alert in alerts:
                 if data_object in alert.dst_hosts:

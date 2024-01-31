@@ -29,25 +29,6 @@ class TestAlert(unittest.TestCase):
         t = [perfect_alert]
         self.assertListEqual(new_alert, t)
 
-
-    # This test relies on network_base, so just leave it commented out for now
-    # def test_observation(self):
-    #     network = Network.create_network_from_yaml('network/config.yaml')
-    #     detector = PerfectDetector()
-    #     src_host = Host("Host1", "Workstation", None)
-    #     dst_hosts = [Host("Host2", "Workstation", None), Host("Host1", "Workstation", None), Host("Host1", "Printer", None)]
-    #     services = [Service("2", "0.0", "bar")]
-    #     perfect_alert = Alert(src_host, dst_hosts, services)
-    #     new_alert = detector.obs(perfect_alert)
-    #     observation = TestObservation()
-    #     observation.set_network(network)
-    #     observation_vector = observation.create_obs_vector(new_alert)
-    #     num_hosts = sum(isinstance(data_object, Host) for _, data_object in network.graph.nodes(data='data'))
-    #     t = np.zeros(num_hosts, dtype=np.int8)
-    #     t[7] = 1
-    #     t[18] = 1
-    #     self.assertListEqual(list(observation_vector),list(t))
-
     def test_alert_add_host(self):
         correct_alert = Alert(dst_hosts=[Host("test_host", None, None)])
         test_alert = Alert()

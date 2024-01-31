@@ -6,7 +6,6 @@ from .service import Service
 from .subnet import Subnet
 #from .router import Router
 
-
 class Host(NetworkObject):
     def __init__(self, name, type, subnet: Subnet, firewall_rules=[], **kwargs):
         '''
@@ -41,7 +40,6 @@ class Host(NetworkObject):
         self.is_compromised = False  # Default to not compromised
         self.services = kwargs.get('services', [])
         self.dns_server = kwargs.get('dns_server')
-
 
     def set_ip(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
         '''

@@ -35,6 +35,4 @@ class TestObservation(AlertsConversion):
                 if data_object in alert.dst_hosts:
                     observation_vector[index] = 1
             index += 1
-
-
         return observation_vector

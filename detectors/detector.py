@@ -5,8 +5,6 @@ import random
 from network.network_base import Network
 from .alert import Alert
 
-
-
 class Detector:
     @abstractmethod
     def obs(self, perfect_alert: Alert) -> Iterable[Alert]:

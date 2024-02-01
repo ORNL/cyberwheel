@@ -1,4 +1,4 @@
-from Technique import Technique
+from red_actions.Technique import Technique
 
 class ExtraWindowMemoryInjection(Technique):
     def __init__(self):

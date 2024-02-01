@@ -1,5 +1,4 @@
-from ipaddress import IPv4Address
-from typing import List, Union, Dict
+from typing import List, Dict
 from copy import deepcopy
 from network.host import Host
 from network.service import Service
@@ -49,4 +48,7 @@ class Alert():
         if src_host and dst_hosts and services:
             return True
         return False 
+    
+    def __str__(self) -> str:
+        return f'Alert: dst_hst: {[str(h) for h in self.dst_hosts]}, services: {[str(s) for s in self.services]}'
     

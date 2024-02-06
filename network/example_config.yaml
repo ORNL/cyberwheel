@@ -46,23 +46,23 @@ routers:
       #  proto: # this value can be 'all', None, 'tcp', or 'udp'. default = 'tcp'
       #  desc:  # human friendly description
 
-      # implied 'allow all' from defined src if no other criteria defined
-      - name: allow all from user subnet
-        src: user_subnet
+      ## implied 'allow all' from defined src if no other criteria defined
+      #- name: allow all from user subnet
+      #  src: user_subnet
 
-      # allow server_subnet to all
-      - name: allow all from server subnet
-        src: server_subnet
-        # can also explicitly define an 'allow all' rule using the 'all' value
-        dest: all
+      ## allow server_subnet to all
+      #- name: allow all from server subnet
+      #  src: server_subnet
+      #  # can also explicitly define an 'allow all' rule using the 'all' value
+      #  dest: all
 
-      # only 443/tcp is allowed into dmz_subnet
-      - name: allow all https traffic into DMZ
-        src: all
-        dest: dmz_subnet
-        port: 443
-        # tcp is always the default
-        proto: tcp
+      ## only 443/tcp is allowed into dmz_subnet
+      #- name: allow all https traffic into DMZ
+      #  src: all
+      #  dest: dmz_subnet
+      #  port: 443
+      #  # tcp is always the default
+      #  proto: tcp
 
 # Subnets
 subnets:
@@ -181,7 +181,6 @@ hosts:
     type:
     subnet: dmz_subnet
     firewall:
-      # implied dest='all' and proto='tcp'
       - name: allow SSH
         port: 22
 

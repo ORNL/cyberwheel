@@ -16,6 +16,7 @@ class Network:
 
     def __init__(self, name=''):
         self.graph = nx.Graph(name=name)
+        self.name = name
 
     def __iter__(self):
         return iter(self.graph)
@@ -162,8 +163,9 @@ class Network:
         return False
 
     def set_host_compromised(self, host_id, compromised):
-        hosts = [data_object for node_name, data_object in self.graph.nodes(data='data') if isinstance(data_object, Host)]
-        host_to_modify = hosts[host_id]  # Adjust the index to match the list
+        #hosts = [data_object for node_name, data_object in self.graph.nodes(data='data') if isinstance(data_object, Host)]
+        host_to_modify = self.graph.nodes[host_id]
+        #host_to_modify = hosts[host_id]  # Adjust the index to match the list
         current_state = host_to_modify.is_compromised
         host_to_modify.is_compromised = compromised  # Set is_compromised to False for the selected host
 
@@ -219,7 +221,7 @@ class Network:
                         host = Host(key,
                                     val.get('type', ''),
                                     subnet,
-                                    val.get('firewall'))
+                                    val.get('firewall', []))
 
                         # add host to network graph
                         network.add_host(host)
@@ -230,6 +232,21 @@ class Network:
                         host.get_dhcp_lease()
 
         return network
+
+
+    def get_node_from_name(self, node: str) -> NetworkObject:
+        '''
+        Return network object by name
+
+        :param str node: node.name of object
+        :returns NetworkObject:
+        '''
+        try:
+            return self.graph.nodes[node]['data']
+        except KeyError as e:
+            # TODO: raise custom exception?
+            print(f'{node} not found in {self.name}')
+            raise e
 
 
     # TODO: check if port is between 1 and 2**16-1
@@ -246,35 +263,42 @@ class Network:
         :param int port: destination port
         :param str proto: protocol (i.e. tcp/udp, default = tcp)
         '''
-        def _does_src_match(src: str, rule: dict) -> bool:
-            if 'src' not in rule or rule['src'] is None:
+        def _does_src_match(src, rule: dict, type) -> bool:
+            if src.name == rule['src'] or rule['src'] == 'all':
                 return True
-            if src in rule['src'] or 'all' in rule['src']:
-                return True
+            if type == 'host':
+                if src.subnet.router.name == rule['src'] or \
+                        src.subnet.name == rule['src']:
+                    return True
+            elif type == 'subnet':
+                if src.router.name == rule['src']:
+                    return True
             return False
 
-        def _does_dest_match(dest: str, rule: dict) -> bool:
-            if 'dest' not in rule or rule['dest'] is None:
+        def _does_dest_match(dest, rule: dict, type) -> bool:
+            if dest.name == rule['dest'] or rule['dest'] == 'all':
                 return True
-            if dest in rule['dest'] or 'all' in rule['dest']:
-                return True
+            if type == 'host':
+                if dest.subnet.router.name == rule['dest'] or \
+                        dest.subnet.name == rule['dest']:
+                    return True
+            elif type == 'subnet':
+                if dest.router.name == rule['dest']:
+                    return True
             return False
 
         def _does_port_match(port: str, rule: dict) -> bool:
-            if 'port' not in rule or rule['port'] is None:
-                return True
-            if port in str(rule['port']) or 'all' in str(rule['port']):
+            if str(rule['port']) == port or str(rule['port']) == 'all':
                 return True
             return False
 
         def _does_proto_match(proto: str, rule: dict) -> bool:
-            if 'proto' not in rule or rule['proto'] is None:
-                return True
-            if proto in rule['proto'] or 'all' in rule['proto']:
+            if rule['proto'] == proto or rule['proto'] == 'all':
                 return True
             return False
 
-        def _check_rules(src, dest, port, proto):
+        def _check_rules(src, dest, port, proto, type):
+
             # default to 'allow all' if no rules defined
             ### this is antithetical to how firewalls work in the real world,
             ### but seemed pragmatic in our case
@@ -287,57 +311,51 @@ class Network:
             # TODO: catch any common exceptions (KeyError, etc.)
             # loop over each rule/element in firewall_rules
             for rule in dest.firewall_rules:
-                if 'dest' not in rule:
-                    rule['dest'] = dest.name
-
-                if 'src' not in rule:
-                    rule['src'] = 'all'
-
                 # break if src doesn't match
-                if not _does_src_match(src.name, rule):
+                if not _does_src_match(src, rule, type):
                     break
 
                 # break if dest doesn't match
-                elif not _does_dest_match(dest.name, rule):
+                if not _does_dest_match(dest, rule, type):
                     break
 
                 # break if port doesn't match
-                elif not _does_port_match(str(port), rule):
+                if not _does_port_match(str(port), rule):
                     break
 
                 # break if proto doesn't match
-                elif not _does_proto_match(proto, rule):
+                if not _does_proto_match(proto, rule):
                     break
 
                 # matching rule found
-                else:
-                    return True
+                return True
+            return False
 
         if isinstance(dest, Host):
             subnet = dest.subnet
             router = subnet.router
-            # check host fw
-            if not _check_rules(src, dest, port, proto):
+            # check router fw
+            if not _check_rules(src, router, port, proto, 'host'):
                 return False
             # check subnet fw
-            if not _check_rules(src, subnet, port, proto):
+            if not _check_rules(src, subnet, port, proto, 'host'):
                 return False
-            # check router fw
-            if not _check_rules(src, router, port, proto):
+            # check host fw
+            if not _check_rules(src, dest, port, proto, 'host'):
                 return False
             return True
         elif isinstance(dest, Subnet):
             router = dest.router
-            # check subnet fw
-            if not _check_rules(src, dest, port, proto):
-                return False
             # check router fw
-            if not _check_rules(src, router, port, proto):
+            if not _check_rules(src, router, port, proto, 'subnet'):
+                return False
+            # check subnet fw
+            if not _check_rules(src, dest, port, proto, 'subnet'):
                 return False
             return True
         elif isinstance(dest, Router):
             # check router fw
-            if not _check_rules(src, dest, port, proto):
+            if not _check_rules(src, dest, port, proto, 'router'):
                 return False
             return True
 

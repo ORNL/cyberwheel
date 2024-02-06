@@ -38,4 +38,5 @@ class Router(NetworkObject):
 
     def get_routes(self):
         # should the default route be preppended to this list?
-        return self.routes.append(self.default_route)
+        routes = self.routes.append(self.default_route)
+        return routes

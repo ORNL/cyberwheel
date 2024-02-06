@@ -4,16 +4,18 @@ import ipaddress
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+from typing import Union
 import yaml
 
+from .network_object import NetworkObject
 from .subnet import Subnet
 from .host import Host
 from .router import Router
 
 class Network:
 
-    def __init__(self):
-        self.graph = nx.Graph()
+    def __init__(self, name=''):
+        self.graph = nx.Graph(name=name)
 
     def __iter__(self):
         return iter(self.graph)
@@ -78,31 +80,33 @@ class Network:
             return None  # Source or target not found in the network
 
         try:
-            shortest_path = nx.shortest_path(self.graph, source=source_host, target=target_host)
-            shortest_path = [item for item in shortest_path if "Router" not in item]
+            return nx.shortest_path(self.graph, source=source_host, target=target_host)
+            #shortest_path = nx.shortest_path(self.graph, source=source_host, target=target_host)
+            ##shortest_path = [item for item in shortest_path if "Router" not in item]
 
-            # Replace subnet names with host names on those subnets
-            new_path = []
+            ## Replace subnet names with host names on those subnets
+            #new_path = []
 
-            for node in shortest_path:
-                if node.startswith('Subnet'):
-                    subnet_name = node
-                    # Try to find a connected node that starts with 'Host'
-                    connected_host = None
-                    for neighbor in self.graph.neighbors(subnet_name):
-                        if neighbor.startswith('Host'):
-                            connected_host = neighbor
-                            break
+            #for node in shortest_path:
+            #    if isinstance(self.graph.nodes[node]['data'], Subnet):
+            #    #if node.startswith('Subnet'):
+            #        subnet_name = node
+            #        # Try to find a connected node that starts with 'Host'
+            #        connected_host = None
+            #        for neighbor in self.graph.neighbors(subnet_name):
+            #            if neighbor.startswith('Host'):
+            #                connected_host = neighbor
+            #                break
 
-                    if connected_host:
-                        new_path.append(connected_host)  # Replace subnet with connected host
-                    else:
-                        new_path.append(node)  # If no connected host found, keep the subnet
-                else:
-                    # Keep non-subnet nodes unchanged
-                    new_path.append(node)
+            #        if connected_host:
+            #            new_path.append(connected_host)  # Replace subnet with connected host
+            #        else:
+            #            new_path.append(node)  # If no connected host found, keep the subnet
+            #    else:
+            #        # Keep non-subnet nodes unchanged
+            #        new_path.append(node)
 
-            return new_path
+            #return new_path
         except:
             return None
 
@@ -178,69 +182,165 @@ class Network:
 
     @classmethod
     def create_network_from_yaml(cls, config_file_path):
-        # Create an instance of the Network class
-        network = cls()
-
         # Load the YAML config file
         with open(config_file_path, 'r') as yaml_file:
             config = yaml.safe_load(yaml_file)
 
+        # Create an instance of the Network class
+        network = cls(name=config['network'].get('name'))
+
+        ## parse topology
         # parse routers
         for key, val in config['routers'].items():
             router = Router(key,
                             # using '.get()' here in case default_route isn't defined
                             val.get('default_route'),
-                            val['routes'],
-                            val.get('firewall'))
+                            val.get('routes', []),
+                            val.get('firewall', []))
             # add router to network graph
             network.add_router(router)
 
-        # parse subnets
-        for key, val in config['subnets'].items():
-            subnet = Subnet(key,
-                            val['default_route'],
-                            val['ip_range'],
-                            val.get('firewall'))
-            # add subnet to network graph
-            network.add_subnet(subnet)
+            # instantiate subnets for this router
+            for key, val in config['subnets'].items():
+                subnet = Subnet(key,
+                                val.get('default_route',''),
+                                val.get('ip_range', ''),
+                                router,
+                                val.get('firewall', []))
+                # add subnet to network graph
+                network.add_subnet(subnet)
+                network.connect_nodes(subnet.name, router.name)
 
-            # instantiate hosts for this subnet
-            for key, val in config['hosts'].items():
+                # instantiate hosts for this subnet
+                for key, val in config['hosts'].items():
 
-                # is host attached to this subnet?
-                if val['subnet'] == subnet.name:
-                    host = Host(key,
-                                val['type'],
-                                subnet,
-                                val.get('firewall'))
+                    # is host attached to this subnet?
+                    if val['subnet'] == subnet.name:
+                        host = Host(key,
+                                    val.get('type', ''),
+                                    subnet,
+                                    val.get('firewall'))
 
-                    # add host to network graph
-                    network.add_host(host)
+                        # add host to network graph
+                        network.add_host(host)
+                        network.connect_nodes(host.name, subnet.name)
 
-                    # get next IP from subnet
-                    #host.set_ip(subnet.get_dhcp_lease())
-                    host.get_dhcp_lease()
-
-        # Parse topology
-        for node, data in network.graph.nodes(data='data'):
-
-            # Connect all hosts to their parent subnets
-            if isinstance(data, Host):
-                parent_subnet = config['hosts'][node].get('subnet')
-                network.connect_nodes(node, parent_subnet)
-
-            # Connect all subnets to their parent routers
-            if isinstance(data, Subnet):
-                parent_router = config['subnets'][node].get('default_route')
-                network.connect_nodes(node, parent_router)
-
-            # Connect all routers that have an upstream default route
-            if isinstance(data, Router):
-                parent_router = config['routers'][node].get('default_route', None)
-                if parent_router:
-                    network.connect_nodes(node, parent_router)
+                        # get next IP from subnet
+                        #host.set_ip(subnet.get_dhcp_lease())
+                        host.get_dhcp_lease()
 
         return network
 
+
+    # TODO: check if port is between 1 and 2**16-1
+    def is_traffic_allowed(self,
+                           src: NetworkObject,
+                           dest: NetworkObject,
+                           port: Union[str, int],
+                           proto: str ='tcp') -> bool:
+        '''
+        Checks firewall to see if network traffic should be allowed
+
+        :param str NetworkObject: source subnet or host of traffic
+        :param str NetworkObject: destination subnet or host of traffic
+        :param int port: destination port
+        :param str proto: protocol (i.e. tcp/udp, default = tcp)
+        '''
+        def _does_src_match(src: str, rule: dict) -> bool:
+            if 'src' not in rule or rule['src'] is None:
+                return True
+            if src in rule['src'] or 'all' in rule['src']:
+                return True
+            return False
+
+        def _does_dest_match(dest: str, rule: dict) -> bool:
+            if 'dest' not in rule or rule['dest'] is None:
+                return True
+            if dest in rule['dest'] or 'all' in rule['dest']:
+                return True
+            return False
+
+        def _does_port_match(port: str, rule: dict) -> bool:
+            if 'port' not in rule or rule['port'] is None:
+                return True
+            if port in str(rule['port']) or 'all' in str(rule['port']):
+                return True
+            return False
+
+        def _does_proto_match(proto: str, rule: dict) -> bool:
+            if 'proto' not in rule or rule['proto'] is None:
+                return True
+            if proto in rule['proto'] or 'all' in rule['proto']:
+                return True
+            return False
+
+        def _check_rules(src, dest, port, proto):
+            # default to 'allow all' if no rules defined
+            ### this is antithetical to how firewalls work in the real world,
+            ### but seemed pragmatic in our case
+            #try:
+            #    if not dest.firewall_rules:
+            #        return True
+            #except NameError:
+            #    return True
+
+            # TODO: catch any common exceptions (KeyError, etc.)
+            # loop over each rule/element in firewall_rules
+            for rule in dest.firewall_rules:
+                if 'dest' not in rule:
+                    rule['dest'] = dest.name
+
+                if 'src' not in rule:
+                    rule['src'] = 'all'
+
+                # break if src doesn't match
+                if not _does_src_match(src.name, rule):
+                    break
+
+                # break if dest doesn't match
+                elif not _does_dest_match(dest.name, rule):
+                    break
+
+                # break if port doesn't match
+                elif not _does_port_match(str(port), rule):
+                    break
+
+                # break if proto doesn't match
+                elif not _does_proto_match(proto, rule):
+                    break
+
+                # matching rule found
+                else:
+                    return True
+
+        if isinstance(dest, Host):
+            subnet = dest.subnet
+            router = subnet.router
+            # check host fw
+            if not _check_rules(src, dest, port, proto):
+                return False
+            # check subnet fw
+            if not _check_rules(src, subnet, port, proto):
+                return False
+            # check router fw
+            if not _check_rules(src, router, port, proto):
+                return False
+            return True
+        elif isinstance(dest, Subnet):
+            router = dest.router
+            # check subnet fw
+            if not _check_rules(src, dest, port, proto):
+                return False
+            # check router fw
+            if not _check_rules(src, router, port, proto):
+                return False
+            return True
+        elif isinstance(dest, Router):
+            # check router fw
+            if not _check_rules(src, dest, port, proto):
+                return False
+            return True
+
+        return False
 
 

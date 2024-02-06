@@ -1,128 +1,187 @@
-# Network Configuration
 network:
-  name: network_foo
-  desc: A network that foos all the bars
+  name: example_net
+  desc: Example config that defines a simplified network
 
-# TODO: I'm no longer using this summary view of the topology in any of the network code
-    # it seemed easier to parse if I just pulled from the detailed config below this block.
-    # This summary 'topology:' block may be useful for humans though..?
-# Topology Definition
+# currently this block is not being parsed and is
+# only here to help visualize the topology
 topology:
-  - MainRouter:
-    #- wan_subnet    # adding this so the MainRouter can have a sane default route
-    - SubnetA:
-      - Host1
-      - Host2
-    - SubnetB:
-      - Host3
-    - SubnetCRouter:
-      - SubnetC:
-        - Host4
-        - Host5
-    - SubnetD
-    - SubnetE
-  #MainRouter:
-  #  type: router
-  #  subnets:
-  #    - subnetA
-  #    - subnetB
-  #subnetCRouter:
-  #  type: router
-  #  subnets:
-  #    - subnetC
-
+  - core_router:
+    - user_subnet:
+      - user01
+      - user02
+      - user03
+      - admin_workstation
+    - server_subnet:
+      - server01
+      - server02
+      - server03
+    - dmz_subnet:
+      - dmz01
+      - dmz02
+      - dmz03
+      - dmz_jump_box
+    # should the red agent start here or can we assume initial foothold already occured?
+    - internet:
 
 # Routers
 routers:
-  MainRouter:
-    # represents the state of the routing table or subnets this router "knows" about
-    #default_route: wan_subnet
-    default_route:
+  core_router:
+    default_route: internet
     routes:
-      - SubnetA
-      - SubnetB
-      - SubnetCRouter    # this would inherit all defined routes from SubnetCRouter
-                         # i.e. MainRouter would know about SubnetC because SubnetCRouter
-                         # has that route defined
-      #- SubnetD    # if subnet not defined in "routes" assume no route to said subnet?
+      - user_subnet
+      - server_subnet
+      - dmz_subnet
+      - internet
     firewall:
-      - https:    # service name as key?
-        port: 443
-        proto: tcp
-        src:        # default to allow any src if not defined?
-          - Host2   # would be nice to have the ability to specify hosts and/or subnets here
-          - Host3
-          - SubnetA
-        desc: optional description
-      - second_service:
-        port: 12345
-        proto: tcp
-        src: []    # src not defined so assume "allow any source"
+      # default to 'allow all' if no rules defined
+      ### this is antithetical to how firewalls work in the real world,
+      ### but seemed pragmatic in our case
 
-# Child Router (nested under MainRouter)
-  SubnetCRouter:
-    default_route: MainRouter    # ability to use either subnet or router to specify default route
-                                 # this gives us the freedom to not have to define networks between routers
-                                 # i.e. MainRouter <--> SubnetARouter
-    routes:
-      - subnetC
-    firewall:
-      # this would allow all hosts on SubnetA to hit any host on SubnetB on the defined ports
-      - source_subnet: SubnetA
-        allow_ports:
-          - 80: tcp
-          - 443: tcp
-          - 123: udp
-      # this would allow all hosts on SubnetB to connect only to Host3 via the defined services
-      - source_subnet: SubnetB
-        dest_hosts:
-          - Host3
-        allow_services: [SSH, FTP]  # Allow SSH and FTP services
+      ## this example rule is basically an 'allow all' rule since none of the
+      ## fields have values. The behavior is the same if a field is not defined
+      #- name: example rule
+      #  src:   # this value can be 'all', None, some_host, or some_subnet
+      #  dest:  # this value can be 'all', None, some_host, or some_subnet
+      #  port:  # this value can be 'all', None, or any int 1 - 65535
+      #  proto: # this value can be 'all', None, 'tcp', or 'udp'. default = 'tcp'
+      #  desc:  # human friendly description
+
+      # implied 'allow all' from defined src if no other criteria defined
+      - name: allow all from user subnet
+        src: user_subnet
+
+      # allow server_subnet to all
+      - name: allow all from server subnet
+        src: server_subnet
+        # can also explicitly define an 'allow all' rule using the 'all' value
+        dest: all
+
+      # only 443/tcp is allowed into dmz_subnet
+      - name: allow all https traffic into DMZ
+        src: all
+        dest: dmz_subnet
+        port: 443
+        # tcp is always the default
+        proto: tcp
 
 # Subnets
 subnets:
-  SubnetA:
-    default_route: MainRouter
+  user_subnet:
+    default_route: core_router
+    ip_range: 192.168.0.0/24
+    firewall:
+      # allow any traffic originating from server_subnet
+      - name: allow all from server_subnet
+        src: server_subnet
+
+      # only traffic allowed from dmz is from jump box on dest port 22
+      ## dest='all' and proto='tcp' is implied here
+      - name: allow ssh from dmz_jump_box
+        src: dmz_jump_box
+        port: 22
+
+      - src: internet
+
+  server_subnet:
+    default_route: core_router
     ip_range: 192.168.1.0/24
+    firewall:
+      # allow admin_workstation to anything in server_subnet
+      - name: allow admin to server_subnet
+        src: admin_workstation
+        dest: server_subnet
 
-  SubnetB:
-    default_route: MainRouter
+      # allow DNS for user_subnet
+      - name: allow DNS
+        src: user_subnet
+        dest: server_subnet
+        port: 53
+
+      # allow DHCP for user_subnet
+      - name: allow DHCP
+        src: user_subnet
+        dest: server_subnet
+        port: 68
+        proto: udp
+
+
+  dmz_subnet:
+    default_route: core_router
     ip_range: 192.168.2.0/24
+    #firewall:
+    #  # implicit 'allow all' from user_subnet
+    #  - name: allow all user_subnet
+    #    src: user_subnet
 
-  SubnetC:
-    default_route: SubnetCRouter
-    ip_range: 192.168.3.0/24
+    #  # implicit 'allow all' from server_subnet
+    #  - name: allow all server_subnet
+    #    src: server_subnet
+
+    #  - name: allow https
+    #    src: all
+    #    dest: dmz_subnet
+    #    port: 443
+
+  # should we visualize the internet as another "subnet"?
+  internet:
+    default_route:
+    ip_range: 1.0.0.0/24
+    firewall:
 
 # Hosts
 hosts:
-  Host1:
-    type: Server
-    subnet: SubnetA
-    # host based firewall
+
+  # User hosts
+  user01:
+    type: User Workstation
+    subnet: user_subnet
+    firewall:  # if firewall is undefined or empty assume 'allow all'
+  user02:
+    type: User Workstation
+    subnet: user_subnet
+  user03:
+    type: User Workstation
+    subnet: user_subnet
+  admin_workstation:
+    type: Admin Workstation
+    subnet: user_subnet
     firewall:
-      - https:    # service name as key?
+      - name: allow SSH
+        src: all
+        port: 22
+
+  # Server hosts
+  server01:
+    type:
+    subnet: server_subnet
+  server02:
+    type:
+    subnet: server_subnet
+  server03:
+    type:
+    subnet: server_subnet
+
+  # DMZ hosts
+  dmz01:
+    type:
+    subnet: dmz_subnet
+  dmz02:
+    type:
+    subnet: dmz_subnet
+  dmz03:
+    type:
+    subnet: dmz_subnet
+    firewall:
+      - name: foo
+        src: all
+        dest: dmz03
         port: 443
         proto: tcp
-        src:        # default to allow any src if not defined?
-          - Host2   # would be nice to have the ability to specify hosts and/or subnets here
-          - Host3
-          - SubnetA
-        desc: optional description
-      - second_service:
-        port: 12345
-        proto: tcp
-        src: []    # src not defined so assume "allow any source"
+  dmz_jump_box:
+    type:
+    subnet: dmz_subnet
+    firewall:
+      # implied dest='all' and proto='tcp'
+      - name: allow SSH
+        port: 22
 
-  Host2:
-    type: Workstation
-    subnet: SubnetA
-    firewall:    # if firewall not defined or empty assume "allow all" for ease of use?
-               # or maybe default to allowing all defined services for the host type?
-
-  Host3:
-    type: Workstation
-    subnet: SubnetC
-
-  Host4:
-    type: Printer
-    subnet: SubnetC

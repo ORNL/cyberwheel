@@ -1,9 +1,10 @@
 import ipaddress
 from .network_object import NetworkObject
+from .router import Router
 
 
 class Subnet(NetworkObject):
-    def __init__(self, name, default_route, ip_range, firewall_rules=[]):
+    def __init__(self, name, default_route, ip_range, router: Router, firewall_rules=[]):
         '''
         :param str name: name of router
         :param str default_route: name of router that provides default route
@@ -37,6 +38,7 @@ class Subnet(NetworkObject):
             print('ip_range does not represent a valid IPv4 or IPv6 address')
             raise e
         self.available_ips = [ip for ip in self.network.hosts()]
+        self.router = router
 
 
     def get_network_address(self) -> str:
@@ -68,5 +70,3 @@ class Subnet(NetworkObject):
 
     def get_dhcp_lease(self):
         return self.available_ips.pop(0)
-
-

@@ -2,6 +2,7 @@ from ipaddress import IPv4Address, IPv6Address
 from typing import Union
 from .network_object import NetworkObject
 from .subnet import Subnet
+from .router import Router
 
 
 class Host(NetworkObject):
@@ -46,4 +47,3 @@ class Host(NetworkObject):
 
     def get_dhcp_lease(self):
         self.ip_address = self.subnet.get_dhcp_lease()
-

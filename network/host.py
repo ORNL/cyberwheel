@@ -1,8 +1,8 @@
-from ipaddress import IPv4Address, IPv6Address
+import ipaddress as ipa
 from typing import Union
 from .network_object import NetworkObject
 from .subnet import Subnet
-from .router import Router
+#from .router import Router
 
 
 class Host(NetworkObject):
@@ -33,10 +33,11 @@ class Host(NetworkObject):
         super().__init__(name, firewall_rules)
         self.type = type
         self.subnet = subnet
+        self.ip_address = None
         self.is_compromised = False  # Default to not compromised
 
 
-    def set_ip(self, ip: Union[IPv4Address, IPv6Address]):
+    def set_ip(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
         '''
         Manually set IP address of host
 
@@ -46,4 +47,4 @@ class Host(NetworkObject):
 
 
     def get_dhcp_lease(self):
-        self.ip_address = self.subnet.get_dhcp_lease()
+        self.ip_address = self.subnet.assign_dhcp_lease(self)

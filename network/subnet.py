@@ -1,5 +1,7 @@
 import ipaddress
+from typing import Union
 from .network_object import NetworkObject
+#from .host import Host  # this is causing circular import issues
 from .router import Router
 
 
@@ -33,12 +35,13 @@ class Subnet(NetworkObject):
         #self.network = ipaddress.IPv4Network(f"{ip_range}", strict=False)
         try:
             # this should allow IPv4 or IPv6
-            self.network = ipaddress.ip_network(f"{ip_range}", strict=False)
+            self.ip_network = ipaddress.ip_network(f"{ip_range}", strict=False)
         except ValueError as e:
             print('ip_range does not represent a valid IPv4 or IPv6 address')
             raise e
-        self.available_ips = [ip for ip in self.network.hosts()]
+        self.available_ips = [ip for ip in self.ip_network.hosts()]
         self.router = router
+        self.connected_hosts = []
 
 
     def get_network_address(self) -> str:
@@ -46,18 +49,18 @@ class Subnet(NetworkObject):
         Returns the network address of the subnet
             i.e. '192.168.0.0'
         '''
-        return str(self.network.network_address)
+        return str(self.ip_network.network_address)
 
 
     def get_prefix_length(self) -> int:
-        return self.network.prefixlen
+        return self.ip_network.prefixlen
 
 
     def get_max_num_hosts(self) -> int:
         '''
         Returns number of usable IP address in subnet.
         '''
-        return self.network.num_addresses - 2
+        return self.ip_network.num_addresses - 2
 
 
     def get_unassigned_ips(self) -> list:
@@ -68,5 +71,17 @@ class Subnet(NetworkObject):
         return len(self.available_ips)
 
 
-    def get_dhcp_lease(self):
-        return self.available_ips.pop(0)
+    def assign_dhcp_lease(self, host_obj) -> Union[ipaddress.IPv4Address, ipaddress.IPv6Address]:
+        ip_lease = self.available_ips.pop(0)
+        # update connected hosts
+        self.connected_hosts.append(host_obj)
+        return ip_lease
+
+
+    def get_connected_hosts(self) -> list:
+        return self.connected_hosts
+
+
+    def get_connected_hostnames(self) -> list[str]:
+        return [host.name for host in self.connected_hosts]
+

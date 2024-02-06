@@ -30,10 +30,10 @@ class NetworkObject:
                     rule['src'] = 'all'
                 if 'dest' not in rule:
                     rule['dest'] = 'all'
-                if 'port' not in rule:
-                    rule['port'] = 'all'
                 if 'proto' not in rule:
                     rule['proto'] = 'all'
+                if 'port' not in rule:
+                    rule['port'] = 'all'
 
             return rules
 
@@ -64,6 +64,11 @@ class NetworkObject:
                         'port': 1234,
                         'proto': 'tcp',
                         'desc': 'Allow all src to all dest on port 1234/tcp'
+                    },
+                    {
+                        'name': 'allow ICMP',
+                        'proto': 'icmp',
+                        'desc': 'Allow pings from anywhere'
                     }
                 ]
         '''
@@ -84,73 +89,3 @@ class NetworkObject:
 
         # update firewall rules
         self.firewall_rules = updated_rules
-
-
-    ## TODO: check if port is between 1 and 2**16-1
-    #def is_traffic_allowed(self, src: str, dest: str, port: int, proto: str ='tcp') -> bool:
-    #    '''
-    #    Checks object's firewall to see if network traffic should be allowed
-
-    #    :param str src: source subnet or host of traffic
-    #    :param str dest: destination subnet or host of traffic
-    #    :param int port: destination port
-    #    :param str proto: protocol (i.e. tcp/udp, default = tcp)
-    #    '''
-    #    def _does_src_match(src: str, rule: dict) -> bool:
-    #        if 'src' not in rule or rule['src'] is None:
-    #            return True
-    #        if src in rule['src'] or 'all' in rule['src']:
-    #            return True
-    #        return False
-
-
-    #    def _does_dest_match(dest: str, rule: dict) -> bool:
-    #        if 'dest' not in rule or rule['dest'] is None:
-    #            return True
-    #        if dest in rule['dest'] or 'all' in rule['dest']:
-    #            return True
-    #        return False
-
-
-    #    def _does_port_match(port: int, rule: dict) -> bool:
-    #        if 'port' not in rule or rule['port'] is None:
-    #            return True
-    #        if port in rule['port'] or 'all' in rule['port']:
-    #            return True
-    #        return False
-
-
-    #    def _does_proto_match(proto: str, rule: dict) -> bool:
-    #        if 'proto' not in rule or rule['proto'] is None:
-    #            return True
-    #        if proto in rule['proto'] or 'all' in rule['proto']:
-    #            return True
-    #        return False
-
-
-    #    # TODO: catch any common exceptions (KeyError, etc.)
-    #    # loop over each rule/element in firewall_rules
-    #    for rule in self.firewall_rules:
-    #        # break if src doesn't match
-    #        if not _does_src_match(src, rule):
-    #            break
-
-    #        # break if dest doesn't match
-    #        elif not _does_dest_match(dest, rule):
-    #            break
-
-    #        # break if port doesn't match
-    #        elif not _does_port_match(port, rule):
-    #            break
-
-    #        # break if proto doesn't match
-    #        elif not _does_proto_match(proto, rule):
-    #            break
-
-    #        # matching rule found
-    #        else:
-    #            return True
-
-    #    return False
-
-

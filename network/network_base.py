@@ -244,16 +244,60 @@ class Network:
         try:
             return self.graph.nodes[node]['data']
         except KeyError as e:
-            # TODO: raise custom exception?
+            # TODO: raise custom exception? return None?
             print(f'{node} not found in {self.name}')
             raise e
 
 
-    # TODO: check if port is between 1 and 2**16-1
+    def get_all_hosts(self) -> list:
+        nodes_tuple = self.graph.nodes(data='data')
+        hosts = [obj for _, obj in nodes_tuple if isinstance(obj, Host)]
+
+        return hosts
+
+
+    def get_all_hosts_on_subnet(self, subnet: Subnet) -> list:
+        return subnet.get_connected_hosts()
+
+
+    def _is_valid_port_number(self, port) -> bool:
+        '''
+        Validates port number
+        '''
+        if isinstance(port, str):
+            if port.lower() == 'all':
+                return True
+            port = int(port)
+        if port > 65535 or port < 1:
+            return False
+        return True
+
+    def scan_subnet(self, src: Host, dest: Subnet) -> dict:
+        '''
+        Scans a given subnet and returns found hosts and open ports
+        '''
+        found_hosts = {}
+        return found_hosts
+
+
+    def ping_sweep_subnet(self, src: Host, subnet: Subnet) -> list:
+        '''
+        Attempts to ping all hosts on a subnet
+
+        Hosts are only visible to ping if ICMP is allowed by the firewall(s).
+        '''
+        subnet_hosts = self.get_all_hosts_on_subnet(subnet)
+        found_hosts = []
+        for host in subnet_hosts:
+            if self.is_traffic_allowed(src, host, None, 'icmp'):
+                found_hosts.append(host)
+        return found_hosts
+
+
     def is_traffic_allowed(self,
                            src: NetworkObject,
                            dest: NetworkObject,
-                           port: Union[str, int],
+                           port: Union[str, int, None],
                            proto: str ='tcp') -> bool:
         '''
         Checks firewall to see if network traffic should be allowed
@@ -263,6 +307,12 @@ class Network:
         :param int port: destination port
         :param str proto: protocol (i.e. tcp/udp, default = tcp)
         '''
+        # ICMP doesn't use ports (it's considered layer 3)
+        if proto.lower() == 'icmp':
+            pass
+        elif not self._is_valid_port_number(port):
+            raise ValueError(f'{port} is not a valid port number')
+
         def _does_src_match(src, rule: dict, type) -> bool:
             if src.name == rule['src'] or rule['src'] == 'all':
                 return True

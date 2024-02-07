@@ -1,3 +1,5 @@
+import ipaddress as ipa
+from typing import Union
 from .network_object import NetworkObject
 
 
@@ -30,6 +32,7 @@ class Router(NetworkObject):
         super().__init__(name, firewall_rules)
         self.default_route = default_route
         self.routes = routes  # List of routes to other subnets or routers
+        self.interfaces = []
 
 
     def get_default_route(self):
@@ -40,3 +43,7 @@ class Router(NetworkObject):
         # should the default route be preppended to this list?
         routes = self.routes.append(self.default_route)
         return routes
+
+    
+    def set_ip(self, ip, interface_name: str):
+        self.interfaces.append({interface_name: ip})

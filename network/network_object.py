@@ -18,7 +18,8 @@ class NetworkObject:
                               'src': 'all',
                               'dest': 'all',
                               'port': 'all',
-                              'proto': 'all'}
+                              'proto': 'all',
+                              'desc': 'auto generated allow-all rule"'}
 
             implied_rules.append(allow_all_rule)
             return implied_rules

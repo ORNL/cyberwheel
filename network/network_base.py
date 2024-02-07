@@ -224,6 +224,10 @@ class Network:
                 network.add_subnet(subnet)
                 network.connect_nodes(subnet.name, router.name)
 
+                # assign router first available IP on each subnet
+                # routers have one interface for each connected subnet
+                router.set_ip(subnet.available_ips.pop(0), subnet.name)
+
                 # instantiate hosts for this subnet
                 for key, val in config['hosts'].items():
 

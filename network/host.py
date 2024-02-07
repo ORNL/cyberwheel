@@ -1,6 +1,7 @@
 import ipaddress as ipa
 from typing import Union
 from .network_object import NetworkObject
+from .service import Service
 from .subnet import Subnet
 #from .router import Router
 
@@ -35,6 +36,7 @@ class Host(NetworkObject):
         self.subnet = subnet
         self.ip_address = None
         self.is_compromised = False  # Default to not compromised
+        self.services = []
 
 
     def set_ip(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
@@ -48,3 +50,15 @@ class Host(NetworkObject):
 
     def get_dhcp_lease(self):
         self.ip_address = self.subnet.assign_dhcp_lease(self)
+
+
+    def define_services(self):
+        pass
+
+
+    def define_services_from_host_type(self):
+        pass
+
+
+    def get_services(self):
+        pass

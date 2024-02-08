@@ -47,3 +47,5 @@ class Router(NetworkObject):
     
     def set_ip(self, ip, interface_name: str):
         self.interfaces.append({interface_name: ip})
+
+

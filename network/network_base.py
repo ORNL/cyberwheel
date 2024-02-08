@@ -311,15 +311,29 @@ class Network:
         return True
 
 
-    # TODO
-    def scan_subnet(self, src: Host, dest: Subnet) -> dict:
+    # TODO: should this be defined in the red actions?
+    def scan_subnet(self, src: Host, subnet: Subnet) -> dict:
         '''
-        Scans a given subnet and returns found hosts and open ports
+        Scans a given subnet and returns found IPs and open ports
+
         '''
+        all_hosts = self.get_all_hosts_on_subnet(subnet)
+        for host in all_hosts:
+            pass
         found_hosts = {}
         return found_hosts
 
 
+    # TODO: should this be defined in the red actions?
+    def scan_host(self, src: Host, ip: str) -> list:
+        '''
+        Scans a given host and returns open ports
+        '''
+        open_ports = []
+        return open_ports
+
+
+    # TODO: should this be defined in the red actions?
     def ping_sweep_subnet(self, src: Host, subnet: Subnet) -> list:
         '''
         Attempts to ping all hosts on a subnet

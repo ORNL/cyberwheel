@@ -219,14 +219,21 @@ class Network:
                                 val.get('default_route',''),
                                 val.get('ip_range', ''),
                                 router,
-                                val.get('firewall', []))
+                                val.get('firewall', []),
+                                dns_server=val.get('dns_server'))
                 # add subnet to network graph
                 network.add_subnet(subnet)
                 network.connect_nodes(subnet.name, router.name)
 
                 # assign router first available IP on each subnet
                 # routers have one interface for each connected subnet
-                router.set_ip(subnet.available_ips.pop(0), subnet.name)
+                router.set_interface_ip(subnet.name, subnet.available_ips.pop(0))
+
+                # ensure subnet.dns_server is defined
+                # default to router IP if it's still None
+                router_interface_ip = router.get_interface_ip(subnet.name)
+                if subnet.dns_server is None and router_interface_ip is not None:
+                    subnet.set_dns_server(router_interface_ip)
 
                 # instantiate hosts for this subnet
                 for key, val in config['hosts'].items():
@@ -236,7 +243,9 @@ class Network:
                         host = Host(key,
                                     val.get('type', ''),
                                     subnet,
-                                    val.get('firewall', []))
+                                    val.get('firewall', []),
+                                    services=val.get('services'),
+                                    dns_server=val.get('dns_server'))
 
                         # add host to network graph
                         network.add_host(host)

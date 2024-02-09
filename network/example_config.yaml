@@ -69,6 +69,7 @@ subnets:
   user_subnet:
     default_route: core_router
     ip_range: 192.168.0.0/24
+    dns_server: 192.168.0.1
     firewall:
       # allow any traffic originating from server_subnet
       - name: allow all from server_subnet

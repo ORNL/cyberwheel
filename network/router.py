@@ -32,7 +32,7 @@ class Router(NetworkObject):
         super().__init__(name, firewall_rules)
         self.default_route = default_route
         self.routes = routes  # List of routes to other subnets or routers
-        self.interfaces = []
+        self.interfaces = {}
 
 
     def get_default_route(self):
@@ -45,7 +45,11 @@ class Router(NetworkObject):
         return routes
 
     
-    def set_ip(self, ip, interface_name: str):
-        self.interfaces.append({interface_name: ip})
+    def set_interface_ip(self, interface_name: str, ip: Union[ipa.IPv4Address,ipa.IPv6Address]):
+        self.interfaces.update({interface_name: ip})
+
+
+    def get_interface_ip(self, interface_name: str) -> Union[ipa.IPv4Address, ipa.IPv6Address, None]:
+        return self.interfaces.get(interface_name)
 
 

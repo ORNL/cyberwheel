@@ -32,6 +32,7 @@ class Host(NetworkObject):
                     }
                 ]
         :param list[Service] **services: list of services
+        :param (IPv4Address | IPv6Address) **dns_server: IP of DNS server
         '''
         super().__init__(name, firewall_rules)
         self.type = type
@@ -39,6 +40,7 @@ class Host(NetworkObject):
         self.ip_address = None
         self.is_compromised = False  # Default to not compromised
         self.services = kwargs.get('services', [])
+        self.dns_server = kwargs.get('dns_server')
 
 
     def set_ip(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
@@ -50,8 +52,18 @@ class Host(NetworkObject):
         self.ip_address = ip
 
 
+    def set_dns(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
+        '''
+        Manually set IP address of host
+
+        :param (IPv4Address | IPv6Address) ip: IP object
+        '''
+        self.dns_server = ip
+
+
     def get_dhcp_lease(self):
-        self.ip_address = self.subnet.assign_dhcp_lease(self)
+        # this also assigns the host's DNS server
+        self.subnet.assign_dhcp_lease(self)
 
 
     def define_services(self, services: list[Service]):

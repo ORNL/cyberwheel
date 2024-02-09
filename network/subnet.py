@@ -1,4 +1,4 @@
-import ipaddress
+import ipaddress as ipa
 from typing import Union
 from .network_object import NetworkObject
 #from .host import Host  # this is causing circular import issues
@@ -6,12 +6,12 @@ from .router import Router
 
 
 class Subnet(NetworkObject):
-    def __init__(self, name, default_route, ip_range, router: Router, firewall_rules=[]):
+    def __init__(self, name, default_route, ip_range, router: Router, firewall_rules=[], **kwargs):
         '''
         :param str name: name of router
         :param str default_route: name of router that provides default route
         :param str ip_range: cidr IP range (i.e. 192.168.0.0/24)
-        :param list[dict] firewall_rules: list offirewall rules (emtpy rules = allow all)
+        :param list[dict] firewall_rules: list of firewall rules (emtpy rules = allow all)
                 Example:
                 [
                     {
@@ -29,19 +29,33 @@ class Subnet(NetworkObject):
                         'desc': 'Allow some_host to use foo service'
                     }
                 ]
+        :param (IPv4Address | IPv6Address] **dns_server: default DNS server for subnet
         '''
         super().__init__(name, firewall_rules)
         self.default_route = default_route
-        #self.network = ipaddress.IPv4Network(f"{ip_range}", strict=False)
+        #self.network = ipa.IPv4Network(f"{ip_range}", strict=False)
         try:
             # this should allow IPv4 or IPv6
-            self.ip_network = ipaddress.ip_network(f"{ip_range}", strict=False)
+            self.ip_network = ipa.ip_network(f"{ip_range}", strict=False)
         except ValueError as e:
             print('ip_range does not represent a valid IPv4 or IPv6 address')
             raise e
         self.available_ips = [ip for ip in self.ip_network.hosts()]
-        self.router = router
         self.connected_hosts = []
+        self.router = router
+        dns_server = kwargs.get('dns_server')
+        if dns_server:
+            try:
+                self.dns_server = ipa.ip_address(dns_server)
+            except ValueError as e:
+                print(f'{dns_server} does not represent a valid IPv4 or IPv6 address')
+                raise e
+        else:
+            self.dns_server = None
+
+
+    def set_dns_server(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
+        self.dns_server = ip
 
 
     def get_network_address(self) -> str:
@@ -71,11 +85,14 @@ class Subnet(NetworkObject):
         return len(self.available_ips)
 
 
-    def assign_dhcp_lease(self, host_obj) -> Union[ipaddress.IPv4Address, ipaddress.IPv6Address]:
+    def assign_dhcp_lease(self, host_obj):
+        # get next available IP
         ip_lease = self.available_ips.pop(0)
         # update connected hosts
         self.connected_hosts.append(host_obj)
-        return ip_lease
+        # assign IP and DNS server
+        host_obj.set_ip(ip_lease)
+        host_obj.set_dns(self.dns_server)
 
 
     def get_connected_hosts(self) -> list:

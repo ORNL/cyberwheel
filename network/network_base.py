@@ -174,7 +174,7 @@ class Network:
     # TODO: still need to test this
     def set_host_compromised(self, host_id, compromised):
         #hosts = [data_object for node_name, data_object in self.graph.nodes(data='data') if isinstance(data_object, Host)]
-        host_to_modify = self.graph.nodes[host_id]
+        host_to_modify = self.get_host_from_name(host_id)
         #host_to_modify = hosts[host_id]  # Adjust the index to match the list
         current_state = host_to_modify.is_compromised
         host_to_modify.is_compromised = compromised  # Set is_compromised to False for the selected host

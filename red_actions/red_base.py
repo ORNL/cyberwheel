@@ -117,3 +117,6 @@ class RedAction():
     @abstractmethod
     def sim_execute(self) -> RedActionResults:
         pass
+
+    def get_techniques(self):
+        return self.techniques

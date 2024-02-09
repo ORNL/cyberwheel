@@ -1,12 +1,14 @@
 from Technique import Technique
-import art_techniques
+import sys
+sys.path.append("/Users/67x/cyberwheel/")
+from red_actions.actions.killchain_phases import InitialAccess, Execution, Persistence
 from pprint import pprint, pformat
-import inspect
 
-total = 0
-for name, obj in inspect.getmembers(art_techniques):
-    if inspect.isclass(obj) and name != "Technique":
-        obj = obj()
-        pprint(obj.get_vulnerabilities())
-        pprint(obj.get_weaknesses())
-        total += 1
+supported_os = ["macos"]
+
+initial_access = InitialAccess(supported_os)
+execution = Execution(supported_os)
+persistence = Persistence(supported_os)
+pprint(initial_access.get_techniques())
+pprint(execution.get_techniques())
+pprint(persistence.get_techniques())

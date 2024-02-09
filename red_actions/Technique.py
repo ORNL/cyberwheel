@@ -1,5 +1,5 @@
 from typing import List
-from red_actions.AtomicTest import AtomicTest
+from AtomicTest import AtomicTest
 from pprint import pformat
 import jsonpickle
 import json
@@ -18,8 +18,9 @@ class Technique():
     cve_list : List[str]
     is_subtechnique : bool
     parent_technique : str
+    supported_os : List[str]
 
-    def __init__(self, mitre_id, name, technique_id, data_components, kill_chain_phases, data_source_platforms, mitigations, description, atomic_tests):
+    def __init__(self, mitre_id, name, technique_id, data_components, kill_chain_phases, data_source_platforms, mitigations, description, atomic_tests, cve_list = [], cwe_list = []):
         self.mitre_id = mitre_id
         self.name = name
         self.technique_id = technique_id
@@ -31,39 +32,9 @@ class Technique():
         self.atomic_tests = [AtomicTest(at) for at in atomic_tests]
         self.is_subtechnique = "." in self.mitre_id
         self.parent_technique = self.mitre_id.split(".")[0] if self.is_subtechnique else self.mitre_id
-        self.load_mappings()
-
-
-    def load_mappings(self):
-        self.cwe_list = []
-        self.cve_list = []
-
-        mitre_to_cwe = {}
-        cwe_to_cve = {}
-        with open('resources/metadata/attack_to_cwe.json', 'r') as f:
-            mitre_to_cwe = json.load(f)
-        with open('resources/metadata/cwe_to_cve.json', 'r') as f:
-            cwe_to_cve = json.load(f)
-
-        mid = self.mitre_id.replace("T", "")
-        pid = self.get_parent_technique().replace("T", "")
-
-        if mid in list(mitre_to_cwe.keys()):
-            self.cwe_list = mitre_to_cwe[mid]
-            temp_cve_list = []
-            for cwe in self.cwe_list:
-                if cwe in list(cwe_to_cve.keys()):
-                    temp_cve_list.extend(cwe_to_cve[cwe])
-            if len(temp_cve_list) > 0:
-                self.cve_list = list(set(temp_cve_list))
-        elif pid in list(mitre_to_cwe.keys()):
-            self.cwe_list = mitre_to_cwe[pid]
-            temp_cve_list = []
-            for cwe in self.cwe_list:
-                if cwe in list(cwe_to_cve.keys()):
-                    temp_cve_list.extend(cwe_to_cve[cwe])
-            if len(temp_cve_list) > 0:
-                self.cve_list = list(set(temp_cve_list))
+        self.supported_os = list(set([os for at in self.atomic_tests for os in at.supported_platforms]))
+        self.cwe_list = cwe_list
+        self.cve_list = cve_list
 
     def get_parent_technique(self) -> str:
         return self.parent_technique

@@ -93,11 +93,6 @@ class RedAction():
     """
     Base class for defining red actions. New actions should inherit from this class and define sim_execute().
     """
-    src_host: Host
-    target_service: Service
-    target_hosts: targets
-    techniques: List[Technique]
-    action_results: RedActionResults
     def __init__(self, src_host, target_service, target_hosts, techniques) -> None:
         """
         - `src_host`: Host from which the attack originates.
@@ -120,3 +115,7 @@ class RedAction():
 
     def get_techniques(self):
         return self.techniques
+
+    @abstractmethod
+    def perfect_alert(self):
+        pass

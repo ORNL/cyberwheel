@@ -1,3 +1,4 @@
+import random
 from typing import Iterable
 
 from network.network_base import Network

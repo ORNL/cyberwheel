@@ -3,7 +3,8 @@ from __future__ import annotations
 import ipaddress as ipa
 from pydantic import BaseModel
 import random
-from typing import Union, Type
+import json
+from typing import Union, List, Type
 from .network_object import NetworkObject
 from .service import Service
 from .subnet import Subnet
@@ -143,10 +144,33 @@ class Host(NetworkObject):
     def get_dhcp_lease(self):
         self.subnet.assign_dhcp_lease(self)
 
-    def define_services(self, services: list[Service]):
+
+    def define_services(self, services: List[Service]):
         self.services = services
 
-    def get_services(self) -> list[Service]:
+
+    def define_services_from_host_type(self, host_types_file=None):
+        # TODO: not sure the best way to handle relative files here...
+        if host_types_file is None:
+            host_types_file = 'resources/metadata/host_definitions.json'
+        # load host type definitions
+        with open(host_types_file) as f:
+            data = json.load(f)
+
+        # create instace of each Service()
+        for host_type in data.get('host_types'):
+            defined_type = host_type.get('type')
+            if self.type == defined_type.lower():
+                for service in defined_type.get('services'):
+                    self.services.append(Service(service.get('name'),
+                                         service.get('port'),
+                                         service.get('protocol'),
+                                         service.get('version'),
+                                         service.get('vulnerabilities'))
+                                        )
+
+
+    def get_services(self) -> Union[List[Service], list]:
         return self.services
 
     def add_service(self, name: str, port: int, **kwargs) -> None:

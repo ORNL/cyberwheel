@@ -1,6 +1,7 @@
 import ipaddress as ipa
 import random
 from .network_object import NetworkObject, Route
+from typing import Union, List
 #from .host import Host  # this is causing circular import issues
 from .router import Router
 

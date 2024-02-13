@@ -6,25 +6,51 @@ from cyberwheel.network.service import Service
 
 IPAddress = Union[IPv4Address, IPv6Address, None]
 
-# TODO Needs to be updated as the network implementation changes.
-class Alert:
-    FIELD_NAMES = set(["src_host", "dst_hosts", "services"])
+# NOTE Consider making an Alert base class with src_host and technique member variables and then inherit to make alerts for network/host
+class Alert():
+    FIELD_NAMES = set(['src_host', 'dst_hosts', 'services'])
+    def __init__(self, src_host: Host = None, techniques: List[Technique]=[], dst_hosts: List[Host] = [], services: List[Service]=[],
+                 user: str="", command: str="", files: List[any]=[], other_resources: Dict[str, any]={}, os: str="", os_version: str=""):
+        """
+        A class for holding information on actions made by a non-blue agent. (Maybe we'll do a green agent at some point?)
+        ### Generic
+        These components are neither network nor host based data components.
+            - src_host: the host that an action is performed on. It either creates network traffic or something is done on the host itself.
+            - techniques: the technique(s) that caused this alert to be created (made a red action successful). It's probably a stretch for a detector to know what techniques the red agent is using. This is primarily used for determining the probability of the detector noticing the action. Should be filtered out.
+       
+        ### Network-based Data Components
+            - dst_hosts: the hosts the src_host is communicating with (possibly hosts being attacked)
+            - services: the services the hosts are communicating through (possibly services being targeted for an attack)
+            - src_ip: the IP of the source host. Also found in src_host, but is here for convenience
+            - dst_ips: the IPs of the destination hosts. Also found in each element of dst_hosts, but is here for convenience
+            - dst_ports: the ports of the services. Also found in services, but is here for convenience 
+        
+        ### Host-based Data Components
+        These components are related to the host's system itself, like the OS or user. This is rather abstract and unimplemented right now.
+            - user: username of the user who executed a command on the host. NOT IMPLEMENTED
+            - command: the command/file being executed. Could include things like syscalls and regular executables. NOT IMPLEMENTED
+            - files: additional files being accessed. I.e log files. NOT IMPLEMENTED
+            - other_resources: other resources used in an abnormal way that are specifically targeted by an action. I.e. a local database. NOT IMPLEMENTED
+            - os: the OS of the system. NOT IMPLEMENTED.
+            - os_version: version of the OS. NOT IMPLEMENTED. (Maybe this should be combined with os? But then you'd make logic based off of version require parsing of a string...)
+        """
+        
+        self.src_host = src_host
+        self.techniques = techniques # Use to determine probabilty of detection. This might actually end up being 1 technique.
 
-    def __init__(
-        self,
-        src_host: Host | None = None,
-        dst_hosts: List[Host] = [],
-        services: List[Service] = [],
-    ):
-        self.src_host: Host | None = src_host
-        self.dst_hosts: List[Host] = dst_hosts
-        self.services: List[Service] = services
+        self.dst_hosts = dst_hosts
+        self.services = services
+        self.src_ip = src_host.ip_address
+        self.dst_ips = [h.ip_address for h in dst_hosts]
+        self.dst_ports = [s.port for s in services]
 
-        self.src_ip: IPAddress = src_host.ip_address
-        self.dst_ips: List[IPAddress] = [h.ip_address for h in dst_hosts]
-        self.dst_ports: List[str] = [s.port for s in services]
+        self.user = user
+        self.command = command
+        self.files = files
+        self.other_resources = other_resources
+        self.os = os
+        self.os_version = os_version
 
-        self.techniques = techniques # Use to determine probabilty of detection
         
 
     def add_dst_host(self, host: Host) -> None:

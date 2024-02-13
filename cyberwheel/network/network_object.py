@@ -1,6 +1,6 @@
 import ipaddress as ipa
 from pydantic import BaseModel
-from typing import Generator
+from typing import Generator, List
 
 
 class Route(BaseModel):

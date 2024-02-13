@@ -343,7 +343,6 @@ class Network:
         return open_ports
 
 
-    # TODO: should this be defined in the red actions?
     def ping_sweep_subnet(self, src: Host, subnet: Subnet) -> list:
         '''
         Attempts to ping all hosts on a subnet
@@ -351,11 +350,11 @@ class Network:
         Hosts are only visible to ping if ICMP is allowed by the firewall(s).
         '''
         subnet_hosts = self.get_all_hosts_on_subnet(subnet)
-        found_hosts = []
+        found_ips = []
         for host in subnet_hosts:
             if self.is_traffic_allowed(src, host, None, 'icmp'):
-                found_hosts.append(host)
-        return found_hosts
+                found_ips.append(host.ip_address)
+        return found_ips
 
 
     def is_traffic_allowed(self,
@@ -369,7 +368,7 @@ class Network:
         :param str NetworkObject: source subnet or host of traffic
         :param str NetworkObject: destination subnet or host of traffic
         :param int port: destination port
-        :param str proto: protocol (i.e. tcp/udp, default = tcp)
+        :param str proto: protocol (i.e. tcp/udp/icmp, default = tcp)
         '''
         # ICMP doesn't use ports (it's considered layer 3)
         if proto.lower() == 'icmp':

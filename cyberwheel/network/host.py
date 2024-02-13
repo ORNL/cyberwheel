@@ -1,5 +1,6 @@
 import ipaddress as ipa
 import json
+import random
 from typing import Union
 from .network_object import NetworkObject
 from .service import Service
@@ -40,6 +41,16 @@ class Host(NetworkObject):
         self.is_compromised = False  # Default to not compromised
         self.services = kwargs.get('services', [])
         self.dns_server = kwargs.get('dns_server')
+        self.mac_address = self._generate_mac_address()
+
+
+    def _generate_mac_address(self):
+        def _generate_hextet() -> str:
+            return '{:02x}'.format(random.randint(0,255))
+        mac_prefix = '46:6f:6f'
+        return mac_prefix + ':{}:{}:{}'.format(_generate_hextet(),
+                                               _generate_hextet(),
+                                               _generate_hextet())
 
     def set_ip(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
         '''
@@ -118,3 +129,6 @@ class Host(NetworkObject):
         if self.name == __value.name:
             return True
         return False
+
+    def get_routes(self):
+        pass

@@ -1,8 +1,10 @@
-from typing import List, Dict
+from ipaddress import IPv4Address, IPv6Address
+from typing import List, Dict, Union
 from copy import deepcopy
 from cyberwheel.network.host import Host
 from cyberwheel.network.service import Service
 
+IPAddress = Union[IPv4Address, IPv6Address, None]
 
 # TODO Needs to be updated as the network implementation changes.
 class Alert:
@@ -18,14 +20,26 @@ class Alert:
         self.dst_hosts: List[Host] = dst_hosts
         self.services: List[Service] = services
 
+        self.src_ip: IPAddress = src_host.ip_address
+        self.dst_ips: List[IPAddress] = [h.ip_address for h in dst_hosts]
+        self.dst_ports: List[str] = [s.port for s in services]
+
+        self.techniques = techniques # Use to determine probabilty of detection
+        
+
     def add_dst_host(self, host: Host) -> None:
         self.dst_hosts.append(host)
+        self.dst_ips.append(host.ip_address)
 
     def add_src_host(self, host: Host) -> None:
         self.src_host = host
 
     def add_service(self, service: Service) -> None:
         self.services.append(service)
+        self.dst_ports.append(service.port)
+
+    def remove_src_host(self) -> None:
+        self.src_host = None
 
     def remove_dst_host(self, host: Host) -> None:
         if host in self.dst_hosts:

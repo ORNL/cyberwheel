@@ -1,5 +1,6 @@
+from __future__ import annotations
 from ipaddress import IPv4Address, IPv6Address
-from typing import List, Dict, Union
+from typing import Any, List, Dict, Union
 from copy import deepcopy
 from cyberwheel.network.host import Host
 from cyberwheel.network.service import Service
@@ -9,8 +10,8 @@ IPAddress = Union[IPv4Address, IPv6Address, None]
 # NOTE Consider making an Alert base class with src_host and technique member variables and then inherit to make alerts for network/host
 class Alert():
     FIELD_NAMES = set(['src_host', 'dst_hosts', 'services'])
-    def __init__(self, src_host: Host = None, techniques: List[Technique]=[], dst_hosts: List[Host] = [], services: List[Service]=[],
-                 user: str="", command: str="", files: List[any]=[], other_resources: Dict[str, any]={}, os: str="", os_version: str=""):
+    def __init__(self, src_host: Union[None, Host] = None, techniques: List[Technique]=[], dst_hosts: List[Host] = [], services: List[Service]=[],
+                 user: str="", command: str="", files: List[Any]=[], other_resources: Dict[str, Any]={}, os: str="", os_version: str=""):
         """
         A class for holding information on actions made by a non-blue agent. (Maybe we'll do a green agent at some point?)
         ### Generic
@@ -40,7 +41,7 @@ class Alert():
 
         self.dst_hosts = dst_hosts
         self.services = services
-        self.src_ip = src_host.ip_address
+        self.src_ip = src_host.ip_address if src_host is not None else None
         self.dst_ips = [h.ip_address for h in dst_hosts]
         self.dst_ports = [s.port for s in services]
 
@@ -83,14 +84,15 @@ class Alert():
         return d
 
     def __eq__(self, __value: object) -> bool:
-        assert isinstance(__value, Alert)
-        src_host = True if self.src_host == __value.src_host else False
-        dst_hosts = True if len(self.dst_hosts) == len(__value.dst_hosts) else False
+        if not isinstance(__value, Alert):
+            return False
+        src_host = self.src_host == __value.src_host
+        dst_hosts = len(self.dst_hosts) == len(__value.dst_hosts)
         if dst_hosts:
             for host in self.dst_hosts:
                 if host not in __value.dst_hosts:
                     dst_hosts = False
-        services = True if len(self.services) == len(__value.services) else False
+        services = len(self.services) == len(__value.services)
         if services:
             for service in self.services:
                 if service not in __value.services:

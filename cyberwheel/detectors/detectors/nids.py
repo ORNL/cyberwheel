@@ -10,7 +10,7 @@ class NIDSDetector(Detector):
         self.network = network
         self.technique_probabilites = read_detector_yaml('resources/configs/nids_detector.yaml')
 
-    def obs(self, perfect_alert: Alert) -> Iterable[Alert]: 
+    def obs(self, perfect_alert: Alert) -> Iterable[Alert]:
         alerts = []
         
         for dst in perfect_alert.dst_hosts:
@@ -36,4 +36,4 @@ class NIDSDetector(Detector):
     
             new_alert = Alert(src_host=perfect_alert.src_host, dst_hosts=[dst], services=perfect_alert.services)
             alerts.append(new_alert)
-            return alerts
+        return alerts

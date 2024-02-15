@@ -28,12 +28,12 @@ class Alert():
         
         ### Host-based Data Components
         These components are related to the host's system itself, like the OS or user. This is rather abstract and unimplemented right now.
-            - user: username of the user who executed a command on the host. NOT IMPLEMENTED
-            - command: the command/file being executed. Could include things like syscalls and regular executables. NOT IMPLEMENTED
-            - files: additional files being accessed. I.e log files. NOT IMPLEMENTED
-            - other_resources: other resources used in an abnormal way that are specifically targeted by an action. I.e. a local database. NOT IMPLEMENTED
-            - os: the OS of the system. NOT IMPLEMENTED.
-            - os_version: version of the OS. NOT IMPLEMENTED. (Maybe this should be combined with os? But then you'd make logic based off of version require parsing of a string...)
+            - user: username of the user who executed a command on the host.
+            - command: the command/file being executed. Could include things like syscalls and regular executables
+            - files: additional files being accessed. I.e log files
+            - other_resources: other resources used in an abnormal way that are specifically targeted by an action. I.e. a local database
+            - os: the OS of the system
+            - os_version: version of the OS. (Maybe this should be combined with os? But then you'd make logic based off of version require parsing of a string...)
         """
         
         self.src_host = src_host
@@ -41,9 +41,16 @@ class Alert():
 
         self.dst_hosts = dst_hosts
         self.services = services
+<<<<<<< HEAD
         self.src_ip = src_host.ip_address if src_host is not None else None
         self.dst_ips = [h.ip_address for h in dst_hosts]
         self.dst_ports = [s.port for s in services]
+=======
+
+        if self.src_host is not None: self.src_ip = self.src_host.ip_address
+        if self.dst_hosts is not None: self.dst_ips = [h.ip_address for h in self.dst_hosts]
+        if self.services is not None: self.dst_ports = [s.port for s in self.services]
+>>>>>>> bd85256 (start hids-based detector)
 
         self.user = user
         self.command = command

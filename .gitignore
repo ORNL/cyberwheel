@@ -3,6 +3,7 @@ monitor_logs/
 monitor_vecenv_logs/
 networkx_graph.png
 .vscode
+cyberwheel/resources/tmp
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python

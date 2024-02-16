@@ -1,7 +1,0 @@
-networkx
-ipaddress
-gymnasium
-stable-baselines3
-pyattck
-pettingzoo
-ray[rllib]

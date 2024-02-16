@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "cyberwheel"
+version = "0.1.0"
+description = "A simulation environment for training autonomous cyber defense agents based on the Mitre Att&ck framework."
+authors = ["Sean Oesch <oeschts@ornl.gov>", "Cory Watson <watsoncl1@ornl.gov>", "Amul Chaulagain <chaulagaina@ornl.gov>", "Matthew Dixson <dixsonmk@ornl.gov>", "Brian Weber <weberb@ornl.gov>"]
+license = "TBD"
+readme = "README.md"
+classifiers = ["Private :: Do not Upload"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+networkx = "^3.2.1"
+ipaddress = "^1.0.23"
+stable-baselines3 = "^2.2.1"
+pyattck = "^7.1.2"
+pettingzoo = "^1.24.3"
+ray = {extras = ["rllib"], version = "^2.9.2"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

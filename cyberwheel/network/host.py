@@ -42,6 +42,8 @@ class Host(NetworkObject):
         self.services = kwargs.get('services', [])
         self.dns_server = kwargs.get('dns_server')
         self.mac_address = self._generate_mac_address()
+        self.default_route = None
+        self.routes = []
 
 
     def _generate_mac_address(self):
@@ -130,5 +132,54 @@ class Host(NetworkObject):
             return True
         return False
 
-    def get_routes(self):
-        pass
+    # TODO: make this work for IPv6 as well
+    def get_routing_table(self):
+        routes = self.routes
+        slash_zero_net = ipa.ip_network('0.0.0.0/0')
+        routes.append({'dest': slash_zero_net, 'via': self.default_route})
+        return routes
+
+
+    def add_route(self,
+                  dest: Union[ipa.IPv4Network, ipa.IPv6Network],
+                  via: Union[ipa.IPv4Address, ipa.IPv6Address]):
+        self.routes.append({'dest': dest, 'via': via})
+
+
+    def add_routes(self, routes: list[dict]):
+        for route in routes:
+            # making sure 'dest' and 'via' are network and ip objects respectively
+            if not isinstance(route['dest'], Union[ipa.IPv4Network, ipa.IPv6Network]):
+                dest = self.generate_ip_network_object(route['dest'])
+            else:
+                dest = route['dest']
+            if not isinstance(route['via'], Union[ipa.IPv4Address, ipa.IPv6Address]):
+                via = self.generate_ip_object(route['via'])
+            else:
+                via = route['via']
+
+            self.add_route(dest, via)
+
+
+    def get_nexthop_from_routes(self,
+                                dest_ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
+        for route in self.routes:
+            if dest_ip in route['dest'].hosts():
+                return route['via']
+        return self.default_route
+
+
+    def generate_ip_object(self, ip: str) -> Union[ipa.IPv4Address, ipa.IPv6Address]:
+        try:
+            return ipa.ip_address(ip)
+        except ValueError as e:
+            # TODO: raise custom exception here?
+            raise e
+
+
+    def generate_ip_network_object(self, net: str) -> Union[ipa.IPv4Network, ipa.IPv6Network]:
+        try:
+            return ipa.ip_network(net)
+        except ValueError as e:
+            # TODO: raise custom exception here?
+            raise e

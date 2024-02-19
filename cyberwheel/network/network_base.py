@@ -217,7 +217,7 @@ class Network:
             # instantiate subnets for this router
             for key, val in config['subnets'].items():
                 subnet = Subnet(key,
-                                val.get('default_route',''),
+                                val.get('default_route', None),
                                 val.get('ip_range', ''),
                                 router,
                                 val.get('firewall', []),
@@ -255,6 +255,8 @@ class Network:
                         # get next IP from subnet
                         #host.set_ip(subnet.get_dhcp_lease())
                         host.get_dhcp_lease()
+                        if val.get('routes'):
+                            host.add_routes(val.get('routes'))
 
         return network
 
@@ -271,15 +273,6 @@ class Network:
         except KeyError as e:
             # TODO: raise custom exception? return None?
             print(f'{node} not found in {self.name}')
-            raise e
-
-
-    def get_host_from_name(self, host: str) -> Host:
-        try:
-            return self.graph.nodes[host]['data']
-        except KeyError as e:
-            # TODO: raise custom exception? return None?
-            print(f'{host} not found in {self.name}')
             raise e
 
 

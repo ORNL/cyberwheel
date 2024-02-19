@@ -7,7 +7,7 @@ class Router(NetworkObject):
     def __init__(self, name, default_route=None, routes=[], firewall_rules=[]):
         '''
         :param str name: name of router
-        :param str default_route: name of router that provides default route
+        :param (ip_address | None) default_route: IP object of default route
         :param list[str] routes: additional routes in the routing table
                 (abstracted to router or subnet names)
         :param list[dict] firewall_rules: list offirewall rules (emtpy rules = allow all)

@@ -32,8 +32,15 @@ class Subnet(NetworkObject):
         :param (IPv4Address | IPv6Address] **dns_server: default DNS server for subnet
         '''
         super().__init__(name, firewall_rules)
-        self.default_route = default_route
-        #self.network = ipa.IPv4Network(f"{ip_range}", strict=False)
+        # default route
+        try:
+            if default_route is not None:
+                self.default_route = ipa.ip_address(default_route)
+        except ValueError as e:
+            print(f'default route ({default_route}) does not represent a valid IP address')
+            raise e
+
+        # ip range of subnet
         try:
             # this should allow IPv4 or IPv6
             self.ip_network = ipa.ip_network(f"{ip_range}", strict=False)
@@ -43,6 +50,7 @@ class Subnet(NetworkObject):
         self.available_ips = [ip for ip in self.ip_network.hosts()]
         self.connected_hosts = []
         self.router = router
+
         dns_server = kwargs.get('dns_server')
         if dns_server:
             try:
@@ -93,6 +101,9 @@ class Subnet(NetworkObject):
         # assign IP and DNS server
         host_obj.set_ip(ip_lease)
         host_obj.set_dns(self.dns_server)
+        # assign default route if not already set
+        if host_obj.default_route is None:
+            host_obj.default_route = self.default_route
 
 
     def get_connected_hosts(self) -> list:

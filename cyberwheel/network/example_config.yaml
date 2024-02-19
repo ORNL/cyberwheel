@@ -67,7 +67,7 @@ routers:
 # Subnets
 subnets:
   user_subnet:
-    default_route: core_router
+    default_route: 192.168.0.1
     ip_range: 192.168.0.0/24
     dns_server: 192.168.0.1
     firewall:
@@ -84,7 +84,7 @@ subnets:
       - src: internet
 
   server_subnet:
-    default_route: core_router
+    default_route: 192.168.1.1
     ip_range: 192.168.1.0/24
     firewall:
       # allow admin_workstation to anything in server_subnet
@@ -107,7 +107,7 @@ subnets:
 
 
   dmz_subnet:
-    default_route: core_router
+    default_route: 192.168.2.1
     ip_range: 192.168.2.0/24
     #firewall:
     #  # implicit 'allow all' from user_subnet
@@ -137,6 +137,9 @@ hosts:
     type: User Workstation
     subnet: user_subnet
     firewall:  # if firewall is undefined or empty assume 'allow all'
+    routes:
+      - dest: 192.168.0.0/24
+        via: 192.168.0.1
   user02:
     type: User Workstation
     subnet: user_subnet

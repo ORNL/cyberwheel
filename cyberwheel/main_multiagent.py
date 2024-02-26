@@ -1,10 +1,11 @@
-'''
-In PettingZoo, independent multi-agent mode refers to a mode where each agent acts independently of the others. 
-In this mode, each agent has its own observation space and action space, and makes decisions based on its own observations, 
+"""
+In PettingZoo, independent multi-agent mode refers to a mode where each agent acts independently of the others.
+In this mode, each agent has its own observation space and action space, and makes decisions based on its own observations,
 without any direct communication or coordination with other agents.
 
 https://github.com/ray-project/ray/blob/master/rllib/examples/multi_agent_independent_learning.py#L26
-'''
+"""
+
 from pettingzoo.test import parallel_api_test
 from cyberwheel_envs.cyberwheel_multiagent import MultiagentCyberwheel
 
@@ -12,7 +13,9 @@ import argparse
 from ray import air, tune
 from ray.tune.registry import register_env
 from ray.rllib.algorithms.ppo import PPOConfig
-from ray.rllib.env.wrappers.pettingzoo_env import ParallelPettingZooEnv # RLLib Wrapper for Parallel Petting Zoo Environments
+from ray.rllib.env.wrappers.pettingzoo_env import (
+    ParallelPettingZooEnv,
+)  # RLLib Wrapper for Parallel Petting Zoo Environments
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
 from ray.rllib.algorithms.ppo import PPO
 from ray.tune import CLIReporter
@@ -32,12 +35,14 @@ parser.add_argument(
     "sampled.",
 )
 
+
 class MyCallbacks(DefaultCallbacks):
     def on_train_result(self, *, algorithm, result: dict, **kwargs):
         result["custom_metrics"]["policy_reward_mean"] = {
             "blue_agent": result["policy_reward_mean"].get("blue_agent", np.nan),
             "red_agent": result["policy_reward_mean"].get("red_agent", np.nan),
         }
+
 
 if __name__ == "__main__":
     pzenv = MultiagentCyberwheel()
@@ -82,7 +87,7 @@ if __name__ == "__main__":
         # Print the mean reward for each agent
         for agent, reward in result["policy_reward_mean"].items():
             print(f"Mean reward for {agent}: {reward}")
-        
+
         print("Mean episode length: " + str(result["episode_len_mean"]))
 
     # tune.Tuner(

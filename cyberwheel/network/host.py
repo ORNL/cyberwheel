@@ -5,11 +5,13 @@ from typing import Union
 from .network_object import NetworkObject
 from .service import Service
 from .subnet import Subnet
-#from .router import Router
+
+# from .router import Router
+
 
 class Host(NetworkObject):
     def __init__(self, name, type, subnet: Subnet, firewall_rules=[], **kwargs):
-        '''
+        """
         :param str name: name of host
         :param str type: type of host
         :param Subnet subnet: subnet to be connected to
@@ -33,97 +35,95 @@ class Host(NetworkObject):
                 ]
         :param list[Service] **services: list of services
         :param (IPv4Address | IPv6Address) **dns_server: IP of DNS server
-        '''
+        """
         super().__init__(name, firewall_rules)
         self.type = type
         self.subnet = subnet
         self.ip_address = None
         self.is_compromised = False  # Default to not compromised
-        self.services = kwargs.get('services', [])
-        self.dns_server = kwargs.get('dns_server')
+        self.services = kwargs.get("services", [])
+        self.dns_server = kwargs.get("dns_server")
         self.mac_address = self._generate_mac_address()
         self.default_route = None
         self.routes = []
 
-
     def _generate_mac_address(self):
         def _generate_hextet() -> str:
-            return '{:02x}'.format(random.randint(0,255))
-        mac_prefix = '46:6f:6f'
-        return mac_prefix + ':{}:{}:{}'.format(_generate_hextet(),
-                                               _generate_hextet(),
-                                               _generate_hextet())
+            return "{:02x}".format(random.randint(0, 255))
+
+        mac_prefix = "46:6f:6f"
+        return mac_prefix + ":{}:{}:{}".format(
+            _generate_hextet(), _generate_hextet(), _generate_hextet()
+        )
 
     def set_ip(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
-        '''
+        """
         Manually set IP address of host
 
         :param (IPv4Address | IPv6Address) ip: IP object
-        '''
+        """
         self.ip_address = ip
 
     def set_dns(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
-        '''
+        """
         Manually set IP address of host
 
         :param (IPv4Address | IPv6Address) ip: IP object
-        '''
+        """
         self.dns_server = ip
-
 
     def get_dhcp_lease(self):
         # this also assigns the host's DNS server
         self.subnet.assign_dhcp_lease(self)
 
-
     def define_services(self, services: list[Service]):
         self.services = services
-
 
     def define_services_from_host_type(self, host_types_file=None):
         # TODO: not sure the best way to handle relative files here...
         if host_types_file is None:
-            host_types_file = 'resources/metadata/host_definitions.json'
+            host_types_file = "resources/metadata/host_definitions.json"
         # load host type definitions
         with open(host_types_file) as f:
             data = json.load(f)
 
         # create instace of each Service()
-        for host_type in data.get('host_types'):
-            defined_type = host_type.get('type')
+        for host_type in data.get("host_types"):
+            defined_type = host_type.get("type")
             if self.type == defined_type.lower():
-                for service in defined_type.get('services'):
-                    self.services.append(Service(service.get('name'),
-                                         service.get('port'),
-                                         service.get('protocol'),
-                                         service.get('version'),
-                                         service.get('vulnerabilities'))
-                                        )
-
+                for service in defined_type.get("services"):
+                    self.services.append(
+                        Service(
+                            service.get("name"),
+                            service.get("port"),
+                            service.get("protocol"),
+                            service.get("version"),
+                            service.get("vulnerabilities"),
+                        )
+                    )
 
     def get_services(self) -> Union[list[Service], list]:
         return self.services
 
-
-    def add_service(self, name: str, port: int, protocol='tcp', version=None, vulns=[]):
-        '''
+    def add_service(self, name: str, port: int, protocol="tcp", version=None, vulns=[]):
+        """
         Adds a service to the defined services list for a host
-        '''
+        """
         service = Service(name, port, protocol, version, vulns)
         self.services.append(service)
 
-
     def remove_service(self, service_name: str):
-        '''
+        """
         Removes an existing service from defined services for host
 
         :param str service_name: name of existing fw rule
-        '''
+        """
         # iterate over existing services and discard if service.name equals
         # the service_name param
-        updated_services = [service for service in self.services if 
-                service.name != service_name]
-        
+        updated_services = [
+            service for service in self.services if service.name != service_name
+        ]
+
         # update services
         self.services = updated_services
 
@@ -135,39 +135,36 @@ class Host(NetworkObject):
     # TODO: make this work for IPv6 as well
     def get_routing_table(self):
         routes = self.routes
-        slash_zero_net = ipa.ip_network('0.0.0.0/0')
-        routes.append({'dest': slash_zero_net, 'via': self.default_route})
+        slash_zero_net = ipa.ip_network("0.0.0.0/0")
+        routes.append({"dest": slash_zero_net, "via": self.default_route})
         return routes
 
-
-    def add_route(self,
-                  dest: Union[ipa.IPv4Network, ipa.IPv6Network],
-                  via: Union[ipa.IPv4Address, ipa.IPv6Address]):
-        self.routes.append({'dest': dest, 'via': via})
-
+    def add_route(
+        self,
+        dest: Union[ipa.IPv4Network, ipa.IPv6Network],
+        via: Union[ipa.IPv4Address, ipa.IPv6Address],
+    ):
+        self.routes.append({"dest": dest, "via": via})
 
     def add_routes(self, routes: list[dict]):
         for route in routes:
             # making sure 'dest' and 'via' are network and ip objects respectively
-            if not isinstance(route['dest'], Union[ipa.IPv4Network, ipa.IPv6Network]):
-                dest = self.generate_ip_network_object(route['dest'])
+            if not isinstance(route["dest"], Union[ipa.IPv4Network, ipa.IPv6Network]):
+                dest = self.generate_ip_network_object(route["dest"])
             else:
-                dest = route['dest']
-            if not isinstance(route['via'], Union[ipa.IPv4Address, ipa.IPv6Address]):
-                via = self.generate_ip_object(route['via'])
+                dest = route["dest"]
+            if not isinstance(route["via"], Union[ipa.IPv4Address, ipa.IPv6Address]):
+                via = self.generate_ip_object(route["via"])
             else:
-                via = route['via']
+                via = route["via"]
 
             self.add_route(dest, via)
 
-
-    def get_nexthop_from_routes(self,
-                                dest_ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
+    def get_nexthop_from_routes(self, dest_ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
         for route in self.routes:
-            if dest_ip in route['dest'].hosts():
-                return route['via']
+            if dest_ip in route["dest"].hosts():
+                return route["via"]
         return self.default_route
-
 
     def generate_ip_object(self, ip: str) -> Union[ipa.IPv4Address, ipa.IPv6Address]:
         try:
@@ -176,8 +173,9 @@ class Host(NetworkObject):
             # TODO: raise custom exception here?
             raise e
 
-
-    def generate_ip_network_object(self, net: str) -> Union[ipa.IPv4Network, ipa.IPv6Network]:
+    def generate_ip_network_object(
+        self, net: str
+    ) -> Union[ipa.IPv4Network, ipa.IPv6Network]:
         try:
             return ipa.ip_network(net)
         except ValueError as e:

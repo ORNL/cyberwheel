@@ -1,5 +1,6 @@
 from Technique import Technique
 import sys
+
 sys.path.append("/Users/67x/cyberwheel/")
 from red_actions.actions.killchain_phases import InitialAccess, Execution, Persistence
 from pprint import pprint, pformat

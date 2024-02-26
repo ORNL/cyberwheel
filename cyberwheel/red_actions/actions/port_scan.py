@@ -1,13 +1,27 @@
 from typing import List
 
-from red_actions.red_base import RedAction, RedActionResults, validate_attack, check_vulnerability, targets
+from red_actions.red_base import (
+    RedAction,
+    RedActionResults,
+    validate_attack,
+    check_vulnerability,
+    targets,
+)
 from red_actions.Technique import Technique
 from network.host import Host
 from network.service import Service
 
+
 class PortScan(RedAction):
     name = "PortScan"
-    def __init__(self, src_host: Host, target_service: Service, target_hosts: targets, techniques: List[Technique]) -> None:
+
+    def __init__(
+        self,
+        src_host: Host,
+        target_service: Service,
+        target_hosts: targets,
+        techniques: List[Technique],
+    ) -> None:
         super().__init__(src_host, target_service, target_hosts, techniques)
 
     def sim_execute(self) -> RedActionResults:

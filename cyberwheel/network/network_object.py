@@ -1,7 +1,8 @@
 class NetworkObject:
-    '''
+    """
     Base class for host, subnet, and router objects
-    '''
+    """
+
     def __init__(self, name, firewall_rules=[]):
         self.name = name
         # default to 'allow all' if no rules defined
@@ -9,17 +10,18 @@ class NetworkObject:
         ### but seemed pragmatic in our case
         self.firewall_rules = self._generate_implied_allow_rules(firewall_rules)
 
-
     def _generate_implied_allow_rules(self, rules):
         # if no rules are defined, add an 'allow all' rule
         if rules is None or rules == []:
             implied_rules = []
-            allow_all_rule = {'name': 'allow all',
-                              'src': 'all',
-                              'dest': 'all',
-                              'port': 'all',
-                              'proto': 'all',
-                              'desc': 'auto generated allow-all rule"'}
+            allow_all_rule = {
+                "name": "allow all",
+                "src": "all",
+                "dest": "all",
+                "port": "all",
+                "proto": "all",
+                "desc": 'auto generated allow-all rule"',
+            }
 
             implied_rules.append(allow_all_rule)
             return implied_rules
@@ -27,20 +29,19 @@ class NetworkObject:
         # if some rules are defined, populate any implied allows
         else:
             for rule in rules:
-                if 'src' not in rule:
-                    rule['src'] = 'all'
-                if 'dest' not in rule:
-                    rule['dest'] = 'all'
-                if 'proto' not in rule:
-                    rule['proto'] = 'all'
-                if 'port' not in rule:
-                    rule['port'] = 'all'
+                if "src" not in rule:
+                    rule["src"] = "all"
+                if "dest" not in rule:
+                    rule["dest"] = "all"
+                if "proto" not in rule:
+                    rule["proto"] = "all"
+                if "port" not in rule:
+                    rule["port"] = "all"
 
             return rules
 
-
     def add_firewall_rules(self, rules: list[dict]):
-        '''
+        """
         Adds new firewall rule(s)
 
         :param list[dict] rules: firewall rule(s)
@@ -72,21 +73,21 @@ class NetworkObject:
                         'desc': 'Allow pings from anywhere'
                     }
                 ]
-        '''
+        """
         self.firewall_rules.append(rules)
-
 
     # TODO: make rule_name case insensitive
     def remove_firewall_rule(self, rule_name: str):
-        '''
+        """
         Removes an existing firewall rule
 
         :param str rule_name: name of existing fw rule
-        '''
+        """
         # iterate over existing rules and discard rule if rule['name'] equals
         # the rule_name param
-        updated_rules = [rule for rule in self.firewall_rules if
-                rule.get('name') != rule_name]
+        updated_rules = [
+            rule for rule in self.firewall_rules if rule.get("name") != rule_name
+        ]
 
         # update firewall rules
         self.firewall_rules = updated_rules

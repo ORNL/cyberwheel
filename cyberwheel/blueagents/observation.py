@@ -7,26 +7,31 @@ from network.host import Host
 from detectors.alert import Alert
 
 
-# 
-class AlertsConversion():
+#
+class AlertsConversion:
     """
     A base class for converting from detector produced alerts to blue observations.
-    Hopefully, this can be used to create different observation vectors easily. 
+    Hopefully, this can be used to create different observation vectors easily.
     """
+
     @abstractmethod
-    def create_obs_vector(self, alerts: Iterable[Alert])-> Iterable:
+    def create_obs_vector(self, alerts: Iterable[Alert]) -> Iterable:
         """create_obs_vector() maps alerts to the blue observation space represented by a vector"""
         pass
-    
-    def set_network(self, network: Network)-> None:
+
+    def set_network(self, network: Network) -> None:
         self.network = network
+
 
 class TestObservation(AlertsConversion):
     def create_obs_vector(self, alerts: Iterable) -> Iterable:
-        num_hosts = sum(isinstance(data_object, Host) for _, data_object in self.network.graph.nodes(data='data'))
+        num_hosts = sum(
+            isinstance(data_object, Host)
+            for _, data_object in self.network.graph.nodes(data="data")
+        )
         observation_vector = np.zeros(num_hosts, dtype=np.int8)
         index = 0
-        for _, data_object in self.network.graph.nodes(data='data'):
+        for _, data_object in self.network.graph.nodes(data="data"):
             if not isinstance(data_object, Host):
                 continue
             for alert in alerts:

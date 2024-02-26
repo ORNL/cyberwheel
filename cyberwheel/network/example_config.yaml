@@ -187,4 +187,3 @@ hosts:
     firewall:
       - name: allow SSH
         port: 22
-

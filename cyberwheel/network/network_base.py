@@ -12,9 +12,10 @@ from .subnet import Subnet
 from .host import Host
 from .router import Router
 
+
 class Network:
 
-    def __init__(self, name=''):
+    def __init__(self, name=""):
         self.graph = nx.Graph(name=name)
         self.name = name
 
@@ -36,19 +37,19 @@ class Network:
     def connect_nodes(self, node1, node2):
         self.graph.add_edge(node1, node2)
 
-    #def define_routing_rules(self, router, routes):
+    # def define_routing_rules(self, router, routes):
     #    if router.name in self.graph.nodes:
     #        data_object = self.graph.nodes[router.name]['data']
     #        if isinstance(data_object, Router):
     #            data_object.routes = routes
 
-    #def define_firewall_rules(self, router, firewall_rules):
+    # def define_firewall_rules(self, router, firewall_rules):
     #    if router.name in self.graph.nodes:
     #        data_object = self.graph.nodes[router.name]['data']
     #        if isinstance(data_object, Router):
     #            data_object.firewall_rules = firewall_rules
 
-    #def define_host_firewall_rules(self, host, firewall_rules):
+    # def define_host_firewall_rules(self, host, firewall_rules):
     #    if host.name in self.graph.nodes:
     #        data_object = self.graph.nodes[host.name]['data']
     #        if isinstance(data_object, Host):
@@ -60,23 +61,27 @@ class Network:
     def get_random_host(self):
         all_hosts = self.get_all_hosts()
         return random.choice(all_hosts)
-    
+
     def get_hosts(self):
-        return [data_object for node_name, data_object in self.graph.nodes(data='data') if isinstance(data_object, Host)]
+        return [
+            data_object
+            for node_name, data_object in self.graph.nodes(data="data")
+            if isinstance(data_object, Host)
+        ]
 
     def update_host_compromised_status(self, host: str, is_compromised: bool):
         try:
             host_obj: Host = self.get_host_from_name(host)
             host_obj.is_compromised = is_compromised
         except KeyError:
-            return None # return None if host not found
+            return None  # return None if host not found
 
     def check_compromised_status(self, host_name: str) -> Union[bool, None]:
         try:
             host_obj: Host = self.get_host_from_name(host_name)
             return host_obj.is_compromised
         except KeyError:
-            return None # return None if host not found
+            return None  # return None if host not found
 
     # TODO - This method is not working properly
     def find_path_between_hosts(self, source_host, target_host):
@@ -85,13 +90,13 @@ class Network:
 
         try:
             return nx.shortest_path(self.graph, source=source_host, target=target_host)
-            #shortest_path = nx.shortest_path(self.graph, source=source_host, target=target_host)
+            # shortest_path = nx.shortest_path(self.graph, source=source_host, target=target_host)
             ##shortest_path = [item for item in shortest_path if "Router" not in item]
 
             ## Replace subnet names with host names on those subnets
-            #new_path = []
+            # new_path = []
 
-            #for node in shortest_path:
+            # for node in shortest_path:
             #    if isinstance(self.graph.nodes[node]['data'], Subnet):
             #    #if node.startswith('Subnet'):
             #        subnet_name = node
@@ -110,7 +115,7 @@ class Network:
             #        # Keep non-subnet nodes unchanged
             #        new_path.append(node)
 
-            #return new_path
+            # return new_path
         except:
             return None
 
@@ -146,7 +151,7 @@ class Network:
     def get_action_space_size(self):
         # TODO: could we just `return len(self.get_all_hosts())` here?
         n = 1  # do nothing action
-        for _, data_object in self.graph.nodes(data='data'):
+        for _, data_object in self.graph.nodes(data="data"):
             if isinstance(data_object, Host):
                 n += 1
         return n
@@ -154,7 +159,7 @@ class Network:
     # TODO: still need to test this
     def is_any_subnet_fully_compromised(self):
         ## Iterate over all nodes in the graph
-        #for node_name, data_object in self.graph.nodes(data='data'):
+        # for node_name, data_object in self.graph.nodes(data='data'):
         #    # Check if the node is a Subnet
         #    if isinstance(data_object, Subnet):
         #        # Get all hosts connected to the subnet
@@ -173,11 +178,13 @@ class Network:
 
     # TODO: still need to test this
     def set_host_compromised(self, host_id, compromised):
-        #hosts = [data_object for node_name, data_object in self.graph.nodes(data='data') if isinstance(data_object, Host)]
+        # hosts = [data_object for node_name, data_object in self.graph.nodes(data='data') if isinstance(data_object, Host)]
         host_to_modify = self.get_host_from_name(host_id)
-        #host_to_modify = hosts[host_id]  # Adjust the index to match the list
+        # host_to_modify = hosts[host_id]  # Adjust the index to match the list
         current_state = host_to_modify.is_compromised
-        host_to_modify.is_compromised = compromised  # Set is_compromised to False for the selected host
+        host_to_modify.is_compromised = (
+            compromised  # Set is_compromised to False for the selected host
+        )
 
         host = self.get_host_from_name(host_id)
 
@@ -185,11 +192,20 @@ class Network:
 
     # For debugging to view the network being generated
     def draw(self, **kwargs):
-        labels: bool = kwargs.get('labels', False)
-        filename: str = kwargs.get('filename', 'networkx_graph.png')
+        labels: bool = kwargs.get("labels", False)
+        filename: str = kwargs.get("filename", "networkx_graph.png")
 
-        plt.clf() # clear
-        nx.draw(self.graph, with_labels=labels, node_color='skyblue', node_size=30, font_size=12, font_color='black', font_weight='bold', edge_color='black')
+        plt.clf()  # clear
+        nx.draw(
+            self.graph,
+            with_labels=labels,
+            node_color="skyblue",
+            node_size=30,
+            font_size=12,
+            font_color="black",
+            font_weight="bold",
+            edge_color="black",
+        )
 
         # Display the graph
         plt.savefig(filename, format="png")
@@ -197,31 +213,35 @@ class Network:
     @classmethod
     def create_network_from_yaml(cls, config_file_path):
         # Load the YAML config file
-        with open(config_file_path, 'r') as yaml_file:
+        with open(config_file_path, "r") as yaml_file:
             config = yaml.safe_load(yaml_file)
 
         # Create an instance of the Network class
-        network = cls(name=config['network'].get('name'))
+        network = cls(name=config["network"].get("name"))
 
         ## parse topology
         # parse routers
-        for key, val in config['routers'].items():
-            router = Router(key,
-                            # using '.get()' here in case default_route isn't defined
-                            val.get('default_route'),
-                            val.get('routes', []),
-                            val.get('firewall', []))
+        for key, val in config["routers"].items():
+            router = Router(
+                key,
+                # using '.get()' here in case default_route isn't defined
+                val.get("default_route"),
+                val.get("routes", []),
+                val.get("firewall", []),
+            )
             # add router to network graph
             network.add_router(router)
 
             # instantiate subnets for this router
-            for key, val in config['subnets'].items():
-                subnet = Subnet(key,
-                                val.get('default_route', None),
-                                val.get('ip_range', ''),
-                                router,
-                                val.get('firewall', []),
-                                dns_server=val.get('dns_server'))
+            for key, val in config["subnets"].items():
+                subnet = Subnet(
+                    key,
+                    val.get("default_route", None),
+                    val.get("ip_range", ""),
+                    router,
+                    val.get("firewall", []),
+                    dns_server=val.get("dns_server"),
+                )
                 # add subnet to network graph
                 network.add_subnet(subnet)
                 network.connect_nodes(subnet.name, router.name)
@@ -237,169 +257,167 @@ class Network:
                     subnet.set_dns_server(router_interface_ip)
 
                 # instantiate hosts for this subnet
-                for key, val in config['hosts'].items():
+                for key, val in config["hosts"].items():
 
                     # is host attached to this subnet?
-                    if val['subnet'] == subnet.name:
-                        host = Host(key,
-                                    val.get('type', ''),
-                                    subnet,
-                                    val.get('firewall', []),
-                                    services=val.get('services'),
-                                    dns_server=val.get('dns_server'))
+                    if val["subnet"] == subnet.name:
+                        host = Host(
+                            key,
+                            val.get("type", ""),
+                            subnet,
+                            val.get("firewall", []),
+                            services=val.get("services"),
+                            dns_server=val.get("dns_server"),
+                        )
 
                         # add host to network graph
                         network.add_host(host)
                         network.connect_nodes(host.name, subnet.name)
 
                         # get next IP from subnet
-                        #host.set_ip(subnet.get_dhcp_lease())
+                        # host.set_ip(subnet.get_dhcp_lease())
                         host.get_dhcp_lease()
-                        if val.get('routes'):
-                            host.add_routes(val.get('routes'))
+                        if val.get("routes"):
+                            host.add_routes(val.get("routes"))
 
         return network
 
-
     def get_node_from_name(self, node: str) -> NetworkObject:
-        '''
+        """
         Return network object by name
 
         :param str node: node.name of object
         :returns NetworkObject:
-        '''
+        """
         try:
-            return self.graph.nodes[node]['data']
+            return self.graph.nodes[node]["data"]
         except KeyError as e:
             # TODO: raise custom exception? return None?
-            print(f'{node} not found in {self.name}')
+            print(f"{node} not found in {self.name}")
             raise e
 
-
     def get_all_hosts(self) -> list:
-        nodes_tuple = self.graph.nodes(data='data')
+        nodes_tuple = self.graph.nodes(data="data")
         hosts = [obj for _, obj in nodes_tuple if isinstance(obj, Host)]
 
         return hosts
 
-
     def get_all_subnets(self) -> list:
-        nodes_tuple = self.graph.nodes(data='data')
+        nodes_tuple = self.graph.nodes(data="data")
         subnets = [obj for _, obj in nodes_tuple if isinstance(obj, Subnet)]
 
         return subnets
 
-
     def get_all_routers(self) -> list:
-        nodes_tuple = self.graph.nodes(data='data')
+        nodes_tuple = self.graph.nodes(data="data")
         routers = [obj for _, obj in nodes_tuple if isinstance(obj, Router)]
 
         return routers
 
-
     def get_all_hosts_on_subnet(self, subnet: Subnet) -> list:
         return subnet.get_connected_hosts()
 
-
     def _is_valid_port_number(self, port) -> bool:
-        '''
+        """
         Validates port number
-        '''
+        """
         if isinstance(port, str):
-            if port.lower() == 'all':
+            if port.lower() == "all":
                 return True
             port = int(port)
         if port > 65535 or port < 1:
             return False
         return True
 
-
     # TODO: should this be defined in the red actions?
     def scan_subnet(self, src: Host, subnet: Subnet) -> dict:
-        '''
+        """
         Scans a given subnet and returns found IPs and open ports
 
-        '''
+        """
         all_hosts = self.get_all_hosts_on_subnet(subnet)
         for host in all_hosts:
             pass
         found_hosts = {}
         return found_hosts
 
-
     # TODO: should this be defined in the red actions?
     def scan_host(self, src: Host, ip: str) -> list:
-        '''
+        """
         Scans a given host and returns open ports
-        '''
+        """
         open_ports = []
         return open_ports
 
-
     def ping_sweep_subnet(self, src: Host, subnet: Subnet) -> list:
-        '''
+        """
         Attempts to ping all hosts on a subnet
 
         Hosts are only visible to ping if ICMP is allowed by the firewall(s).
-        '''
+        """
         subnet_hosts = self.get_all_hosts_on_subnet(subnet)
         found_ips = []
         for host in subnet_hosts:
-            if self.is_traffic_allowed(src, host, None, 'icmp'):
+            if self.is_traffic_allowed(src, host, None, "icmp"):
                 found_ips.append(host.ip_address)
         return found_ips
 
-
-    def is_traffic_allowed(self,
-                           src: NetworkObject,
-                           dest: NetworkObject,
-                           port: Union[str, int, None],
-                           proto: str ='tcp') -> bool:
-        '''
+    def is_traffic_allowed(
+        self,
+        src: NetworkObject,
+        dest: NetworkObject,
+        port: Union[str, int, None],
+        proto: str = "tcp",
+    ) -> bool:
+        """
         Checks firewall to see if network traffic should be allowed
 
         :param str NetworkObject: source subnet or host of traffic
         :param str NetworkObject: destination subnet or host of traffic
         :param int port: destination port
         :param str proto: protocol (i.e. tcp/udp/icmp, default = tcp)
-        '''
+        """
         # ICMP doesn't use ports (it's considered layer 3)
-        if proto.lower() == 'icmp':
+        if proto.lower() == "icmp":
             pass
         elif not self._is_valid_port_number(port):
-            raise ValueError(f'{port} is not a valid port number')
+            raise ValueError(f"{port} is not a valid port number")
 
         def _does_src_match(src, rule: dict, type) -> bool:
-            if src.name == rule['src'] or rule['src'] == 'all':
+            if src.name == rule["src"] or rule["src"] == "all":
                 return True
-            if type == 'host':
-                if src.subnet.router.name == rule['src'] or \
-                        src.subnet.name == rule['src']:
+            if type == "host":
+                if (
+                    src.subnet.router.name == rule["src"]
+                    or src.subnet.name == rule["src"]
+                ):
                     return True
-            elif type == 'subnet':
-                if src.router.name == rule['src']:
+            elif type == "subnet":
+                if src.router.name == rule["src"]:
                     return True
             return False
 
         def _does_dest_match(dest, rule: dict, type) -> bool:
-            if dest.name == rule['dest'] or rule['dest'] == 'all':
+            if dest.name == rule["dest"] or rule["dest"] == "all":
                 return True
-            if type == 'host':
-                if dest.subnet.router.name == rule['dest'] or \
-                        dest.subnet.name == rule['dest']:
+            if type == "host":
+                if (
+                    dest.subnet.router.name == rule["dest"]
+                    or dest.subnet.name == rule["dest"]
+                ):
                     return True
-            elif type == 'subnet':
-                if dest.router.name == rule['dest']:
+            elif type == "subnet":
+                if dest.router.name == rule["dest"]:
                     return True
             return False
 
         def _does_port_match(port: str, rule: dict) -> bool:
-            if str(rule['port']) == port or str(rule['port']) == 'all':
+            if str(rule["port"]) == port or str(rule["port"]) == "all":
                 return True
             return False
 
         def _does_proto_match(proto: str, rule: dict) -> bool:
-            if rule['proto'] == proto or rule['proto'] == 'all':
+            if rule["proto"] == proto or rule["proto"] == "all":
                 return True
             return False
 
@@ -408,10 +426,10 @@ class Network:
             # default to 'allow all' if no rules defined
             ### this is antithetical to how firewalls work in the real world,
             ### but seemed pragmatic in our case
-            #try:
+            # try:
             #    if not dest.firewall_rules:
             #        return True
-            #except NameError:
+            # except NameError:
             #    return True
 
             # TODO: catch any common exceptions (KeyError, etc.)
@@ -441,30 +459,28 @@ class Network:
             subnet = dest.subnet
             router = subnet.router
             # check router fw
-            if not _check_rules(src, router, port, proto, 'host'):
+            if not _check_rules(src, router, port, proto, "host"):
                 return False
             # check subnet fw
-            if not _check_rules(src, subnet, port, proto, 'host'):
+            if not _check_rules(src, subnet, port, proto, "host"):
                 return False
             # check host fw
-            if not _check_rules(src, dest, port, proto, 'host'):
+            if not _check_rules(src, dest, port, proto, "host"):
                 return False
             return True
         elif isinstance(dest, Subnet):
             router = dest.router
             # check router fw
-            if not _check_rules(src, router, port, proto, 'subnet'):
+            if not _check_rules(src, router, port, proto, "subnet"):
                 return False
             # check subnet fw
-            if not _check_rules(src, dest, port, proto, 'subnet'):
+            if not _check_rules(src, dest, port, proto, "subnet"):
                 return False
             return True
         elif isinstance(dest, Router):
             # check router fw
-            if not _check_rules(src, dest, port, proto, 'router'):
+            if not _check_rules(src, dest, port, proto, "router"):
                 return False
             return True
 
         return False
-
-

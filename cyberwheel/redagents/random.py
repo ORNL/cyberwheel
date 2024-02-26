@@ -1,5 +1,6 @@
 import random
 
+
 class RandomRedAgent:
     def __init__(self, network):
         self.network = network

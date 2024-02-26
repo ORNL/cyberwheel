@@ -1,19 +1,21 @@
 from redbase import RedAgentBase
 from typing import Dict, List
 
+
 class ARTCampaign(RedAgentBase):
     """
     Class defining an ART Campaign. Acts as a tailor-made killchain with specific
     pre-defined MITRE Techniques rather than the general killchain phases.
     """
-    name : str
-    killchain : List[List[str]]
+
+    name: str
+    killchain: List[List[str]]
 
     def __init__(self, name, killchain):
         """
         - `name`: Name of ART Campaign
-        - `killchain`: 2-Dimensional List killchain[i][j], where 
-        killchain[i] determines a step in the killchain  and 
+        - `killchain`: 2-Dimensional List killchain[i][j], where
+        killchain[i] determines a step in the killchain  and
         killchain[i][j] defines the technique(s) to use in that step.
 
         Example:
@@ -27,6 +29,6 @@ class ARTCampaign(RedAgentBase):
         self.name = name
         self.killchain = killchain
         return NotImplementedError
-    
+
     def act(self):
         return NotImplementedError

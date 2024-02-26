@@ -5,9 +5,10 @@ from network.service import Service
 from detectors.alert import Alert
 from red_actions.red_base import PingSweep, RedActionResults
 
+
 class TestRedActionResult(unittest.TestCase):
     def setUp(self):
-        self.network = Network.create_network_from_yaml('network/example_config.yaml')
+        self.network = Network.create_network_from_yaml("network/example_config.yaml")
         self.action_result = RedActionResults()
         self.host = self.network.get_hosts()[0]
         self.service = self.host.services[0]
@@ -21,7 +22,7 @@ class TestRedActionResult(unittest.TestCase):
         self.alert.add_dst_host(self.host)
         self.action_result.modify_alert(self.host)
         self.assertEqual(self.action_result.detector_alert, self.alert)
-        
+
     def test_red_action_result_modify_alert_service(self):
         self.alert.add_service(self.service)
         self.action_result.modify_alert(self.service)
@@ -31,9 +32,10 @@ class TestRedActionResult(unittest.TestCase):
         self.action_result.add_successful_action(self.host)
         self.assertListEqual(self.action_result.attack_success, [self.host])
 
+
 class TestRedAction(unittest.TestCase):
     def setUp(self):
-        self.network = Network.create_network_from_yaml('network/example_config.yaml')
+        self.network = Network.create_network_from_yaml("network/example_config.yaml")
         self.host = self.network.get_hosts()[0]
         self.src_host = self.network.get_hosts()[1]
         self.service = self.host.services[0]
@@ -47,6 +49,7 @@ class TestRedAction(unittest.TestCase):
         true_result.modify_alert(self.host)
         true_result.modify_alert(self.service)
         self.assertEqual(action_result, true_result)
+
 
 if __name__ == "__main__":
     unittest.main()

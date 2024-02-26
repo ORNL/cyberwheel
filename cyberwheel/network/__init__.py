@@ -1,6 +1,1 @@
-from . import (network_base,
-               network_object,
-               router,
-               subnet,
-               host,
-               service)
+from . import network_base, network_object, router, subnet, host, service

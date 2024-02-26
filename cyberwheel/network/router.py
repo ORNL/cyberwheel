@@ -5,7 +5,7 @@ from .network_object import NetworkObject
 
 class Router(NetworkObject):
     def __init__(self, name, default_route=None, routes=[], firewall_rules=[]):
-        '''
+        """
         :param str name: name of router
         :param (ip_address | None) default_route: IP object of default route
         :param list[str] routes: additional routes in the routing table
@@ -28,28 +28,26 @@ class Router(NetworkObject):
                         'desc': 'Allow some_host to use foo service'
                     }
                 ]
-        '''
+        """
         super().__init__(name, firewall_rules)
         self.default_route = default_route
         self.routes = routes  # List of routes to other subnets or routers
         self.interfaces = {}
 
-
     def get_default_route(self):
         return self.default_route
-
 
     def get_routes(self):
         # should the default route be preppended to this list?
         routes = self.routes.append(self.default_route)
         return routes
 
-    
-    def set_interface_ip(self, interface_name: str, ip: Union[ipa.IPv4Address,ipa.IPv6Address]):
+    def set_interface_ip(
+        self, interface_name: str, ip: Union[ipa.IPv4Address, ipa.IPv6Address]
+    ):
         self.interfaces.update({interface_name: ip})
 
-
-    def get_interface_ip(self, interface_name: str) -> Union[ipa.IPv4Address, ipa.IPv6Address, None]:
+    def get_interface_ip(
+        self, interface_name: str
+    ) -> Union[ipa.IPv4Address, ipa.IPv6Address, None]:
         return self.interfaces.get(interface_name)
-
-

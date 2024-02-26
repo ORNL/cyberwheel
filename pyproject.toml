@@ -17,6 +17,10 @@ pettingzoo = "^1.24.3"
 ray = {extras = ["rllib"], version = "^2.9.2"}
 
 
+[tool.poetry.group.dev.dependencies]
+black = "^24.2.0"
+pre-commit = "^3.6.2"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

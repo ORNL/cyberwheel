@@ -5,9 +5,15 @@ from network.service import Service
 
 
 # TODO Needs to be updated as the network implementation changes.
-class Alert():
-    FIELD_NAMES = set(['src_host', 'dst_hosts', 'services'])
-    def __init__(self, src_host: Host = None, dst_hosts: List[Host] = [], services: List[Service]=[]):
+class Alert:
+    FIELD_NAMES = set(["src_host", "dst_hosts", "services"])
+
+    def __init__(
+        self,
+        src_host: Host = None,
+        dst_hosts: List[Host] = [],
+        services: List[Service] = [],
+    ):
         self.src_host: Host = src_host
         self.dst_hosts: List[Host] = dst_hosts
         self.services: List[Service] = services
@@ -21,18 +27,18 @@ class Alert():
     def remove_dst_host(self, host: Host) -> None:
         if host in self.dst_hosts:
             self.dst_hosts.remove(host)
-    
+
     def remove_service(self, service: Service) -> None:
-        if service  in self.services:
+        if service in self.services:
             self.services.remove(service)
 
-    def to_dict(self)-> Dict:
+    def to_dict(self) -> Dict:
         d = deepcopy(self.__dict__)
         for k in self.__dict__.keys():
             if k not in self.FIELD_NAMES:
                 d.pop(k)
         return d
-    
+
     def __eq__(self, __value: object) -> bool:
         src_host = True if self.src_host == __value.src_host else False
         dst_hosts = True if len(self.dst_hosts) == len(__value.dst_hosts) else False
@@ -47,8 +53,7 @@ class Alert():
                     services = False
         if src_host and dst_hosts and services:
             return True
-        return False 
-    
+        return False
+
     def __str__(self) -> str:
-        return f'Alert: dst_hst: {[str(h) for h in self.dst_hosts]}, services: {[str(s) for s in self.services]}'
-    
+        return f"Alert: dst_hst: {[str(h) for h in self.dst_hosts]}, services: {[str(s) for s in self.services]}"

@@ -1,6 +1,7 @@
 from pyattck import Attck
 import json
 
+
 def map_mitigations_to_techniques():
 
     count = 0
@@ -9,7 +10,7 @@ def map_mitigations_to_techniques():
         for component in technique.data_components:
             if component not in components:
                 components.append(component)
-        count+= 1
+        count += 1
 
     mapping = {}
     count = 0
@@ -23,6 +24,7 @@ def map_mitigations_to_techniques():
 
     return mapping
 
+
 def create_techniques_json():
     # Create an instance of the Attck class
     technique_to_mitigations = map_mitigations_to_techniques()
@@ -33,14 +35,22 @@ def create_techniques_json():
     # Iterate through all techniques and gather information
     for technique in attck.enterprise.techniques:
         technique_info = {
-            'name': technique.name,
-            'technique_id': technique.id,
-            'external_id': technique.external_references[0].external_id,
-            'data_components': [dc.name for dc in technique.data_components],
-            'kill_chain_phases': [phase.phase_name for phase in technique.kill_chain_phases],
-            'data_source_platforms': [source.platform for source in technique.data_sources],
-            'mitigations': technique_to_mitigations[technique.id] if technique.id in technique_to_mitigations else None,
-            'description': technique.description
+            "name": technique.name,
+            "technique_id": technique.id,
+            "external_id": technique.external_references[0].external_id,
+            "data_components": [dc.name for dc in technique.data_components],
+            "kill_chain_phases": [
+                phase.phase_name for phase in technique.kill_chain_phases
+            ],
+            "data_source_platforms": [
+                source.platform for source in technique.data_sources
+            ],
+            "mitigations": (
+                technique_to_mitigations[technique.id]
+                if technique.id in technique_to_mitigations
+                else None
+            ),
+            "description": technique.description,
         }
 
         techniques_info.append(technique_info)
@@ -49,10 +59,11 @@ def create_techniques_json():
     json_output = json.dumps(techniques_info, indent=2)
 
     # Write the JSON to a file
-    with open('all_techniques_info.json', 'w') as json_file:
+    with open("all_techniques_info.json", "w") as json_file:
         json_file.write(json_output)
 
     print("Technique information written to 'all_techniques_info.json'.")
+
 
 if __name__ == "__main__":
     attck = Attck()

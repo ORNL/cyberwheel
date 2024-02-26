@@ -3,9 +3,11 @@ import numpy as np
 import random
 from .redbase import *
 
-'''
+"""
 Selects a random host as the starting point and then chooses as target the host that is furthest away
-'''
+"""
+
+
 class LongestPathRedAgent(RedAgentBase):
 
     def __init__(self, network):
@@ -21,7 +23,13 @@ class LongestPathRedAgent(RedAgentBase):
 
         for node in path:
             if not self.network.check_compromised_status(node):
-                self.network.update_host_compromised_status(node, True)  # Set is_compromised to True
+                self.network.update_host_compromised_status(
+                    node, True
+                )  # Set is_compromised to True
                 break
 
-        return "owned" if all(self.network.check_compromised_status(n) for n in path) else None
+        return (
+            "owned"
+            if all(self.network.check_compromised_status(n) for n in path)
+            else None
+        )

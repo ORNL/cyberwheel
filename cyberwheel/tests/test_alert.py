@@ -7,22 +7,29 @@ from detectors.detector import PerfectDetector
 from network.network_base import Network
 from blueagents.observation import TestObservation
 
+
 class TestAlert(unittest.TestCase):
     def test_alert_to_dict(self):
-        self.maxDiff=None
+        self.maxDiff = None
         src_host = Host("Host1", "Workstation", None)
-        dst_hosts = [Host("Host2", "Workstation", None), Host("Host1", "Workstation", None), Host("Host1", "Printer", None)]
+        dst_hosts = [
+            Host("Host2", "Workstation", None),
+            Host("Host1", "Workstation", None),
+            Host("Host1", "Printer", None),
+        ]
         services = [Service("2", "0.0", "bar")]
         alert = Alert(src_host, dst_hosts, services)
-        t = {"src_host": src_host,
-             "dst_hosts": dst_hosts,
-             "services": services}
+        t = {"src_host": src_host, "dst_hosts": dst_hosts, "services": services}
         self.assertDictEqual(alert.to_dict(), t)
 
     def test_alert_detector(self):
         detector = PerfectDetector()
         src_host = Host("Host1", "Workstation", None)
-        dst_hosts = [Host("Host2", "Workstation", None), Host("Host1", "Workstation", None), Host("Host1", "Printer", None)]
+        dst_hosts = [
+            Host("Host2", "Workstation", None),
+            Host("Host1", "Workstation", None),
+            Host("Host1", "Printer", None),
+        ]
         services = [Service("2", "0.0", "bar")]
         perfect_alert = Alert(src_host, dst_hosts, services)
         new_alert = detector.obs(perfect_alert)
@@ -40,6 +47,7 @@ class TestAlert(unittest.TestCase):
         test_alert = Alert()
         test_alert.add_service(Service(None, None, "test_service"))
         self.assertEqual(test_alert, correct_alert)
+
 
 if __name__ == "__main__":
     unittest.main()

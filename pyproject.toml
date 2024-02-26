@@ -20,6 +20,7 @@ ray = {extras = ["rllib"], version = "^2.9.2"}
 [tool.poetry.group.dev.dependencies]
 black = "^24.2.0"
 pre-commit = "^3.6.2"
+pyright = "^1.1.351"
 
 [build-system]
 requires = ["poetry-core"]

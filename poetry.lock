@@ -1845,6 +1845,24 @@ files = [
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
+name = "pyright"
+version = "1.1.351"
+description = "Command line wrapper for pyright"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyright-1.1.351-py3-none-any.whl", hash = "sha256:83b44b25396ae20661fc5f133c3fce30928ff1296d4f2e5ff0bca5fcf03eb89d"},
+    {file = "pyright-1.1.351.tar.gz", hash = "sha256:01124099714eebd7f6525d8cbfa350626b56dfaf771cfcd55c03e69f0f1efbbd"},
+]
+
+[package.dependencies]
+nodeenv = ">=1.6.0"
+
+[package.extras]
+all = ["twine (>=3.4.1)"]
+dev = ["twine (>=3.4.1)"]
+
+[[package]]
 name = "pyrsistent"
 version = "0.20.0"
 description = "Persistent/Functional/Immutable data structures"
@@ -2468,4 +2486,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "39722585dd8492c1ea3ae0a503cef433a352c760e6c82259df245a2a41cfe0dd"
+content-hash = "acc2176f61cc314403bb53d6ddca0114b002cbc7f06f53c18864b722b0e931a2"

@@ -66,6 +66,20 @@ class Subnet(NetworkObject):
         else:
             self.dns_server = None
 
+
+    def __str__(self) -> str:
+        return f'Subnet(name="{self.name}", ip_network="{self.ip_network}", router="{self.router.name}"'
+
+
+    def __repr__(self) -> str:
+        str = f'Subnet(name={self.name!r}, '
+        str += f'default_route={self.default_route!r}, '
+        str += f'ip_range={self.ip_network!r}, router={self.router!r}, '
+        str += f'firewall_rules={self.firewall_rules!r}, '
+        str += f'dns_server={self.dns_server!r}'
+        return str
+
+
     def set_dns_server(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
         self.dns_server = ip
 
@@ -108,3 +122,11 @@ class Subnet(NetworkObject):
 
     def get_connected_hostnames(self) -> list[str]:
         return [host.name for host in self.connected_hosts]
+<<<<<<< HEAD
+=======
+
+
+    def create_decoy_host(self) -> None:
+        raise NotImplementedError
+
+>>>>>>> 0d0f90a (add dunder str and repr for host, subnet, and router)

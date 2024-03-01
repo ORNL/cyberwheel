@@ -34,6 +34,18 @@ class Router(NetworkObject):
         self.routes = routes  # List of routes to other subnets or routers
         self.interfaces = {}
 
+    def __str__(self) -> str:
+        str = f'Router(name="{self.name}", default_route="{self.default_route}", '
+        str += f'routes="{self.routes}"'
+        return str
+
+
+    def __repr__(self) -> str:
+        str = f'Router(name={self.name!r}, default_route={self.default_route!r}, '
+        str += f'routes={self.routes!r}, firewall_rules={self.firewall_rules!r}'
+        return str
+
+
     def get_default_route(self):
         return self.default_route
 

@@ -47,6 +47,19 @@ class Host(NetworkObject):
         self.default_route = None
         self.routes = []
 
+    def __str__(self) -> str:
+        str = f'Host(name="{self.name}", type="{self.type}", '
+        str += f'subnet="{self.subnet.name}"'
+        return str
+
+
+    def __repr__(self) -> str:
+        str = f'Host(name={self.name!r}, type={self.type!r}, '
+        str += f'subnet={self.subnet!r}, firewall_rules={self.firewall_rules!r}, '
+        str += f'services={self.services!r}, dns_server={self.dns_server!r}'
+        return str
+
+
     def _generate_mac_address(self):
         def _generate_hextet() -> str:
             return "{:02x}".format(random.randint(0, 255))

@@ -45,6 +45,18 @@ class Host(NetworkObject):
         if self.host_type:
             self._apply_host_type(self.host_type)
 
+    def __str__(self) -> str:
+        str = f'Host(name="{self.name}", type="{self.type}", '
+        str += f'subnet="{self.subnet.name}"'
+        return str
+
+
+    def __repr__(self) -> str:
+        str = f'Host(name={self.name!r}, type={self.type!r}, '
+        str += f'subnet={self.subnet!r}, firewall_rules={self.firewall_rules!r}, '
+        str += f'services={self.services!r}, dns_server={self.dns_server!r}'
+        return str
+
 
     def __str__(self) -> str:
         str = f'Host(name="{self.name}", subnet="{self.subnet.name}", '

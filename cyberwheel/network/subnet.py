@@ -67,18 +67,7 @@ class Subnet(NetworkObject):
         return str
 
 
-    def set_default_route(self):
-        default_route_via = self.router.get_interface_ip(self.name)
-        ip_version = default_route_via.version #type:ignore
-        if ip_version == 4:
-            self.default_route = Route(dest=ipa.ip_network('0.0.0.0/0'),
-                                       via=default_route_via) # type: ignore
-        elif ip_version == 6:
-            self.default_route = Route(dest=ipa.ip_network('::/0'),
-                                       via=default_route_via) # type: ignore
-
-
-    def set_dns_server(self, ip: ipa.IPv4Address | ipa.IPv6Address):
+    def set_dns_server(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
         self.dns_server = ip
 
     def get_network_address(self) -> str:
@@ -140,3 +129,8 @@ class Subnet(NetworkObject):
 
     def get_connected_hostnames(self) -> list[str]:
         return [host.name for host in self.connected_hosts]
+
+
+    def create_decoy_host(self) -> None:
+        raise NotImplementedError
+

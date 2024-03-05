@@ -1,6 +1,5 @@
 import ipaddress as ipa
-from .network_object import NetworkObject, Route
-#from .subnet import Subnet
+from .network_object import NetworkObject
 
 
 class Router(NetworkObject):
@@ -48,7 +47,6 @@ class Router(NetworkObject):
         return str
 
 
-
     def get_default_route(self):
         return self.default_route
 
@@ -63,13 +61,8 @@ class Router(NetworkObject):
         self.interfaces.update({interface_name: ip})
 
 
-    #def get_interface_ip(self, interface_name: str) -> ipa.IPv4Address | ipa.IPv6Address:
-    def get_interface_ip(self, interface_name: str):
-        try:
-            return self.interfaces.get(interface_name)
-        except KeyError as e:
-            # TODO
-            raise e
+    def get_interface_ip(self, interface_name: str) -> ipa.IPv4Address | ipa.IPv6Address | None:
+        return self.interfaces.get(interface_name)
 
 
     def add_subnet_interface(self, subnet) -> None:

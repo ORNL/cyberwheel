@@ -10,6 +10,7 @@ class Service(BaseModel):
     version: Optional[str] = None
     vulns: Optional[list] = [] # TODO: list[dict] here? list[Vuln]??
     description: Optional[str] = ''
+    decoy: Optional[bool] = False
 
     @validator('port')
     @classmethod
@@ -17,17 +18,15 @@ class Service(BaseModel):
         if port not in range(2**16):
             msg = 'Port should be an integer (1-65535)'
             raise PortValueError(value=port, message=msg)
-        else:
-            return port
+        return port
 
     @validator('protocol')
     @classmethod
     def validate_proto(cls, proto) -> str:
-        if proto in ['tcp', 'udp', 'icmp']:
-            return proto
-        else:
+        if proto not in ['tcp', 'udp', 'icmp']:
             msg = "Protocol should be 'tcp', 'udp', or 'icmp'"
             raise ProtocolValueError(value=proto, message=msg)
+        return proto
 
 
 class PortValueError(ValueError):

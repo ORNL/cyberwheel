@@ -1,7 +1,8 @@
 import ipaddress as ipa
+import json
 from pydantic import BaseModel
 import random
-from .network_object import NetworkObject
+from .network_object import NetworkObject, Route, FirewallRule
 from .service import Service
 from .subnet import Subnet
 
@@ -23,27 +24,31 @@ class ArpTable(BaseModel):
     table: list[ArpEntry]
 
 
+
+class HostType(BaseModel):
+    name: str | None = None
+    services: list[Service] = []
+    decoy: bool = False
+
+
 class Host(NetworkObject):
-    def __init__(self, name: str, subnet: Subnet, host_type: HostType | None, **kwargs):
+    def __init__(self, name: str, subnet: Subnet, type: HostType, **kwargs):
         '''
         :param str name: name of host
         :param Subnet subnet: subnet to be connected to
-        :param str host_type: type of host
+        :param str type: type of host
         :param list[FirewallRule] | list[None] **firewall_rules: list of FirewallRules
         :param list[Service] | list[None] **services: list of services
         '''
         super().__init__(name, kwargs.get('firewall_rules', []))
         self.subnet: Subnet = subnet
-        self.host_type: HostType | None = host_type
-        self.services: list[Service] = kwargs.get('services', [])
+        self.type: HostType = type
+        self.services: list[Service] | None = kwargs.get('services')
         self.is_compromised: bool = False  # Default to not compromised
         self.mac_address = self._generate_mac_address()
+        self.default_route = None
         self.routes = set()
         self.decoy = False
-        
-        # apply any HostType details
-        if self.host_type:
-            self._apply_host_type(self.host_type)
 
     def __str__(self) -> str:
         str = f'Host(name="{self.name}", type="{self.type}", '
@@ -114,7 +119,6 @@ class Host(NetworkObject):
         Manually set IP address of host from a given str
 
         :param str ip: IP
-        :raises ValueError:
         '''
         ip_obj = self.generate_ip_object(ip)
         self.ip_address = ip_obj
@@ -134,11 +138,9 @@ class Host(NetworkObject):
         Manually set DNS IP address of host from a given str
 
         :param str ip: IP
-        :raises ValueError:
         '''
         ip_obj = self.generate_ip_object(ip)
         self.dns_server = ip_obj
-
 
 
     def get_dhcp_lease(self):
@@ -148,7 +150,28 @@ class Host(NetworkObject):
         self.services = services
 
 
-    def get_services(self) -> list[Service]:
+    #def define_services_from_host_type(self, host_types_file=None):
+    #    # TODO: not sure the best way to handle relative files here...
+    #    if host_types_file is None:
+    #        host_types_file = 'resources/metadata/host_definitions.json'
+    #    # load host type definitions
+    #    with open(host_types_file) as f:
+    #        data = json.load(f)
+
+    #    # create instace of each Service()
+    #    for host_type in data.get('host_types'):
+    #        defined_type = host_type.get('type')
+    #        if self.type == defined_type.lower():
+    #            for service in defined_type.get('services'):
+    #                self.services.append(Service(service.get('name'),
+    #                                     service.get('port'),
+    #                                     service.get('protocol'),
+    #                                     service.get('version'),
+    #                                     service.get('vulnerabilities'))
+    #                                    )
+
+
+    def get_services(self) -> list[Service] | list:
         return self.services
 
 
@@ -195,3 +218,69 @@ class Host(NetworkObject):
         
         # update services
         self.services = updated_services
+
+    # TODO: make this work for IPv6 as well
+    def get_routing_table(self, ipv6: bool = False):
+        routes = self.routes
+        if ipv6:
+            slash_zero_net = ipa.ip_network('::/0')
+        else:
+            slash_zero_net = ipa.ip_network('0.0.0.0/0')
+        routes.add({'dest': slash_zero_net, 'via': self.default_route})
+        return routes
+
+
+    def add_route(self,
+                  dest: ipa.IPv4Network | ipa.IPv6Network,
+                  via: ipa.IPv4Address | ipa.IPv6Address):
+        route = Route(dest=dest, via=via)
+        self.routes.add(route)
+
+
+    def add_routes_from_dict(self, routes: list[dict]):
+        for route in routes:
+            # make sure 'dest' is an ip_network object
+            try:
+                if not isinstance(route['dest'], ipa.IPv4Network | ipa.IPv6Network):
+                    dest = self.generate_ip_network_object(route['dest'])
+                else:
+                    dest = route['dest']
+            except ValueError as e:
+                # TODO: custom exception here?
+                raise e
+            # make sure 'via' is an ip_address object
+            try:
+                if not isinstance(route['via'], ipa.IPv4Address | ipa.IPv6Address):
+                    via = self.generate_ip_object(route['via'])
+                else:
+                    via = route['via']
+            except ValueError as e:
+                # TODO: custom exception here?
+                raise e
+
+            self.add_route(dest, via)
+
+
+    def get_nexthop_from_routes(self,
+                                dest_ip: ipa.IPv4Address | ipa.IPv6Address):
+        '''
+        Return most specific route that matches dest_ip
+
+        :param (IPv4Address | IPv6Address) dest_ip: destination IP object
+        :returns (IPv4Network | IPv6Network):
+        '''
+        # sort routes
+        routes = sorted(self.routes)
+
+        # reverse list because ipaddress' logical operators are weird
+        # and sort by subnet mask bits instead of number of ips in subnet
+        # i.e. this should give us a list with smallest subnets first
+        routes.reverse()
+
+        # find most specific match in routes
+        for route in routes:
+            if dest_ip in route['dest'].hosts():
+                return route['via']
+
+        # return default_route if no matche
+        return self.default_route

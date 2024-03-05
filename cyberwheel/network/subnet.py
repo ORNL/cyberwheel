@@ -67,7 +67,7 @@ class Subnet(NetworkObject):
         return str
 
 
-    def set_dns_server(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
+    def set_dns_server(self, ip: ipa.IPv4Address | ipa.IPv6Address):
         self.dns_server = ip
 
     def get_network_address(self) -> str:
@@ -93,12 +93,7 @@ class Subnet(NetworkObject):
         return len(self.available_ips)
 
 
-    def assign_dhcp_lease(self, host_obj) -> None:
-        '''
-        Simmulate a DHCP lease
-
-        :param Host host_obj: host requesting lease
-        '''
+    def assign_dhcp_lease(self, host_obj):
         # get random IP from self.available_ips
         ip_lease = random.choice(self.available_ips)
         self.available_ips.remove(ip_lease)
@@ -112,8 +107,7 @@ class Subnet(NetworkObject):
 
         # assign route for subnet.ip_network
         host_ip = host_obj.ip_address
-        route = self.generate_route(self.ip_network, host_ip)
-        host_obj.add_route(route)
+        host_obj.add_route(dest=self.ip_network, via=host_ip)
 
         # assign default route if not already set
         if host_obj.default_route is None:
@@ -131,6 +125,5 @@ class Subnet(NetworkObject):
         return [host.name for host in self.connected_hosts]
 
 
-    def create_decoy_host(self) -> None:
-        raise NotImplementedError
-
+    def get_nexthop_from_routes(self):
+        raise NotImplementedError()

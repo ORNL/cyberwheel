@@ -1,5 +1,4 @@
 import ipaddress as ipa
-from typing import Union
 from .network_object import NetworkObject
 
 
@@ -54,12 +53,10 @@ class Router(NetworkObject):
         routes = self.routes.append(self.default_route)
         return routes
 
-    def set_interface_ip(
-        self, interface_name: str, ip: Union[ipa.IPv4Address, ipa.IPv6Address]
-    ):
+    
+    def set_interface_ip(self, interface_name: str, ip: ipa.IPv4Address |ipa.IPv6Address):
         self.interfaces.update({interface_name: ip})
 
-    def get_interface_ip(
-        self, interface_name: str
-    ) -> Union[ipa.IPv4Address, ipa.IPv6Address, None]:
+
+    def get_interface_ip(self, interface_name: str) -> ipa.IPv4Address | ipa.IPv6Address | None:
         return self.interfaces.get(interface_name)

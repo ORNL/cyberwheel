@@ -1,80 +1,59 @@
+import ipaddress as ipa
+from pydantic import BaseModel
+
+
+class Route(BaseModel):
+    dest: ipa.IPv4Network | ipa.IPv6Network
+    via: ipa.IPv4Address | ipa.IPv6Address
+
+    def __hash__(self):
+        return hash((self.dest, self.via))
+
+
+class FirewallRule(BaseModel):
+    name: str = 'allow all'
+    src: str = 'all'
+    port: int | str = 'all'
+    proto: str = 'tcp'
+    desc: str | None = None
+
+
 class NetworkObject:
     """
     Base class for host, subnet, and router objects
     """
-
-    def __init__(self, name, firewall_rules=[]):
+    def __init__(self, name, firewall_rules: list[FirewallRule] = []):
         self.name = name
         # default to 'allow all' if no rules defined
         ### this is antithetical to how firewalls work in the real world,
         ### but seemed pragmatic in our case
-        self.firewall_rules = self._generate_implied_allow_rules(firewall_rules)
+        #self.firewall_rules = self._generate_implied_allow_rules(firewall_rules)
+        self.firewall_rules = firewall_rules
+        self.is_compromised = False
 
-    def _generate_implied_allow_rules(self, rules):
-        # if no rules are defined, add an 'allow all' rule
-        if rules is None or rules == []:
-            implied_rules = []
-            allow_all_rule = {
-                "name": "allow all",
-                "src": "all",
-                "dest": "all",
-                "port": "all",
-                "proto": "all",
-                "desc": 'auto generated allow-all rule"',
-            }
 
-            implied_rules.append(allow_all_rule)
-            return implied_rules
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, NetworkObject):
+            return self.name == other.name
+        return False
 
-        # if some rules are defined, populate any implied allows
-        else:
-            for rule in rules:
-                if "src" not in rule:
-                    rule["src"] = "all"
-                if "dest" not in rule:
-                    rule["dest"] = "all"
-                if "proto" not in rule:
-                    rule["proto"] = "all"
-                if "port" not in rule:
-                    rule["port"] = "all"
 
-            return rules
+    def add_firewall_rule(self, rule: FirewallRule) -> None:
+        '''
+        Adds new firewall rule
 
-    def add_firewall_rules(self, rules: list[dict]):
-        """
-        Adds new firewall rule(s)
+        :param FirewallRule rule: firewall rule
+        '''
+        self.firewall_rules.append(rule)
 
-        :param list[dict] rules: firewall rule(s)
-                Example:
-                [
-                    {
-                        'name': 'https',
-                        'src': 'some_subnet',
-                        'port': 443,
-                        'proto': 'tcp',
-                        'desc': 'Allow some_subnet to all dest on dest port 443/tcp'
-                    },
-                    {
-                        'name': 'squid-proxy',
-                        'src': 'some_host',
-                        'port': 3128,
-                        'proto': 'tcp',
-                        'desc': 'Allow some_host to all dest hosts on dest port 3128/tcp'
-                    },
-                    {
-                        'name': 'foo service',
-                        'port': 1234,
-                        'proto': 'tcp',
-                        'desc': 'Allow all src to all dest on port 1234/tcp'
-                    },
-                    {
-                        'name': 'allow ICMP',
-                        'proto': 'icmp',
-                        'desc': 'Allow pings from anywhere'
-                    }
-                ]
-        """
-        self.firewall_rules.append(rules)
+
+    def add_firewall_rules(self, rules: list[FirewallRule]) -> None:
+        '''
+        Adds new firewall rules
+
+        :param list[FirewallRule] rules: list of firewall rule(s)
+        '''
+        self.firewall_rules.extend(rules)
 
     # TODO: make rule_name case insensitive
     def remove_firewall_rule(self, rule_name: str):
@@ -85,9 +64,24 @@ class NetworkObject:
         """
         # iterate over existing rules and discard rule if rule['name'] equals
         # the rule_name param
-        updated_rules = [
-            rule for rule in self.firewall_rules if rule.get("name") != rule_name
-        ]
+        updated_rules = [rule for rule in self.firewall_rules if
+                rule.name != rule_name]
 
         # update firewall rules
         self.firewall_rules = updated_rules
+
+
+    def generate_ip_object(self, ip: str) -> ipa.IPv4Address | ipa.IPv6Address:
+        try:
+            return ipa.ip_address(ip)
+        except ValueError as e:
+            # TODO: raise custom exception here?
+            raise e
+
+
+    def generate_ip_network_object(self, net: str) -> ipa.IPv4Network | ipa.IPv6Network:
+        try:
+            return ipa.ip_network(net)
+        except ValueError as e:
+            # TODO: raise custom exception here?
+            raise e

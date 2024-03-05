@@ -1,15 +1,14 @@
 import networkx as nx
 import random
-import ipaddress
-import math
+import ipaddress as ipa
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import Union
 import yaml
 
-from .network_object import NetworkObject
+from .network_object import NetworkObject, FirewallRule, Route
+from .service import Service
 from .subnet import Subnet
-from .host import Host
+from .host import Host, HostType
 from .router import Router
 
 
@@ -25,14 +24,29 @@ class Network:
     def __len__(self):
         return len(self.graph)
 
+    # TODO: remove these in favor of self.add_node()
     def add_subnet(self, subnet):
-        self.graph.add_node(subnet.name, data=subnet)
-
+        self.add_node(subnet)
+        #self.graph.add_node(subnet.name, data=subnet)
     def add_router(self, router):
-        self.graph.add_node(router.name, data=router)
-
+        self.add_node(router)
+        #self.graph.add_node(router.name, data=router)
     def add_host(self, host):
-        self.graph.add_node(host.name, data=host)
+        self.add_node(host)
+        #self.graph.add_node(host.name, data=host)
+
+
+    def add_node(self, node) -> None:
+        self.graph.add_node(node.name, data=node)
+
+
+    def remove_node(self, node: NetworkObject) -> None:
+        try:
+            self.graph.remove_node(node.name)
+        except nx.NetworkXError as e:
+            # TODO: raise custom exception?
+            raise e
+
 
     def connect_nodes(self, node1, node2):
         self.graph.add_edge(node1, node2)
@@ -71,14 +85,14 @@ class Network:
 
     def update_host_compromised_status(self, host: str, is_compromised: bool):
         try:
-            host_obj: Host = self.get_host_from_name(host)
+            host_obj = self.get_node_from_name(host)
             host_obj.is_compromised = is_compromised
         except KeyError:
             return None  # return None if host not found
 
-    def check_compromised_status(self, host_name: str) -> Union[bool, None]:
+    def check_compromised_status(self, host_name: str) -> bool | None:
         try:
-            host_obj: Host = self.get_host_from_name(host_name)
+            host_obj = self.get_node_from_name(host_name)
             return host_obj.is_compromised
         except KeyError:
             return None  # return None if host not found
@@ -212,6 +226,17 @@ class Network:
 
     @classmethod
     def create_network_from_yaml(cls, config_file_path):
+        # TODO: should this just be a module-level function instead of static method??
+        @staticmethod
+        def create_host_type_from_yaml(name: str, config_file: str) -> HostType:
+            with open(config_file) as f:
+                config = yaml.safe_load(f)
+
+            services = config[name].get('services')
+            decoy: bool = config[name].get('decoy', False)
+
+            return HostType(name=name, services=services, decoy=decoy)
+
         # Load the YAML config file
         with open(config_file_path, "r") as yaml_file:
             config = yaml.safe_load(yaml_file)
@@ -260,25 +285,57 @@ class Network:
                 for key, val in config["hosts"].items():
 
                     # is host attached to this subnet?
-                    if val["subnet"] == subnet.name:
-                        host = Host(
-                            key,
-                            val.get("type", ""),
-                            subnet,
-                            val.get("firewall", []),
-                            services=val.get("services"),
-                            dns_server=val.get("dns_server"),
-                        )
+                    if val['subnet'] == subnet.name:
+                        # instantiate firewall rules
+                        fw_rules = []
+                        if rules := val.get('firewall_rules'):
+                            for rule in rules:
+                                fw_rules.append(FirewallRule(rule('name'), # type: ignore
+                                                             rule.get('src'),
+                                                             rule.get('port'),
+                                                             rule.get('proto'),
+                                                             rule.get('desc')))
+                        # TODO: wip
+                        # instantiate host type
+                        if type_str := val.get('type'):
+                            type = create_host_type_from_yaml(type_str, 'file.yml')
+                        else:
+                            type = HostType()
+
+                        # instantiate services
+                        if services_dict := val.get('services'):
+                            services = [service for service in services_dict]
+                            for service in services_dict.items():
+                                services.append(Service(name=service['name'],
+                                                        port=service['port'],
+                                                        protocol=service.get('protocol'),
+                                                        version=service.get('version'),
+                                                        vulns=service.get('vulns'),
+                                                        description=service.get('descscription'),
+                                                        decoy=service.get('decoy')))
+                        else:
+                            services = []
+
+                        # instantiate dns server
+                        host = Host(key,
+                                    subnet,
+                                    type,
+                                    firewall_rules=fw_rules,
+                                    services=services,
+                                    )
 
                         # add host to network graph
                         network.add_host(host)
                         network.connect_nodes(host.name, subnet.name)
 
-                        # get next IP from subnet
-                        # host.set_ip(subnet.get_dhcp_lease())
+                        # get IP from subnet
+                        #host.set_ip(subnet.get_dhcp_lease())
                         host.get_dhcp_lease()
-                        if val.get("routes"):
-                            host.add_routes(val.get("routes"))
+                        if routes := val.get('routes'):
+                            for route in routes:
+                                dest = route['dest']
+                                via = route['via']
+                                host.add_route(dest, via)
 
         return network
 
@@ -484,3 +541,54 @@ class Network:
             return True
 
         return False
+
+
+    def add_host_to_subnet(self, name: str, subnet: Subnet, type: HostType, **kwargs) -> Host:
+        '''
+        Create host and add it to parent subnet and self.graph
+
+        :param str *name:
+        :param Subnet *subnet:
+        :param str *type:
+        :param list[Service] **services:
+        :param IPv4Address | IPv6Address **dns_server:
+        '''
+        host = Host(name,
+                    subnet,
+                    type,
+                    firewall_rules=[],
+                    #services=kwargs.get('services'),
+                    #dns_server=kwargs.get('dns_server'),
+                    )
+        # add host to graph
+        self.add_node(host)
+        # connect node to parent subnet
+        self.connect_nodes(host.name, subnet.name)
+        # assign IP, DNS, route for subnet, and default route
+        host.get_dhcp_lease()
+        return host
+
+
+    def remove_host_from_subnet(self, host: Host) -> None:
+        # release DHCP lease
+        if host.ip_address is not None:
+            ip: ipa.IPv4Address | ipa.IPv6Address = host.ip_address
+            host.subnet.available_ips.append(ip)
+        self.remove_node(host)
+        host.subnet.remove_connected_host(host)
+        pass
+
+        
+    def create_decoy_host(self, *args, **kwargs) -> Host:
+        '''
+        Create decoy host and add it to subnet and self.graph
+
+        :param str *name:
+        :param Subnet *subnet:
+        :param str *type:
+        :param list[Service] **services:
+        :param IPv4Address | IPv6Address **dns_server:
+        '''
+        host = self.add_host_to_subnet(*args, decoy=True, **kwargs)
+        host.decoy = True
+        return host

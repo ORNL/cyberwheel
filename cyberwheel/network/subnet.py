@@ -1,8 +1,7 @@
 import ipaddress as ipa
-from typing import Union
-from .network_object import NetworkObject
-
-# from .host import Host  # this is causing circular import issues
+import random
+from .network_object import NetworkObject, Route
+#from .host import Host  # this is causing circular import issues
 from .router import Router
 
 
@@ -80,7 +79,7 @@ class Subnet(NetworkObject):
         return str
 
 
-    def set_dns_server(self, ip: Union[ipa.IPv4Address, ipa.IPv6Address]):
+    def set_dns_server(self, ip: ipa.IPv4Address | ipa.IPv6Address):
         self.dns_server = ip
 
     def get_network_address(self) -> str:
@@ -106,13 +105,21 @@ class Subnet(NetworkObject):
         return len(self.available_ips)
 
     def assign_dhcp_lease(self, host_obj):
-        # get next available IP
-        ip_lease = self.available_ips.pop(0)
+        # get random IP from self.available_ips
+        ip_lease = random.choice(self.available_ips)
+        self.available_ips.remove(ip_lease)
+
         # update connected hosts
         self.connected_hosts.append(host_obj)
+
         # assign IP and DNS server
         host_obj.set_ip(ip_lease)
         host_obj.set_dns(self.dns_server)
+
+        # assign route for subnet.ip_network
+        host_ip = host_obj.ip_address
+        host_obj.add_route(dest=self.ip_network, via=host_ip)
+
         # assign default route if not already set
         if host_obj.default_route is None:
             host_obj.default_route = self.default_route
@@ -120,13 +127,10 @@ class Subnet(NetworkObject):
     def get_connected_hosts(self) -> list:
         return self.connected_hosts
 
+
+    def remove_connected_host(self, host) -> None:
+        self.connected_hosts.remove(host)
+
+
     def get_connected_hostnames(self) -> list[str]:
         return [host.name for host in self.connected_hosts]
-<<<<<<< HEAD
-=======
-
-
-    def create_decoy_host(self) -> None:
-        raise NotImplementedError
-
->>>>>>> 0d0f90a (add dunder str and repr for host, subnet, and router)

@@ -15,6 +15,7 @@ stable-baselines3 = "^2.2.1"
 pyattck = "^7.1.2"
 pettingzoo = "^1.24.3"
 ray = {extras = ["rllib"], version = "^2.9.2"}
+pydantic = "^1"
 
 
 [tool.poetry.group.dev.dependencies]

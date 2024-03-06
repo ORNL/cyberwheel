@@ -130,6 +130,7 @@ subnets:
     firewall:
 
 # Hosts
+host_type_config: resources/metadata/host_definitions.json
 hosts:
 
   # User hosts

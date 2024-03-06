@@ -1,6 +1,7 @@
 import networkx as nx
 import random
 import ipaddress as ipa
+import json
 import numpy as np
 import matplotlib.pyplot as plt
 import yaml
@@ -226,16 +227,41 @@ class Network:
 
     @classmethod
     def create_network_from_yaml(cls, config_file_path):
-        # TODO: should this just be a module-level function instead of static method??
+
+        # TODO/Question: should this just be a module-level function
+        # instead of a static method??
         @staticmethod
-        def create_host_type_from_yaml(name: str, config_file: str) -> HostType:
+        def create_host_type_from_json(name: str, config_file: str) -> HostType:
+            '''
+            Return a HostType object from json file
+
+            :param str name: host type name
+            :param str config_file: JSON config file path
+            :raises HostTypeNotFoundError:
+            :returns HostType:
+            '''
             with open(config_file) as f:
-                config = yaml.safe_load(f)
+                config = json.load(f)
+            types: list = config['host_types']
 
-            services = config[name].get('services')
-            decoy: bool = config[name].get('decoy', False)
+            host_type = [t for t in types if t['type'] == name]
+            if not host_type:
+                msg = f'Host type ({name}) not found in config file ({config_file})'
+                raise HostTypeNotFoundError(value=name, message=msg)
 
-            return HostType(name=name, services=services, decoy=decoy)
+            services_list = host_type[0]['services']
+            service_objects = []
+            for service in services_list:
+                service_objects.append(Service(name=name,
+                                               port=service.get('port'),
+                                               protocol=service.get('protocol'),
+                                               version=service.get('version'),
+                                               vulns=service.get('vulns'),
+                                               description=service.get('description'),
+                                               decoy=service.get('decoy')))
+
+            return HostType(name=name, services=service_objects)
+
 
         # Load the YAML config file
         with open(config_file_path, "r") as yaml_file:
@@ -298,9 +324,10 @@ class Network:
                         # TODO: wip
                         # instantiate host type
                         if type_str := val.get('type'):
-                            type = create_host_type_from_yaml(type_str, 'file.yml')
+                            config_file =  config.get('host_type_config')
+                            type = create_host_type_from_json(type_str, config_file)
                         else:
-                            type = HostType()
+                            type = None
 
                         # instantiate services
                         if services_dict := val.get('services'):
@@ -592,3 +619,10 @@ class Network:
         host = self.add_host_to_subnet(*args, decoy=True, **kwargs)
         host.decoy = True
         return host
+
+
+class HostTypeNotFoundError(Exception):
+    def __init__(self, value: str, message: str) -> None:
+        self.value = value
+        self.message = message
+        super().__init__(message)

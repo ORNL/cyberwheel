@@ -93,7 +93,13 @@ class Subnet(NetworkObject):
         return len(self.available_ips)
 
 
-    def assign_dhcp_lease(self, host_obj):
+    # TODO: refactor for Route
+    def assign_dhcp_lease(self, host_obj) -> None:
+        '''
+        Emulate a DHCP lease
+
+        :param Host host_obj: host requesting lease
+        '''
         # get random IP from self.available_ips
         ip_lease = random.choice(self.available_ips)
         self.available_ips.remove(ip_lease)
@@ -107,7 +113,8 @@ class Subnet(NetworkObject):
 
         # assign route for subnet.ip_network
         host_ip = host_obj.ip_address
-        host_obj.add_route(dest=self.ip_network, via=host_ip)
+        route = self.generate_route(self.ip_network, host_ip)
+        host_obj.add_route(route)
 
         # assign default route if not already set
         if host_obj.default_route is None:

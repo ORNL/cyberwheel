@@ -29,38 +29,31 @@ class HostType(BaseModel):
     name: str | None = None
     services: list[Service] = []
     decoy: bool = False
+    os: str = ''
 
 
 class Host(NetworkObject):
-    def __init__(self, name: str, subnet: Subnet, type: HostType, **kwargs):
+    def __init__(self, name: str, subnet: Subnet, host_type: HostType | None, **kwargs):
         '''
         :param str name: name of host
         :param Subnet subnet: subnet to be connected to
-        :param str type: type of host
+        :param str host_type: type of host
         :param list[FirewallRule] | list[None] **firewall_rules: list of FirewallRules
         :param list[Service] | list[None] **services: list of services
         '''
         super().__init__(name, kwargs.get('firewall_rules', []))
         self.subnet: Subnet = subnet
-        self.type: HostType = type
-        self.services: list[Service] | None = kwargs.get('services')
+        self.host_type: HostType | None = host_type
+        self.services: list[Service] = kwargs.get('services', [])
         self.is_compromised: bool = False  # Default to not compromised
         self.mac_address = self._generate_mac_address()
         self.default_route = None
         self.routes = set()
         self.decoy = False
-
-    def __str__(self) -> str:
-        str = f'Host(name="{self.name}", type="{self.type}", '
-        str += f'subnet="{self.subnet.name}"'
-        return str
-
-
-    def __repr__(self) -> str:
-        str = f'Host(name={self.name!r}, type={self.type!r}, '
-        str += f'subnet={self.subnet!r}, firewall_rules={self.firewall_rules!r}, '
-        str += f'services={self.services!r}, dns_server={self.dns_server!r}'
-        return str
+        
+        # apply any HostType details
+        if self.host_type:
+            self._apply_host_type(self.host_type)
 
 
     def __str__(self) -> str:
@@ -119,6 +112,7 @@ class Host(NetworkObject):
         Manually set IP address of host from a given str
 
         :param str ip: IP
+        :raises ValueError:
         '''
         ip_obj = self.generate_ip_object(ip)
         self.ip_address = ip_obj
@@ -138,6 +132,7 @@ class Host(NetworkObject):
         Manually set DNS IP address of host from a given str
 
         :param str ip: IP
+        :raises ValueError:
         '''
         ip_obj = self.generate_ip_object(ip)
         self.dns_server = ip_obj
@@ -150,28 +145,7 @@ class Host(NetworkObject):
         self.services = services
 
 
-    #def define_services_from_host_type(self, host_types_file=None):
-    #    # TODO: not sure the best way to handle relative files here...
-    #    if host_types_file is None:
-    #        host_types_file = 'resources/metadata/host_definitions.json'
-    #    # load host type definitions
-    #    with open(host_types_file) as f:
-    #        data = json.load(f)
-
-    #    # create instace of each Service()
-    #    for host_type in data.get('host_types'):
-    #        defined_type = host_type.get('type')
-    #        if self.type == defined_type.lower():
-    #            for service in defined_type.get('services'):
-    #                self.services.append(Service(service.get('name'),
-    #                                     service.get('port'),
-    #                                     service.get('protocol'),
-    #                                     service.get('version'),
-    #                                     service.get('vulnerabilities'))
-    #                                    )
-
-
-    def get_services(self) -> list[Service] | list:
+    def get_services(self) -> list[Service]:
         return self.services
 
 
@@ -219,6 +193,7 @@ class Host(NetworkObject):
         # update services
         self.services = updated_services
 
+
     # TODO: make this work for IPv6 as well
     def get_routing_table(self, ipv6: bool = False):
         routes = self.routes
@@ -230,10 +205,7 @@ class Host(NetworkObject):
         return routes
 
 
-    def add_route(self,
-                  dest: ipa.IPv4Network | ipa.IPv6Network,
-                  via: ipa.IPv4Address | ipa.IPv6Address):
-        route = Route(dest=dest, via=via)
+    def add_route(self, route: Route) -> None:
         self.routes.add(route)
 
 
@@ -267,10 +239,10 @@ class Host(NetworkObject):
         Return most specific route that matches dest_ip
 
         :param (IPv4Address | IPv6Address) dest_ip: destination IP object
-        :returns (IPv4Network | IPv6Network):
+        :returns (IPv4Address | IPv6Address):
         '''
         # sort routes
-        routes = sorted(self.routes)
+        routes = sorted(list(self.routes))
 
         # reverse list because ipaddress' logical operators are weird
         # and sort by subnet mask bits instead of number of ips in subnet

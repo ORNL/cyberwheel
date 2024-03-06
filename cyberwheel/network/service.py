@@ -1,16 +1,29 @@
 #from dataclasses import dataclass, field
 from pydantic import BaseModel, validator, PositiveInt
-from typing import Optional
 
 
 class Service(BaseModel):
     name: str
     port: PositiveInt
-    protocol: Optional[str] = 'tcp' # default to tcp
-    version: Optional[str] = None
-    vulns: Optional[list] = [] # TODO: list[dict] here? list[Vuln]??
-    description: Optional[str] = ''
-    decoy: Optional[bool] = False
+    protocol: str = 'tcp' # default to tcp
+    version: str = ''
+    vulns: list = [] # TODO: list[dict] here? list[Vuln]??
+    description: str = ''
+    decoy: bool = False
+
+
+    #def __post_init__(self) -> None:
+    #    pass
+
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Service):
+            port_matched: bool = self.port == other.port
+            proto_matched: bool = self.protocol == other.protocol
+            version_matched: bool = self.version == other.version
+            return port_matched and proto_matched and version_matched
+        return False
+
 
     @validator('port')
     @classmethod
@@ -43,5 +56,3 @@ class ProtocolValueError(ValueError):
         super().__init__(message)
 
 
-    #def __post_init__(self) -> None:
-    #    pass

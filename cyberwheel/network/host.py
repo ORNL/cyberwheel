@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 import ipaddress as ipa
 from pydantic import BaseModel
 import random
+from typing import Union, Type
 from .network_object import NetworkObject
 from .service import Service
 from .subnet import Subnet
+from .process import Process
 
 
 class HostType(BaseModel):
@@ -77,6 +81,9 @@ class Host(NetworkObject):
         self.services: list[Service] = deduped_services
         self.decoy: bool = host_type.decoy
 
+        self.default_route = None
+        self.routes = []
+        self.cves = []
 
     def _generate_mac_address(self) -> str:
         '''Generates a random MAC address'''

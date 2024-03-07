@@ -1,7 +1,7 @@
 from typing import List
 
 from red_actions.red_base import RedAction, RedActionResults, validate_attack, targets
-from red_actions.Technique import Technique
+from red_actions.technique import Technique
 from network.host import Host
 from network.service import Service
 
@@ -20,11 +20,19 @@ class PingSweep(RedAction):
 
     def sim_execute(self) -> RedActionResults:
         for host in self.target_hosts:
-            # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
                 continue
-            self.action_results.add_host(host)
-            self.action_results.modify_alert(host)
-            self.action_results.modify_alert(self.target_service)
-            self.action_results.add_successful_action(host)
+            subnet_hosts = host.subnet.connected_hosts
+            self.action_results.add_metadata(
+                host.subnet, {"subnet_scanned", host.subnet}
+            )
+            for h in subnet_hosts:
+                # Check if the attack is valid against this specific host
+                self.action_results.add_host(h)
+                self.action_results.modify_alert(host)
+                self.action_results.add_metadata(host, host.ip_address)
+                self.action_results.modify_alert(self.target_service)
+                self.action_results.add_successful_action(
+                    host
+                )  # Add host to list of success
         return self.action_results

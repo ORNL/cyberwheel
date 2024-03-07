@@ -1,14 +1,14 @@
 import networkx as nx
 import numpy as np
 import random
-from .redbase import *
+from .red_agent_base import *
 
 """
 Selects a random host as the starting point and then chooses as target the host that is furthest away
 """
 
 
-class LongestPathRedAgent(RedAgentBase):
+class LongestPathRedAgent(RedAgent):
 
     def __init__(self, network):
         super().__init__()
@@ -17,7 +17,6 @@ class LongestPathRedAgent(RedAgentBase):
         self.target = self.network.find_host_with_longest_path(self.source)
 
     def act(self):
-
         # update this in case network object has been modified
         path = self.network.find_path_between_hosts(self.source, self.target)
 
@@ -28,8 +27,8 @@ class LongestPathRedAgent(RedAgentBase):
                 )  # Set is_compromised to True
                 break
 
-        return (
-            "owned"
-            if all(self.network.check_compromised_status(n) for n in path)
-            else None
-        )
+        # return (
+        #    "owned"
+        #    if all(self.network.check_compromised_status(n) for n in path)
+        #    else None
+        # )

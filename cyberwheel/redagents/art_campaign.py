@@ -1,8 +1,8 @@
-from redbase import RedAgentBase
+from redagents.red_agent_base import RedAgent
 from typing import Dict, List
 
 
-class ARTCampaign(RedAgentBase):
+class ARTCampaign(RedAgent):
     """
     Class defining an ART Campaign. Acts as a tailor-made killchain with specific
     pre-defined MITRE Techniques rather than the general killchain phases.
@@ -31,4 +31,4 @@ class ARTCampaign(RedAgentBase):
         return NotImplementedError
 
     def act(self):
-        return NotImplementedError
+        pass

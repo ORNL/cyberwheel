@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Type
+from cyberwheel.red_actions.actions import port_scan
 
 from red_actions.red_base import (
     RedAction,
@@ -7,10 +8,12 @@ from red_actions.red_base import (
     check_vulnerability,
     targets,
 )
-from red_actions.Technique import Technique
-from network.host import Host
+from red_actions.technique import Technique
+from actions import PortScan, PingSweep
+from network.host import Host, Subnet
 from network.service import Service
 
+import random
 import art_techniques
 import inspect
 
@@ -22,8 +25,8 @@ class KillChainPhase(RedAction):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
+        src_host: Host,
+        target_service: Service,
         target_hosts: targets = [],
         techniques: List[Technique] = [],
     ) -> None:
@@ -55,7 +58,7 @@ class KillChainPhase(RedAction):
     def set_techniques(self, techniques: List[str]):
         pass
 
-    def sim_execute(self) -> RedActionResults:
+    def sim_execute(self) -> type[NotImplementedError] | RedActionResults:
         return NotImplementedError
 
 
@@ -76,8 +79,8 @@ class InitialAccess(KillChainPhase):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
+        src_host: Host,
+        target_service: Service,
         target_hosts: targets = [],
         techniques: List[Technique] = [],
         valid_os: List[str] = [],
@@ -93,7 +96,7 @@ class InitialAccess(KillChainPhase):
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
 
-    def sim_execute(self) -> RedActionResults:
+    def sim_execute(self):
         return NotImplementedError
 
 
@@ -114,8 +117,8 @@ class Execution(KillChainPhase):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
+        src_host: Host,
+        target_service: Service,
         target_hosts: targets = [],
         techniques: List[Technique] = [],
         valid_os: List[str] = [],
@@ -131,7 +134,7 @@ class Execution(KillChainPhase):
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
 
-    def sim_execute(self) -> RedActionResults:
+    def sim_execute(self):
         return NotImplementedError
 
 
@@ -152,8 +155,8 @@ class Persistence(KillChainPhase):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
+        src_host: Host,
+        target_service: Service,
         target_hosts: targets = [],
         techniques: List[Technique] = [],
         valid_os: List[str] = [],
@@ -169,7 +172,7 @@ class Persistence(KillChainPhase):
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
 
-    def sim_execute(self) -> RedActionResults:
+    def sim_execute(self):
         return NotImplementedError
 
 
@@ -196,8 +199,8 @@ class PrivilegeEscalation(KillChainPhase):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
+        src_host: Host,
+        target_service: Service,
         target_hosts: targets = [],
         techniques: List[Technique] = [],
         valid_os: List[str] = [],
@@ -213,8 +216,23 @@ class PrivilegeEscalation(KillChainPhase):
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
 
-    def sim_execute(self) -> RedActionResults:
-        return NotImplementedError
+    def sim_execute(self):
+        if not check_vulnerability(self.target_service, self.techniques):
+            # If the service is not vulnerable, then the attack cannot be performed at all
+            return self.action_results
+        for host in self.target_hosts:
+            # Check if the attack is valid against this specific host
+            if not validate_attack(host, self.target_service):
+                continue
+            target_process = None
+            for p in host.processes:
+                if p.name == "malware.exe":
+                    p.escalate_privilege()
+            self.action_results.modify_alert(host)
+            if self.target_service not in self.action_results.detector_alert.services:
+                self.action_results.modify_alert(self.target_service)
+            self.action_results.add_successful_action(host)
+        return self.action_results
 
 
 class DefenseEvasion(KillChainPhase):
@@ -234,8 +252,8 @@ class DefenseEvasion(KillChainPhase):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
+        src_host: Host,
+        target_service: Service,
         target_hosts: targets = [],
         techniques: List[Technique] = [],
         valid_os: List[str] = [],
@@ -251,7 +269,7 @@ class DefenseEvasion(KillChainPhase):
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
 
-    def sim_execute(self) -> RedActionResults:
+    def sim_execute(self):
         return NotImplementedError
 
 
@@ -271,8 +289,8 @@ class CredentialAccess(KillChainPhase):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
+        src_host: Host,
+        target_service: Service,
         target_hosts: targets = [],
         techniques: List[Technique] = [],
         valid_os: List[str] = [],
@@ -288,7 +306,7 @@ class CredentialAccess(KillChainPhase):
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
 
-    def sim_execute(self) -> RedActionResults:
+    def sim_execute(self):
         return NotImplementedError
 
 
@@ -310,12 +328,14 @@ class Discovery(KillChainPhase):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
-        target_hosts: targets = [],
+        src_host: Host,
+        target_service: Service,
+        target_hosts: targets,
         techniques: List[Technique] = [],
         valid_os: List[str] = [],
         load_techniques: bool = True,
+        scanned_subnets: List[Subnet] = [],
+        scanned_hosts: List[Host] = [],
     ):
         """
         - `name`: Name of the Killchain Phase
@@ -326,9 +346,45 @@ class Discovery(KillChainPhase):
         self.valid_os = valid_os
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
+        self.scanned_subnets = scanned_subnets
+        self.scanned_hosts = scanned_hosts
 
-    def sim_execute(self) -> RedActionResults:
-        return NotImplementedError
+    def sim_execute(self):
+        # Check if agent already has service info on Host with a PortScan
+        h = self.target_hosts[0]
+        is_portscanned = h in self.scanned_hosts
+
+        # Check if agent already has subnet info on Subnet with a Pingsweep
+        s = h.subnet
+        is_pingsweeped = s in self.scanned_subnets
+
+        if not is_pingsweeped and not is_portscanned:  # If it has done neither
+            return PingSweep(
+                self.src_host, self.target_service, self.target_hosts, self.techniques
+            ).sim_execute()
+        elif is_portscanned != is_pingsweeped:
+            # If has already PortScanned, do Pingsweep; and vice versa
+            if is_pingsweeped:
+                return PortScan(
+                    self.src_host,
+                    self.target_service,
+                    self.target_hosts,
+                    self.techniques,
+                ).sim_execute()
+            else:
+                return PingSweep(
+                    self.src_host,
+                    self.target_service,
+                    self.target_hosts,
+                    self.techniques,
+                ).sim_execute()
+        elif is_pingsweeped and is_portscanned:  # If it has done both
+            actions = [PortScan, PingSweep]
+            action = random.choice(actions)
+            return action(
+                self.src_host, self.target_service, self.target_hosts, self.techniques
+            ).sim_execute()
+        return RedActionResults()
 
 
 class LateralMovement(KillChainPhase):
@@ -349,8 +405,8 @@ class LateralMovement(KillChainPhase):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
+        src_host: Host,
+        target_service: Service,
         target_hosts: targets = [],
         techniques: List[Technique] = [],
         valid_os: List[str] = [],
@@ -366,8 +422,26 @@ class LateralMovement(KillChainPhase):
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
 
-    def sim_execute(self) -> RedActionResults:
-        return NotImplementedError
+    def sim_execute(self):
+        if not check_vulnerability(self.target_service, self.techniques):
+            # If the service is not vulnerable, then the attack cannot be performed at all
+            return self.action_results
+        for host in self.target_hosts:
+            # Check if the attack is valid against this specific host
+            if not validate_attack(host, self.target_service):
+                continue
+            self.action_results.modify_alert(host)
+            self.src_host.remove_process(
+                process_name="malware.exe"
+            )  # Remove malware from source host
+            host.add_process(
+                process_name="malware.exe", process_privilege_level="user"
+            )  # Implant malware into target_host
+            if self.target_service not in self.action_results.detector_alert.services:
+                self.action_results.modify_alert(self.target_service)
+                # This action needs to be done to a Host before it can be privilege escalated.
+            self.action_results.add_successful_action(host)
+        return self.action_results
 
 
 class Collection(KillChainPhase):
@@ -387,8 +461,8 @@ class Collection(KillChainPhase):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
+        src_host: Host,
+        target_service: Service,
         target_hosts: targets = [],
         techniques: List[Technique] = [],
         valid_os: List[str] = [],
@@ -404,7 +478,7 @@ class Collection(KillChainPhase):
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
 
-    def sim_execute(self) -> RedActionResults:
+    def sim_execute(self):
         return NotImplementedError
 
 
@@ -425,8 +499,8 @@ class Exfiltration(KillChainPhase):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
+        src_host: Host,
+        target_service: Service,
         target_hosts: targets = [],
         techniques: List[Technique] = [],
         valid_os: List[str] = [],
@@ -442,7 +516,7 @@ class Exfiltration(KillChainPhase):
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
 
-    def sim_execute(self) -> RedActionResults:
+    def sim_execute(self):
         return NotImplementedError
 
 
@@ -462,8 +536,8 @@ class CommandAndControl(KillChainPhase):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
+        src_host: Host,
+        target_service: Service,
         target_hosts: targets = [],
         techniques: List[Technique] = [],
         valid_os: List[str] = [],
@@ -479,7 +553,7 @@ class CommandAndControl(KillChainPhase):
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
 
-    def sim_execute(self) -> RedActionResults:
+    def sim_execute(self):
         return NotImplementedError
 
 
@@ -500,8 +574,8 @@ class Impact(KillChainPhase):
 
     def __init__(
         self,
-        src_host: Host = None,
-        target_service: Service = None,
+        src_host: Host,
+        target_service: Service,
         target_hosts: targets = [],
         techniques: List[Technique] = [],
         valid_os: List[str] = [],
@@ -517,5 +591,74 @@ class Impact(KillChainPhase):
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
 
-    def sim_execute(self) -> RedActionResults:
-        return NotImplementedError
+    def sim_execute(self):
+        if not check_vulnerability(self.target_service, self.techniques):
+            # If the service is not vulnerable, then the attack cannot be performed at all
+            return self.action_results
+        for host in self.target_hosts:
+            # Check if the attack is valid against this specific host
+            if not validate_attack(host, self.target_service):
+                continue
+            host.is_compromised = True
+            self.action_results.modify_alert(host)
+            if self.target_service not in self.action_results.detector_alert.services:
+                self.action_results.modify_alert(self.target_service)
+            self.action_results.add_successful_action(host)
+        return self.action_results
+
+
+class Reconnaissance(KillChainPhase):
+    """
+    Reconnaissance Killchain Phase Attack. As described by MITRE:
+
+    The adversary is trying to gather information they can use to plan future operations.
+
+    Reconnaissance consists of techniques that involve adversaries actively or passively gathering information that can be used to support
+    targeting. Such information may include details of the victim organization, infrastructure, or staff/personnel. This information can
+    be leveraged by the adversary to aid in other phases of the adversary lifecycle, such as using gathered information to plan and execute
+    Initial Access, to scope and prioritize post-compromise objectives, or to drive and lead further Reconnaissance efforts.
+    """
+
+    name: str
+    valid_os: List[str]
+
+    def __init__(
+        self,
+        src_host: Host,
+        target_service: Service,
+        target_hosts: targets = [],
+        techniques: List[Technique] = [],
+        valid_os: List[str] = [],
+        load_techniques: bool = True,
+    ):
+        """
+        - `name`: Name of the Killchain Phase
+        - `valid_os`: List of operating systems compatible with attack
+        """
+        super().__init__(src_host, target_service, target_hosts, techniques)
+        self.name = "reconnaissance"
+        self.valid_os = valid_os
+        if load_techniques:
+            self.load_valid_techniques(self.name, self.valid_os)
+
+    def sim_execute(self):
+        """
+        This action scans the vulnerabilities on a Host and relays the information to the red agent.
+        """
+        # This class should return the vulnerbailities to the red agent
+        if not check_vulnerability(self.target_service, self.techniques):
+            # If the service is not vulnerable, then the attack cannot be performed at all
+            return self.action_results
+        for host in self.target_hosts:
+            # Check if the attack is valid against this specific host
+            if not validate_attack(host, self.target_service):
+                continue
+            self.action_results.modify_alert(host)
+            self.action_results.add_metadata(
+                host, {"vulnerabilities": host.vulnerabilities, "type": host.type}
+            )  # NOTE: Host does not have vulnerabilities assocated yet?
+            if self.target_service not in self.action_results.detector_alert.services:
+                self.action_results.modify_alert(self.target_service)
+                # This action needs to be done to a Host before it can be exploited with LateralMovement
+            self.action_results.add_successful_action(host)
+        return self.action_results

@@ -1,15 +1,17 @@
-from .Technique import Technique
+from technique import Technique
 import sys
 
 sys.path.append("/Users/67x/cyberwheel/")
-from red_actions.actions.killchain_phases import InitialAccess, Execution, Persistence
+from red_actions.actions.killchain_phases import (
+    InitialAccess,
+    Execution,
+    Persistence,
+    Discovery,
+)
 from pprint import pprint, pformat
 
 supported_os = ["macos"]
 
-initial_access = InitialAccess(supported_os)
-execution = Execution(supported_os)
-persistence = Persistence(supported_os)
-pprint(initial_access.get_techniques())
-pprint(execution.get_techniques())
-pprint(persistence.get_techniques())
+temp_host = None
+temp_service = "ssh"  # TODO: What are the options for Service
+# discovery = Discovery(temp_host, temp_service, [temp_host], [], supported_os, scanned_hosts=[], scanned_subnets=[])

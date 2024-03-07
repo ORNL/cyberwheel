@@ -16,6 +16,7 @@ pyattck = "^7.1.2"
 pettingzoo = "^1.24.3"
 ray = {extras = ["rllib"], version = "^2.9.2"}
 pydantic = "^1"
+jsonpickle = "^3.0.3"
 
 
 [tool.poetry.group.dev.dependencies]

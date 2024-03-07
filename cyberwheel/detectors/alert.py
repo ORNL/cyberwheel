@@ -10,11 +10,11 @@ class Alert:
 
     def __init__(
         self,
-        src_host: Host = None,
+        src_host: Host | None = None,
         dst_hosts: List[Host] = [],
         services: List[Service] = [],
     ):
-        self.src_host: Host = src_host
+        self.src_host: Host | None = src_host
         self.dst_hosts: List[Host] = dst_hosts
         self.services: List[Service] = services
 
@@ -40,6 +40,7 @@ class Alert:
         return d
 
     def __eq__(self, __value: object) -> bool:
+        assert isinstance(__value, Alert)
         src_host = True if self.src_host == __value.src_host else False
         dst_hosts = True if len(self.dst_hosts) == len(__value.dst_hosts) else False
         if dst_hosts:

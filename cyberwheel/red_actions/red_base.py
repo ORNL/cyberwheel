@@ -1,11 +1,12 @@
 from abc import abstractmethod
-from typing import Union, List
+from typing import Union, List, Dict, Any
+from cyberwheel.network.network_object import NetworkObject
 from detectors.alert import Alert
 from network.network_base import Network
 from network.host import Host
 from network.service import Service
 from network.subnet import Subnet
-from .Technique import Technique
+from .technique import Technique
 
 targets = Union[List[Host], List[Subnet]]
 destination = Union[Host, Service]
@@ -48,6 +49,8 @@ class RedActionResults:
     - `detector_alert`: The alert to be passed to the detector. It should contain all the information the detector can get.
 
     - `attack_success`: Feedback for the red agent so that it knows if the attack worked or not. Most attacks target 1 host, but some techniques, particularly reconnaissance techniques, may target multiple hosts.
+
+    - `metadata`: Associated metadata with the red action. For example, a Reconnaissance action will add the host vulnerabilities to the metadata object.
     """
 
     discovered_hosts: List[Host]
@@ -58,6 +61,7 @@ class RedActionResults:
         self.discovered_hosts = []
         self.detector_alert = Alert(None, [], [])
         self.attack_success = []
+        self.metadata = {}
 
     def add_host(self, host: Host) -> None:
         """
@@ -90,7 +94,11 @@ class RedActionResults:
         """
         self.attack_success.append(host)
 
+    def add_metadata(self, net_obj: NetworkObject, metadata: Any) -> None:
+        self.metadata[net_obj] = metadata
+
     def __eq__(self, __value: object) -> bool:
+        assert isinstance(__value, RedActionResults)
         if (
             self.discovered_hosts == __value.discovered_hosts
             and self.detector_alert == __value.detector_alert
@@ -122,8 +130,8 @@ class RedAction:
         self.action_results = RedActionResults()
 
     @abstractmethod
-    def sim_execute(self) -> RedActionResults:
-        raise NotImplementedError
+    def sim_execute(self) -> RedActionResults | type[NotImplementedError]:
+        pass
 
     def get_techniques(self):
         return self.techniques

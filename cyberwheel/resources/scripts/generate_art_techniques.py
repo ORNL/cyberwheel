@@ -1,28 +1,21 @@
 import json
 from typing import List
 
-
 def generate_art_techniques():
 
-    scripts = """from red_actions.Technique import Technique
+    scripts = """from red_actions.technique import Technique
 """
     preamble = "\ntechnique_mapping = {"
     path_to_combined_art_techniques = "../metadata/combined_art_techniques.json"
     art_techniques = {}
     mapping = {}
     temp_list = []
-    with open(path_to_combined_art_techniques, "r") as f:
+    with open(path_to_combined_art_techniques, 'r') as f:
         art_techniques = json.load(f)
     for key in list(art_techniques.keys()):
         t = art_techniques[key]
         name = t["name"]
-        name_trunc = (
-            name.replace(" ", "")
-            .replace("/", "")
-            .replace("-", "")
-            .replace("(", "")
-            .replace(")", "")
-        )
+        name_trunc = name.replace(" ", "").replace("/","").replace("-","").replace("(", "").replace(")", "")
         mitre_id = t["external_id"]
         temp_list.append(mitre_id)
         technique_id = t["technique_id"]
@@ -37,9 +30,9 @@ def generate_art_techniques():
         cve_list = []
         mitre_to_cwe = {}
         cwe_to_cve = {}
-        with open("../metadata/attack_to_cwe.json", "r") as f:
+        with open('../metadata/attack_to_cwe.json', 'r') as f:
             mitre_to_cwe = json.load(f)
-        with open("../metadata/cwe_to_cve.json", "r") as f:
+        with open('../metadata/cwe_to_cve.json', 'r') as f:
             cwe_to_cve = json.load(f)
 
         mid = mitre_id.replace("T", "")
@@ -81,13 +74,12 @@ class {name_trunc}(Technique):
         )
 """
         preamble += f"'{mitre_id}': {name_trunc}, "
-        # with open('temp_techniques_list.json', 'w') as f:
+        #with open('temp_techniques_list.json', 'w') as f:
         #   json.dump(list(set(temp_list)), f)
     preamble = preamble[:-2] + "}\n"
     scripts = scripts + preamble
-    with open("temp_techniques.py", "w") as f:
+    with open('temp_techniques.py', 'w') as f:
         f.write(scripts)
-
 
 if __name__ == "__main__":
     generate_art_techniques()

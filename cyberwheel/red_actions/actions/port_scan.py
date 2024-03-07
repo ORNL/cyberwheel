@@ -7,7 +7,7 @@ from red_actions.red_base import (
     check_vulnerability,
     targets,
 )
-from red_actions.Technique import Technique
+from red_actions.technique import Technique
 from network.host import Host
 from network.service import Service
 
@@ -33,6 +33,7 @@ class PortScan(RedAction):
             if not validate_attack(host, self.target_service):
                 continue
             self.action_results.modify_alert(host)
+            self.action_results.add_metadata(host, host.services)
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)
             self.action_results.add_successful_action(host)

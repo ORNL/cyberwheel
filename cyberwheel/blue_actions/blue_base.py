@@ -8,9 +8,10 @@ from network.service import Service
 
 
 class BlueAction:
-    def __init__(self) -> None:
-        pass
-
     @abstractmethod
-    def execute() -> any:
-        pass
+    def execute(self) -> int:
+        """
+        This method executes a blue action. 
+        It returns the reward gained (negative or positive) by performing this action.
+        """
+        raise NotImplementedError

@@ -1,0 +1,78 @@
+host_types:
+  example:
+    services:
+      - name: foo
+        port: 1234
+        protocol: udp
+        version:
+        vulns:
+          - vuln1:
+            foo: bar
+          - vuln2:
+            bar: baz
+        description: foo
+      - name: ping
+        # TODO: make port optional for ICMP
+        port: 1
+        protocol: icmp
+    decoy: False
+    os: linux
+  workstation:
+    services:
+      - name: rdp
+        port: 3389
+        protocol:
+    decoy: false
+    os: windows
+  web_server:
+    services:
+      - name: http
+        port: 80
+        protocol: tcp
+      - name: https
+        port: 443
+        protocol: tcp
+  mail_server:
+    services:
+      - name: smtp
+        port: 25
+        protocol: tcp
+      - name: smtp_tls
+        port: 587
+        protocol: tcp
+      - name: smtps
+        port: 465
+        protocol: tcp
+      - name: imap
+        port: 143
+        protocol: tcp
+      - name: pop3
+        port: 110
+        protocol: tcp
+  file_server:
+    services:
+      - name: ftp
+        port: 21
+        protocol: tcp
+      - name: sftp
+        port: 22
+        protocol: tcp
+      - name: smb
+        port: 445
+        protocol: tcp
+  ssh_jump_server:
+    services:
+      - name: ssh
+        port: 22
+        protocol: tcp
+  proxy_server:
+    services:
+      - name: squid
+        port: 3128
+        protocol: tcp
+      - name: http
+        port: 80
+        protocol: tcp
+      - name: https
+        port: 443
+        protocol: tcp

@@ -1,0 +1,5 @@
+include cyberwheel/network/*.yaml
+include cyberwheel/network/*.yml
+include cyberwheel/resources/metadata/*.json
+include cyberwheel/resources/metadata/*.yaml
+include cyberwheel/resources/metadata/*.yml

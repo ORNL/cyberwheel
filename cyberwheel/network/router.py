@@ -1,9 +1,10 @@
 import ipaddress as ipa
-from .network_object import NetworkObject
+from .network_object import NetworkObject, Route
+#from .subnet import Subnet
 
 
 class Router(NetworkObject):
-    def __init__(self, name, default_route=None, routes=[], firewall_rules=[]):
+    def __init__(self, name, firewall_rules=[], **kwargs):
         """
         :param str name: name of router
         :param (ip_address | None) default_route: IP object of default route
@@ -29,8 +30,10 @@ class Router(NetworkObject):
                 ]
         """
         super().__init__(name, firewall_rules)
-        self.default_route = default_route
-        self.routes = routes  # List of routes to other subnets or routers
+        # TODO
+        self.default_route = None
+        # TODO: set routes after init?
+        #self.routes = routes  # List of routes to other subnets or routers
         self.interfaces = {}
 
     def __str__(self) -> str:
@@ -44,19 +47,20 @@ class Router(NetworkObject):
         str += f'routes={self.routes!r}, firewall_rules={self.firewall_rules!r}'
         return str
 
-
-    def get_default_route(self):
-        return self.default_route
-
-    def get_routes(self):
-        # should the default route be preppended to this list?
-        routes = self.routes.append(self.default_route)
-        return routes
-
     
     def set_interface_ip(self, interface_name: str, ip: ipa.IPv4Address |ipa.IPv6Address):
         self.interfaces.update({interface_name: ip})
 
 
-    def get_interface_ip(self, interface_name: str) -> ipa.IPv4Address | ipa.IPv6Address | None:
-        return self.interfaces.get(interface_name)
+    #def get_interface_ip(self, interface_name: str) -> ipa.IPv4Address | ipa.IPv6Address:
+    def get_interface_ip(self, interface_name: str):
+        try:
+            return self.interfaces.get(interface_name)
+        except KeyError as e:
+            # TODO
+            raise e
+
+
+    def add_subnet_interface(self, subnet) -> None:
+        ip = subnet.available_ips.pop(0)
+        self.set_interface_ip(subnet.name, ip)

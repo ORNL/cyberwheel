@@ -1,13 +1,9 @@
 import ipaddress as ipa
-import json
 from pydantic import BaseModel
 import random
-from .network_object import NetworkObject, Route, FirewallRule
+from .network_object import NetworkObject
 from .service import Service
 from .subnet import Subnet
-
-# from .router import Router
-
 
 
 class HostType(BaseModel):
@@ -15,6 +11,16 @@ class HostType(BaseModel):
     services: list[Service] = []
     decoy: bool = False
     os: str = ''
+
+# not using this yet
+class ArpEntry(BaseModel):
+    mac: str
+    ip: ipa.IPv4Network | ipa.IPv6Network
+
+
+# not using this yet
+class ArpTable(BaseModel):
+    table: list[ArpEntry]
 
 
 class Host(NetworkObject):
@@ -32,7 +38,6 @@ class Host(NetworkObject):
         self.services: list[Service] = kwargs.get('services', [])
         self.is_compromised: bool = False  # Default to not compromised
         self.mac_address = self._generate_mac_address()
-        self.default_route = None
         self.routes = set()
         self.decoy = False
         
@@ -178,67 +183,3 @@ class Host(NetworkObject):
         
         # update services
         self.services = updated_services
-
-
-    # TODO: make this work for IPv6 as well
-    def get_routing_table(self, ipv6: bool = False):
-        routes = self.routes
-        if ipv6:
-            slash_zero_net = ipa.ip_network('::/0')
-        else:
-            slash_zero_net = ipa.ip_network('0.0.0.0/0')
-        routes.add({'dest': slash_zero_net, 'via': self.default_route})
-        return routes
-
-
-    def add_route(self, route: Route) -> None:
-        self.routes.add(route)
-
-
-    def add_routes_from_dict(self, routes: list[dict]):
-        for route in routes:
-            # make sure 'dest' is an ip_network object
-            try:
-                if not isinstance(route['dest'], ipa.IPv4Network | ipa.IPv6Network):
-                    dest = self.generate_ip_network_object(route['dest'])
-                else:
-                    dest = route['dest']
-            except ValueError as e:
-                # TODO: custom exception here?
-                raise e
-            # make sure 'via' is an ip_address object
-            try:
-                if not isinstance(route['via'], ipa.IPv4Address | ipa.IPv6Address):
-                    via = self.generate_ip_object(route['via'])
-                else:
-                    via = route['via']
-            except ValueError as e:
-                # TODO: custom exception here?
-                raise e
-
-            self.add_route(dest, via)
-
-
-    def get_nexthop_from_routes(self,
-                                dest_ip: ipa.IPv4Address | ipa.IPv6Address):
-        '''
-        Return most specific route that matches dest_ip
-
-        :param (IPv4Address | IPv6Address) dest_ip: destination IP object
-        :returns (IPv4Address | IPv6Address):
-        '''
-        # sort routes
-        routes = sorted(list(self.routes))
-
-        # reverse list because ipaddress' logical operators are weird
-        # and sort by subnet mask bits instead of number of ips in subnet
-        # i.e. this should give us a list with smallest subnets first
-        routes.reverse()
-
-        # find most specific match in routes
-        for route in routes:
-            if dest_ip in route['dest'].hosts():
-                return route['via']
-
-        # return default_route if no matche
-        return self.default_route

@@ -6,9 +6,7 @@ from .router import Router
 
 
 class Subnet(NetworkObject):
-    def __init__(
-        self, name, default_route, ip_range, router: Router, firewall_rules=[], **kwargs
-    ):
+    def __init__(self, name, ip_range, router: Router, firewall_rules=[], **kwargs):
         """
         :param str name: name of router
         :param str default_route: name of router that provides default route
@@ -34,16 +32,6 @@ class Subnet(NetworkObject):
         :param (IPv4Address | IPv6Address] **dns_server: default DNS server for subnet
         """
         super().__init__(name, firewall_rules)
-        # default route
-        try:
-            if default_route is not None:
-                self.default_route = ipa.ip_address(default_route)
-        except ValueError as e:
-            print(
-                f"default route ({default_route}) does not represent a valid IP address"
-            )
-            raise e
-
         # ip range of subnet
         try:
             # this should allow IPv4 or IPv6
@@ -58,7 +46,7 @@ class Subnet(NetworkObject):
         dns_server = kwargs.get("dns_server")
         if dns_server:
             try:
-                self.dns_server = ipa.ip_address(dns_server)
+                self.dns_server = self.generate_ip_object(dns_server)
             except ValueError as e:
                 print(f"{dns_server} does not represent a valid IPv4 or IPv6 address")
                 raise e
@@ -77,6 +65,17 @@ class Subnet(NetworkObject):
         str += f'firewall_rules={self.firewall_rules!r}, '
         str += f'dns_server={self.dns_server!r}'
         return str
+
+
+    def set_default_route(self):
+        default_route_via = self.router.get_interface_ip(self.name)
+        ip_version = default_route_via.version #type:ignore
+        if ip_version == 4:
+            self.default_route = Route(dest=ipa.ip_network('0.0.0.0/0'),
+                                       via=default_route_via) # type: ignore
+        elif ip_version == 6:
+            self.default_route = Route(dest=ipa.ip_network('::/0'),
+                                       via=default_route_via) # type: ignore
 
 
     def set_dns_server(self, ip: ipa.IPv4Address | ipa.IPv6Address):
@@ -105,10 +104,9 @@ class Subnet(NetworkObject):
         return len(self.available_ips)
 
 
-    # TODO: refactor for Route
     def assign_dhcp_lease(self, host_obj) -> None:
         '''
-        Emulate a DHCP lease
+        Simmulate a DHCP lease
 
         :param Host host_obj: host requesting lease
         '''

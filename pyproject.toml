@@ -26,3 +26,9 @@ pyright = "^1.1.351"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.setuptools.packages.find]
+where = ['cyberwheel']
+
+[tool.setuptools.package-data]
+cyberwheel = ['*.json', '*.yaml', '*.yml']

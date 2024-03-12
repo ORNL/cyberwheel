@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Iterable
 import random
 
-from network.network_base import Network
+from cyberwheel.network.network_base import Network
 from .alert import Alert
 
 

@@ -1,4 +1,5 @@
 host:
+    name: decoy
     type: User Workstation
     firewall:  # if firewall is undefined or empty assume 'allow all'
     routes:

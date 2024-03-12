@@ -1,4 +1,4 @@
-from Technique import Technique
+from .Technique import Technique
 import sys
 
 sys.path.append("/Users/67x/cyberwheel/")

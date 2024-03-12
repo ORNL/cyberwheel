@@ -1,5 +1,5 @@
 from typing import List
-from AtomicTest import AtomicTest
+from .AtomicTest import AtomicTest
 from pprint import pformat
 import jsonpickle
 import json

@@ -225,14 +225,14 @@ class Network:
 
             services_list = host_type[0]['services']
             service_objects = []
-            for service in services_list:
-                service_objects.append(Service(name=name,
-                                               port=service.get('port'),
-                                               protocol=service.get('protocol'),
-                                               version=service.get('version'),
-                                               vulns=service.get('vulns'),
-                                               description=service.get('description'),
-                                               decoy=service.get('decoy')))
+            # for service in services_list:
+            #     service_objects.append(Service(name=name,
+            #                                    port=service.get('port'),
+            #                                    protocol=service.get('protocol'),
+            #                                    version=service.get('version'),
+            #                                    vulns=service.get('vulns'),
+            #                                    description=service.get('description'),
+            #                                    decoy=service.get('decoy')))
 
             return HostType(name=name, services=service_objects)
 
@@ -346,7 +346,7 @@ class Network:
                             for route in routes:
                                 dest = route['dest']
                                 via = route['via']
-                                host.add_route(dest, via)
+                                host.add_route(Route(**{'dest':dest, 'via':via}))
 
         return network
 

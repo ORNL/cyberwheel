@@ -52,9 +52,13 @@ class Host(NetworkObject):
         self.decoy = False
         
         # apply any HostType details
-        if self.host_type:
-            self._apply_host_type(self.host_type)
-
+        # if self.host_type:
+        #     self._apply_host_type(self.host_type)
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Host):
+            return False
+        return self.services == other.services and self.subnet == other.subnet and self.host_type == other.host_type
+    
 
     def __str__(self) -> str:
         str = f'Host(name="{self.name}", subnet="{self.subnet.name}", '

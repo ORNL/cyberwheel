@@ -1,7 +1,7 @@
 from typing import List, Dict
 from copy import deepcopy
-from network.host import Host
-from network.service import Service
+from cyberwheel.network.host import Host
+from cyberwheel.network.service import Service
 
 
 # TODO Needs to be updated as the network implementation changes.

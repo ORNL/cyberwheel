@@ -1,5 +1,6 @@
 #from dataclasses import dataclass, field
-from pydantic import BaseModel, validator, PositiveInt
+from typing_extensions import Unpack
+from pydantic import BaseModel, ConfigDict, validator, PositiveInt
 
 
 class Service(BaseModel):

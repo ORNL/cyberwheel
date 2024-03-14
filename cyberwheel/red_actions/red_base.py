@@ -123,7 +123,7 @@ class RedAction:
 
     @abstractmethod
     def sim_execute(self) -> RedActionResults:
-        pass
+        raise NotImplementedError
 
     def get_techniques(self):
         return self.techniques

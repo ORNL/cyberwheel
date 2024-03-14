@@ -49,10 +49,10 @@ class DeployDecoyHost(BlueAction):
 
     def execute(self) -> int:
         self.host = self.network.create_decoy_host(self.type.name, self.subnet, self.type)
-        return self.reward
+        return self.reward                                                                                                                                                                                                                                                   
 
 
-def deploy_from_yaml(path: str, network: Network, subnet: Subnet)-> DeployDecoyHost:
+def deploy_from_yaml(decoy_name: str, path: str, network: Network, subnet: Subnet)-> DeployDecoyHost:
     """
     Creates a DecoyHost object specified in a YAML file. This YAML file defines 
     a type of host, what services run on it, and if there are any firewall rules.
@@ -64,19 +64,21 @@ def deploy_from_yaml(path: str, network: Network, subnet: Subnet)-> DeployDecoyH
     with open(path, 'r') as r:
         config = yaml.safe_load(r)
 
-    name = ""
-    if 'name' in config['host']:
-        name = config['host']['name']
+    if decoy_name not in config:
+        raise KeyError() 
+    # name = ""
+    # if 'name' in config['host']:
+    #     name = config['host']['name']
     host_types = get_host_types()
     for h in host_types: 
-        if h['type'] == config['host']['type']:
+        if h['type'] == config[decoy_name]['type']:
             decoy_type = HostType(**h)
-            decoy_type.name = name
+            decoy_type.name = decoy_name
             decoy_type.decoy = True
             break
 
-    reward = int(config['host']['reward'])
-    recurring_reward = int(config['host']['recurring_reward'])
+    reward = int(config[decoy_name]['reward'])
+    recurring_reward = int(config[decoy_name]['recurring_reward'])
     decoy = DeployDecoyHost(network, subnet, decoy_type, reward=reward, recurring_reward=recurring_reward)
     return decoy
 

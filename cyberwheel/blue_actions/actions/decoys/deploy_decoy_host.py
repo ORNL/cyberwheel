@@ -52,10 +52,10 @@ class DeployDecoyHost(BlueAction):
         return self.reward                                                                                                                                                                                                                                                   
 
 
-def deploy_from_yaml(decoy_name: str, path: str, network: Network, subnet: Subnet)-> DeployDecoyHost:
+def deploy_host_from_yaml(decoy_name: str, path: str, network: Network, subnet: Subnet)-> DeployDecoyHost:
     """
     Creates a DecoyHost object specified in a YAML file. This YAML file defines 
-    a type of host, what services run on it, and if there are any firewall rules.
+    a type of host and what services run on its.
     This should allow for different kinds of decoy hosts to be made in the future.
     - `path`: path to the config file of the typ
     - `network`: the network this decoy will be on

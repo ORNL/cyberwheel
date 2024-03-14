@@ -65,6 +65,16 @@ class Subnet(NetworkObject):
         str += f'firewall_rules={self.firewall_rules!r}, '
         str += f'dns_server={self.dns_server!r}'
         return str
+    
+    def set_default_route(self):
+        default_route_via = self.router.get_interface_ip(self.name)
+        ip_version = default_route_via.version #type:ignore
+        if ip_version == 4:
+            self.default_route = Route(dest=ipa.ip_network('0.0.0.0/0'),
+                                       via=default_route_via) # type: ignore
+        elif ip_version == 6:
+            self.default_route = Route(dest=ipa.ip_network('::/0'),
+                                       via=default_route_via) # type: ignore
 
 
     def set_dns_server(self, ip: ipa.IPv4Address | ipa.IPv6Address):

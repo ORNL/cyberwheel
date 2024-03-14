@@ -4,7 +4,7 @@ from cyberwheel.detectors.alert import Alert
 from cyberwheel.network.host import Host, HostType
 from cyberwheel.network.service import Service
 from cyberwheel.network.network_base import Network
-from cyberwheel.blue_actions.actions.decoys.deploy_decoy_host import DeployDecoyHost, deploy_from_yaml
+from cyberwheel.blue_actions.actions.decoys.deploy_decoy_host import DeployDecoyHost, deploy_host_from_yaml
 
 class TestDeployDecoyHost(unittest.TestCase):
     def setUp(self) -> None:
@@ -15,7 +15,7 @@ class TestDeployDecoyHost(unittest.TestCase):
         self.correct_deploy = DeployDecoyHost(self.network, self.subnet, self.host_type, -10, -1)
     
     def test_decoy_host(self):
-        deploy = deploy_from_yaml('decoy1','resources/metadata/decoy_hosts.yaml', self.network, self.subnet)
+        deploy = deploy_host_from_yaml('decoy1','resources/metadata/decoy_hosts.yaml', self.network, self.subnet)
         deploy.execute()
         self.assertTrue(self.correct_deploy == deploy, f'\n---------------\n{self.correct_deploy}\n\n{deploy}---------------')
 

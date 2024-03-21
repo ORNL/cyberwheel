@@ -7,7 +7,7 @@ import numpy as np
 from os import PathLike
 from pathlib import PosixPath
 import random
-from typing import Union
+from typing import Union, List
 import yaml
 
 from .host import Host, HostType
@@ -84,6 +84,9 @@ class Network:
     def get_hosts(self) -> list[Host]:
         return [host for _, host in self.graph.nodes(data='data') if isinstance(host, Host)]#type:ignore
 
+    def get_nondecoy_hosts(self)-> List[Host]:
+        return [host for _, host in self.graph.nodes(data='data') if isinstance(host, Host) and not host.decoy]
+    
     def update_host_compromised_status(self, host: str, is_compromised: bool):
         try:
             host_obj = self.get_node_from_name(host)

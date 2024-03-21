@@ -1,5 +1,6 @@
 import yaml
 from importlib.resources import files
+from typing import Dict
 
 import gymnasium as gym
 from gymnasium import spaces
@@ -7,13 +8,32 @@ from gymnasium import spaces
 from network.network_base import Network
 from network.host import Host
 from .cyberwheel import Cyberwheel
-from redagents.longestpath import LongestPathRedAgent
+from redagents.killchain_agent import KillChainAgent
 from blueagents.decoy_blue import DecoyBlueAgent
+from blueagents.observation import HistoryObservation
+from detectors.detector import CoinFlipDetector
+from red_actions.red_base import RedActionResults
 from redagents.killchain_agent import KillChainAgent
 from red_actions.red_base import RedActionResults
 import random
 
 # import numpy as np
+
+def host_to_index_mapping(network: Network)-> Dict[Host, int]:
+    """
+    This will help with constructing the obs_vec.
+    It will need to be called and save during __init__() 
+    because deploying decoy hosts may affect the order of 
+    the list network.get_non_decoy_hosts() returns.
+    This might not be the case, but this will ensure the 
+    original indices are preserved.
+    """
+    mapping:  Dict[Host, int] = {}
+    i = 0
+    for host in network.get_nondecoy_hosts():
+        mapping[host] = i
+        i += 1
+    return mapping
 
 
 class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
@@ -66,14 +86,14 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         [0, 1, 0, 0, 0, 1, 1, 0]
         [0, 0, 0, 0, 0, 1, 1, 0]
 
-
         Changed this to be a 2d vector to make indexing easier:
         v = [[1 ... n],[1 ... n]]
         [[0, 0, 1, 0], [0, 0, 0, 0]]
         v[0] is what is passed by the detector
         v[1] is the history of each host
         """
-        self.observation_space = spaces.MultiBinary([num_hosts - 1, num_hosts - 1])
+        self.observation_space = spaces.MultiBinary([num_hosts-1, num_hosts-1])
+        self.alert_converter = HistoryObservation(self.observation_space.shape, host_to_index_mapping(self.network))
 
         hosts = self.network.get_all_hosts()
         user_hosts = []
@@ -84,7 +104,8 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
         self.red_agent = KillChainAgent(entry_host)
         self.blue_agent = DecoyBlueAgent(self.network)
-
+        self.detector = CoinFlipDetector()
+        
     def step(self, action):
         """
         Currently, blue actions don't update the obs_vector. They just make a decoy host
@@ -116,8 +137,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         # detector(rRedActionResult.alert) -> List[Alert]
         # update_obs(List[Alert]->obs_vec)
 
-        red_action_reward = self.calculate_red_reward(red_action)
-
+        red_action_reward: RedActionResults = self.calculate_red_reward(red_action_result)
+        alerts = self.detector.obs(red_action_reward.detector_alert)
+        obs_vec = self.alert_converter.create_obs_vector(alerts)
         net_reward = red_action_reward + rew
 
         if self.current_step >= self.max_steps:  # Maximal number of steps

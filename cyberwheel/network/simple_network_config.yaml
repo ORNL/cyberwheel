@@ -1,0 +1,191 @@
+network:
+  name: simple_network
+  desc: Example config that defines a simple network
+
+# currently this block is not being parsed and is
+# only here to help visualize the topology
+topology:
+  - core_router:
+    - user_subnet:
+      - user01
+      - user02
+      - user03
+      - user04
+      - user05
+      - admin_workstation
+    - server_subnet:
+      - server01
+      - server02
+      - server03
+    - dmz_subnet:
+      - dmz01
+      - dmz02
+      - dmz03
+      - dmz_jump_box
+    # should the red agent start here or can we assume initial foothold already occured?
+    - internet:
+
+# Routers
+routers:
+  core_router:
+    default_route: internet
+    routes:
+      - user_subnet
+      - server_subnet
+      - dmz_subnet
+      - internet
+    firewall:
+      # default to 'allow all' if no rules defined
+      ### this is antithetical to how firewalls work in the real world,
+      ### but seemed pragmatic in our case
+
+      ## this example rule is basically an 'allow all' rule since none of the
+      ## fields have values. The behavior is the same if a field is not defined
+      #- name: example rule
+      #  src:   # this value can be 'all', None, some_host, or some_subnet
+      #  dest:  # this value can be 'all', None, some_host, or some_subnet
+      #  port:  # this value can be 'all', None, or any int 1 - 65535
+      #  proto: # this value can be 'all', None, 'tcp', or 'udp'. default = 'tcp'
+      #  desc:  # human friendly description
+
+      ## implied 'allow all' from defined src if no other criteria defined
+      #- name: allow all from user subnet
+      #  src: user_subnet
+
+      ## allow server_subnet to all
+      #- name: allow all from server subnet
+      #  src: server_subnet
+      #  # can also explicitly define an 'allow all' rule using the 'all' value
+      #  dest: all
+
+      ## only 443/tcp is allowed into dmz_subnet
+      #- name: allow all https traffic into DMZ
+      #  src: all
+      #  dest: dmz_subnet
+      #  port: 443
+      #  # tcp is always the default
+      #  proto: tcp
+
+# Subnets
+subnets:
+  user_subnet:
+    default_route: 192.168.0.1
+    ip_range: 192.168.0.0/24
+    dns_server: 192.168.0.1
+    firewall:
+      # allow any traffic originating from server_subnet
+      - name: allow all from server_subnet
+        src: server_subnet
+
+      # only traffic allowed from dmz is from jump box on dest port 22
+      ## dest='all' and proto='tcp' is implied here
+      - name: allow ssh from dmz_jump_box
+        src: dmz_jump_box
+        port: 22
+
+      - src: internet
+
+  server_subnet:
+    default_route: 192.168.1.1
+    ip_range: 192.168.1.0/24
+    firewall:
+      # allow admin_workstation to anything in server_subnet
+      - name: allow admin to server_subnet
+        src: admin_workstation
+        dest: server_subnet
+
+      # allow DNS for user_subnet
+      - name: allow DNS
+        src: user_subnet
+        dest: server_subnet
+        port: 53
+
+      # allow DHCP for user_subnet
+      - name: allow DHCP
+        src: user_subnet
+        dest: server_subnet
+        port: 68
+        proto: udp
+
+
+  dmz_subnet:
+    default_route: 192.168.2.1
+    ip_range: 192.168.2.0/24
+    #firewall:
+    #  # implicit 'allow all' from user_subnet
+    #  - name: allow all user_subnet
+    #    src: user_subnet
+
+    #  # implicit 'allow all' from server_subnet
+    #  - name: allow all server_subnet
+    #    src: server_subnet
+
+    #  - name: allow https
+    #    src: all
+    #    dest: dmz_subnet
+    #    port: 443
+
+  # should we visualize the internet as another "subnet"?
+  internet:
+    default_route:
+    ip_range: 1.0.0.0/24
+    firewall:
+
+# Hosts
+hosts:
+
+  # User hosts
+  user01:
+    type: User Workstation
+    subnet: user_subnet
+    firewall:  # if firewall is undefined or empty assume 'allow all'
+    routes:
+      - dest: 192.168.0.0/24
+        via: 192.168.0.1
+  user02:
+    type: User Workstation
+    subnet: user_subnet
+  user03:
+    type: User Server
+    subnet: user_subnet
+  admin_workstation:
+    type: Admin Workstation
+    subnet: user_subnet
+    firewall:
+      - name: allow SSH
+        src: all
+        port: 22
+
+  # Server hosts
+  server01:
+    type:
+    subnet: server_subnet
+  server02:
+    type:
+    subnet: server_subnet
+  server03:
+    type:
+    subnet: server_subnet
+
+  # DMZ hosts
+  dmz01:
+    type:
+    subnet: dmz_subnet
+  dmz02:
+    type:
+    subnet: dmz_subnet
+  dmz03:
+    type:
+    subnet: dmz_subnet
+    firewall:
+      - name: foo
+        src: all
+        dest: dmz03
+        port: 443
+        proto: tcp
+  dmz_jump_box:
+    type:
+    subnet: dmz_subnet
+    firewall:
+      - name: allow SSH
+        port: 22

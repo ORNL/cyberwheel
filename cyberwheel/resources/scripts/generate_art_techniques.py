@@ -3,7 +3,7 @@ from typing import List
 
 def generate_art_techniques():
 
-    scripts = """from red_actions.technique import Technique
+    scripts = """from cyberwheel.red_actions.technique import Technique
 """
     preamble = "\ntechnique_mapping = {"
     path_to_combined_art_techniques = "../metadata/combined_art_techniques.json"

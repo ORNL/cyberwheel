@@ -1,12 +1,12 @@
 import unittest
 
-from detectors.detector import PerfectDetector
+from cyberwheel.detectors.detector import PerfectDetector
 from blueagents.observation import TestObservation
-from network.network_base import Network
-from network.service import Service
-from red_actions.art_techniques import NetworkServiceDiscovery
-from red_actions.actions.port_scan import PortScan
-from red_actions.actions.ping_sweep import PingSweep
+from cyberwheel.network.network_base import Network
+from cyberwheel.network.service import Service
+from cyberwheel.red_actions.art_techniques import NetworkServiceDiscovery
+from cyberwheel.red_actions.actions.port_scan import PortScan
+from cyberwheel.red_actions.actions.ping_sweep import PingSweep
 
 
 class TestPipeline(unittest.TestCase):

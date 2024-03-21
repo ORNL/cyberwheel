@@ -1,4 +1,4 @@
-from network.network_base import Network
+from cyberwheel.network.network_base import Network
 
 
 class Cyberwheel:

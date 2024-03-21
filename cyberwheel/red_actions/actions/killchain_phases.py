@@ -1,20 +1,20 @@
 from typing import List, Type
 from cyberwheel.red_actions.actions import port_scan
 
-from red_actions.red_base import (
+from cyberwheel.red_actions.red_base import (
     RedAction,
     RedActionResults,
     validate_attack,
     check_vulnerability,
     targets,
 )
-from red_actions.technique import Technique
-from actions import PortScan, PingSweep
-from network.host import Host, Subnet
-from network.service import Service
-
+from cyberwheel.red_actions.technique import Technique
+from cyberwheel.red_actions.actions import PortScan, PingSweep
+from cyberwheel.network.host import Host, Subnet
+from cyberwheel.network.service import Service
+import cyberwheel.red_actions.art_techniques as art_techniques
 import random
-import art_techniques
+
 import inspect
 
 
@@ -217,9 +217,9 @@ class PrivilegeEscalation(KillChainPhase):
             self.load_valid_techniques(self.name, self.valid_os)
 
     def sim_execute(self):
-        if not check_vulnerability(self.target_service, self.techniques):
-            # If the service is not vulnerable, then the attack cannot be performed at all
-            return self.action_results
+        # if not check_vulnerability(self.target_service, self.techniques): #TODO: Will need to implement this
+        #    # If the service is not vulnerable, then the attack cannot be performed at all
+        #    return self.action_results
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
@@ -352,11 +352,15 @@ class Discovery(KillChainPhase):
     def sim_execute(self):
         # Check if agent already has service info on Host with a PortScan
         h = self.target_hosts[0]
+
         is_portscanned = h in self.scanned_hosts
+
+        print(f"Is portscanned: {is_portscanned}")
 
         # Check if agent already has subnet info on Subnet with a Pingsweep
         s = h.subnet
         is_pingsweeped = s in self.scanned_subnets
+        print(f"Is pingsweeped: {is_pingsweeped}")
 
         if not is_pingsweeped and not is_portscanned:  # If it has done neither
             return PingSweep(
@@ -423,9 +427,9 @@ class LateralMovement(KillChainPhase):
             self.load_valid_techniques(self.name, self.valid_os)
 
     def sim_execute(self):
-        if not check_vulnerability(self.target_service, self.techniques):
-            # If the service is not vulnerable, then the attack cannot be performed at all
-            return self.action_results
+        # if not check_vulnerability(self.target_service, self.techniques): #TODO: This will need to be implemented for LateralMovement
+        # If the service is not vulnerable, then the attack cannot be performed at all
+        #    return self.action_results
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
@@ -592,9 +596,9 @@ class Impact(KillChainPhase):
             self.load_valid_techniques(self.name, self.valid_os)
 
     def sim_execute(self):
-        if not check_vulnerability(self.target_service, self.techniques):
-            # If the service is not vulnerable, then the attack cannot be performed at all
-            return self.action_results
+        # if not check_vulnerability(self.target_service, self.techniques): # TODO: Will need to implement this.
+        #    # If the service is not vulnerable, then the attack cannot be performed at all
+        #    return self.action_results
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
@@ -646,16 +650,13 @@ class Reconnaissance(KillChainPhase):
         This action scans the vulnerabilities on a Host and relays the information to the red agent.
         """
         # This class should return the vulnerbailities to the red agent
-        if not check_vulnerability(self.target_service, self.techniques):
-            # If the service is not vulnerable, then the attack cannot be performed at all
-            return self.action_results
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
                 continue
             self.action_results.modify_alert(host)
             self.action_results.add_metadata(
-                host, {"vulnerabilities": host.vulnerabilities, "type": host.type}
+                host.name, {"vulnerabilities": host.vulnerabilities, "type": host.type}
             )  # NOTE: Host does not have vulnerabilities assocated yet?
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)

@@ -1,9 +1,9 @@
 import unittest
-from network.network_base import Network
-from network.host import Host
-from network.service import Service
-from detectors.alert import Alert
-from red_actions.red_base import PingSweep, RedActionResults
+from cyberwheel.network.network_base import Network
+from cyberwheel.network.host import Host
+from cyberwheel.network.service import Service
+from cyberwheel.detectors.alert import Alert
+from cyberwheel.red_actions.red_base import PingSweep, RedActionResults
 
 
 class TestRedActionResult(unittest.TestCase):

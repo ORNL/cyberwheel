@@ -13472,7 +13472,7 @@
     },
     "T1039": {
         "attack_technique": "T1039",
-        "display_name": "Data from Network Shared Drive",
+        "display_name": "Data from cyberwheel.network Shared Drive",
         "atomic_tests": [
             {
                 "name": "Copy a sensitive File over Administrative share with copy",

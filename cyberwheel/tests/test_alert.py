@@ -1,10 +1,10 @@
 import unittest
 import numpy as np
-from detectors.alert import Alert
-from network.host import Host
-from network.service import Service
-from detectors.detector import PerfectDetector
-from network.network_base import Network
+from cyberwheel.detectors.alert import Alert
+from cyberwheel.network.host import Host
+from cyberwheel.network.service import Service
+from cyberwheel.detectors.detector import PerfectDetector
+from cyberwheel.network.network_base import Network
 from blueagents.observation import TestObservation
 
 
@@ -34,7 +34,7 @@ class TestAlert(unittest.TestCase):
         perfect_alert = Alert(src_host, dst_hosts, services)
         new_alert = detector.obs(perfect_alert)
         t = [perfect_alert]
-        self.assertListEqual(new_alert, t)
+        self.assertListEqual(new_alert, t)  # type: ignore
 
     def test_alert_add_host(self):
         correct_alert = Alert(dst_hosts=[Host("test_host", None, None)])

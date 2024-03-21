@@ -2,12 +2,12 @@ from ipaddress import IPv4Address, IPv6Address
 import networkx as nx
 import numpy as np
 from abc import ABC, abstractmethod
-from typing import Type, List
+from typing import Type, List, Tuple
 
 from ray import init
-from red_actions.red_base import RedAction
-from network.network_base import Host, Subnet
-from network.service import Service
+from cyberwheel.red_actions.red_base import RedAction
+from cyberwheel.network.network_base import Host, Subnet
+from cyberwheel.network.service import Service
 
 
 class RedAgent(ABC):
@@ -33,8 +33,9 @@ class KnownHostInfo:
         self.ports_scanned = scanned
         self.ip_address = ip_address
         self.services = services
-        self.vulnerabilities = vulnerabilities
+        self.vulnerabilities = vulnerabilities  # TODO: Service-level host
         self.type = type
+        self.routes = None  # TODO: If route not set, defaults to Router and local Subnet-level network
 
     def scan(self):
         self.ports_scanned = True
@@ -63,15 +64,19 @@ class KnownSubnetInfo:
 
 
 class StepInfo:
-    def __init__(self, step: int, action: Type[RedAction], success: bool):
+    def __init__(
+        self, step: int, action: Tuple[Type[RedAction], Host, Host], success: bool
+    ):
         self.step = step
         self.action = action
         self.success = success
+        self.info = f"{action[0].__name__} from {action[1].name} to {action[2].name} - {'Succeeded' if success else 'Failed'}"
 
 
 class AgentHistory:
     def __init__(self, initial_host: Host):
         self.history = []  # List of StepInfo objects detailing step information by step
+        self.mapping = {}
         self.hosts = (
             {}
         )  # Hosts discovered, and whether or not they've been scanned successfully yet
@@ -80,17 +85,24 @@ class AgentHistory:
         )  # Subnets discovered, and last killchainstep performed on them (by index)
         self.step = -1
 
-        self.hosts[initial_host] = KnownHostInfo(
-            last_step=2,
+        self.hosts[initial_host.name] = KnownHostInfo(
+            last_step=1,
             scanned=True,
             ip_address=initial_host.ip_address,
             type=initial_host.type,
             services=initial_host.services,
             vulnerabilities=initial_host.cves,
         )
-        self.hosts[initial_host].ip_address = initial_host.ip_address
-        self.subnets[initial_host.subnet] = KnownSubnetInfo()
+        self.hosts[initial_host.name].ip_address = initial_host.ip_address
+        self.subnets[initial_host.subnet.name] = KnownSubnetInfo()
 
-    def update_step(self, action: Type[RedAction], success: bool):
+        for h in initial_host.subnet.connected_hosts:
+            self.hosts[initial_host.name] = KnownHostInfo()
+            self.mapping[initial_host.name] = initial_host
+
+        self.mapping[initial_host.name] = initial_host
+        self.mapping[initial_host.subnet.name] = initial_host.subnet
+
+    def update_step(self, action: Tuple[Type[RedAction], Host, Host], success: bool):
         self.step += 1
         self.history.append(StepInfo(self.step, action=action, success=success))

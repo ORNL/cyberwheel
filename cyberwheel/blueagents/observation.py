@@ -2,9 +2,9 @@ from abc import abstractmethod
 from typing import Iterable
 import numpy as np
 
-from network.network_base import Network
-from network.host import Host
-from detectors.alert import Alert
+from cyberwheel.network.network_base import Network
+from cyberwheel.network.host import Host
+from cyberwheel.detectors.alert import Alert
 
 
 #

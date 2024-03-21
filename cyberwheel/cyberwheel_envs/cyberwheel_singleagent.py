@@ -1,6 +1,6 @@
 import gymnasium as gym
 from gymnasium import spaces
-from network.network_base import Network
+from cyberwheel.network.network_base import Network
 from .cyberwheel import Cyberwheel
 from redagents.longestpath import LongestPathRedAgent
 

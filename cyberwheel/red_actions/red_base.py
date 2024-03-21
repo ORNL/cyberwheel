@@ -1,11 +1,11 @@
 from abc import abstractmethod
 from typing import Union, List, Dict, Any
 from cyberwheel.network.network_object import NetworkObject
-from detectors.alert import Alert
-from network.network_base import Network
-from network.host import Host
-from network.service import Service
-from network.subnet import Subnet
+from cyberwheel.detectors.alert import Alert
+from cyberwheel.network.network_base import Network
+from cyberwheel.network.host import Host
+from cyberwheel.network.service import Service
+from cyberwheel.network.subnet import Subnet
 from .technique import Technique
 
 targets = Union[List[Host], List[Subnet]]
@@ -94,8 +94,8 @@ class RedActionResults:
         """
         self.attack_success.append(host)
 
-    def add_metadata(self, net_obj: NetworkObject, metadata: Any) -> None:
-        self.metadata[net_obj] = metadata
+    def add_metadata(self, host_or_subnet_name: str, metadata: Any) -> None:
+        self.metadata[host_or_subnet_name] = metadata
 
     def __eq__(self, __value: object) -> bool:
         assert isinstance(__value, RedActionResults)

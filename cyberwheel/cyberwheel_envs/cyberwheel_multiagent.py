@@ -1,5 +1,5 @@
 from pettingzoo import ParallelEnv
-from network.network_base import Network
+from cyberwheel.network.network_base import Network
 from .cyberwheel import Cyberwheel
 from redagents.multiagent.simple_red import SimpleRedAgent
 from blueagents.simple_blue import SimpleBlueAgent

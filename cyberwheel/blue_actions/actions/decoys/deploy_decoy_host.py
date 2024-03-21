@@ -2,7 +2,7 @@ import json
 import random
 import yaml
 
-from typing import List
+from typing import List, Tuple, Union
 
 from cyberwheel.blue_actions.blue_base import BlueAction
 from cyberwheel.network.network_base import Network
@@ -18,7 +18,7 @@ def get_host_types() -> List[dict[str, any]]:
 
 class DeployDecoyHost(BlueAction):
     def __init__(self, network: Network, subnet: Subnet, type: HostType,
-                 reward: int = 0, recurring_reward: int = 0) -> None:
+                 obs_vec: List, reward: int = 0, recurring_reward: int = 0) -> None:
         """
             A class that allows the blue agent to create a decoy host.
             ### Parameters
@@ -28,7 +28,7 @@ class DeployDecoyHost(BlueAction):
             - `reward`: the effect this decoy has on the overall reward upon execution
             - `recurring_reward`: the recurring effect this decoy has on the overall reward
         """
-        super().__init__(reward=reward, recurring_reward=recurring_reward)
+        super().__init__(obs_vec, reward=reward, recurring_reward=recurring_reward)
         self.network: Network = network
         self.subnet: Subnet = subnet
         self.type: HostType = type
@@ -47,9 +47,9 @@ class DeployDecoyHost(BlueAction):
         return s
 
 
-    def execute(self) -> int:
+    def execute(self) -> Tuple[List[int], int]:
         self.host = self.network.create_decoy_host(self.type.name, self.subnet, self.type)
-        return self.reward                                                                                                                                                                                                                                                   
+        return [], self.reward                                                                                                                                                                                                                                              
 
 
 def deploy_host_from_yaml(decoy_name: str, path: str, network: Network, subnet: Subnet)-> DeployDecoyHost:
@@ -94,5 +94,5 @@ def random_decoy(network: Network, subnet: Subnet)-> DeployDecoyHost:
     
 
     decoy_type = HostType(**selected_type)
-    return  DeployDecoyHost(network, subnet, decoy_type)
+    return  DeployDecoyHost(network, subnet, decoy_type, reward=-10, recurring_reward=-1)
     

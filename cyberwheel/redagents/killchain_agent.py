@@ -8,6 +8,7 @@ from cyberwheel.redagents.red_agent_base import (
 )
 from cyberwheel.red_actions.actions.killchain_phases import KillChainPhase
 from typing import Type, Any, Dict, Tuple
+from cyberwheel.network.network_base import Network
 
 
 class KillChainAgent(RedAgent):
@@ -21,15 +22,16 @@ class KillChainAgent(RedAgent):
             Discovery,
             Reconnaissance,  # Get CVEs on a host
             PrivilegeEscalation,  # Use previous exploit to elevate privilege level
-            Impact,  # Perform big attack (unknown atm)
+            Impact,  # Perform big attack
         ],
+        network: Network = None,
     ):
         """
         A basic Red Agent that uses a defined Killchain to attack hosts in a particular order.
 
         The KillChain in this case:
         1. Discovery - PortScan and PingSweep a Host (two separate actions)
-        2. Reconnaissance - Get List of CVEs associated with a host
+        2. Reconnaissance - Get List of CVEs associated with a host, and a host's type (user/server)
         3. PrivilegeEscalation - When an agent is physically on a Host, it can escalate it's privileges to 'root'
         4. Impact - When its privileges are escalated, it can compromise the Host
 
@@ -179,7 +181,7 @@ class KillChainAgent(RedAgent):
         """
         # TODO: need to implement more intelligent Service selection using the action type
         # return random.choice(self.history.hosts[target_host.name].services)
-        return Service("Placeholder", 8080)
+        return Service(name="Placeholder")
 
     def run_action(
         self, target_host: Host
@@ -261,9 +263,9 @@ class KillChainAgent(RedAgent):
             elif k == "type":
                 host_type = v
                 known_type = ""
-                if "server" in v.lower():
+                if "server" in host_type.lower():
                     known_type = "Server"
-                elif "workstation" in v.lower():
+                elif "workstation" in host_type.lower():
                     known_type = "User"
                 else:
                     known_type = "Unknown"
@@ -300,11 +302,7 @@ class KillChainAgent(RedAgent):
             return False
 
         # If the current host is a Printer or Workstation, use LateralMovement to move to a random known Server
-        elif (
-            current_host_type == "Printer"
-            or "Workstation" in current_host_type
-            or current_host_type == "User"
-        ):
+        elif current_host_type == "User":
             servers = [
                 self.history.mapping[k]
                 for k, h in self.history.hosts.items()

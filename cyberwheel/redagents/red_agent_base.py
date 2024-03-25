@@ -9,6 +9,8 @@ from cyberwheel.red_actions.red_base import RedAction
 from cyberwheel.network.network_base import Host, Subnet
 from cyberwheel.network.service import Service
 
+from cyberwheel.red_actions.red_base import RedActionResults
+
 
 class RedAgent(ABC):
     def __init__(self):
@@ -75,7 +77,10 @@ class StepInfo:
 
 class AgentHistory:
     def __init__(self, initial_host: Host):
-        self.history = []  # List of StepInfo objects detailing step information by step
+        self.history: List[StepInfo] = (
+            []
+        )  # List of StepInfo objects detailing step information by step
+        self.red_action_history: List[RedActionResults] = []
         self.mapping = {}
         self.hosts = (
             {}
@@ -89,7 +94,7 @@ class AgentHistory:
             last_step=1,
             scanned=True,
             ip_address=initial_host.ip_address,
-            type=initial_host.type,
+            type=initial_host.host_type,
             services=initial_host.services,
             vulnerabilities=initial_host.cves,
         )
@@ -103,6 +108,12 @@ class AgentHistory:
         self.mapping[initial_host.name] = initial_host
         self.mapping[initial_host.subnet.name] = initial_host.subnet
 
-    def update_step(self, action: Tuple[Type[RedAction], Host, Host], success: bool):
+    def update_step(
+        self,
+        action: Tuple[Type[RedAction], Host, Host],
+        success: bool,
+        red_action_results: RedActionResults,
+    ):
         self.step += 1
         self.history.append(StepInfo(self.step, action=action, success=success))
+        self.red_action_history.append(red_action_results)

@@ -10,6 +10,7 @@ from .technique import Technique
 
 targets = Union[List[Host], List[Subnet]]
 destination = Union[Host, Service]
+source = Union[Host, None]
 
 
 def check_vulnerability(service: Service, techniques: List[Technique]) -> bool:
@@ -35,7 +36,8 @@ def validate_attack(host: Host, service: Service) -> bool:
 
     - `service`: a target service
     """
-    return True if service in host.services else False
+    return True
+    # return True if service in host.services else False
 
 
 class RedActionResults:
@@ -56,12 +58,15 @@ class RedActionResults:
     discovered_hosts: List[Host]
     detector_alert: Alert
     attack_success: List[Host]
+    metadata: Dict[str, Any]
+    cost: int
 
     def __init__(self):
         self.discovered_hosts = []
         self.detector_alert = Alert(None, [], [])
         self.attack_success = []
         self.metadata = {}
+        self.cost = 0
 
     def add_host(self, host: Host) -> None:
         """
@@ -71,14 +76,17 @@ class RedActionResults:
         """
         self.discovered_hosts.append(host)
 
-    def modify_alert(self, dst: destination) -> None:
+    def modify_alert(self, dst: destination = None, src: source = None) -> None:
         """
         Modifies the RedActionResults' alert by adding either to alert.dst_hosts or alert.services. It selects which list to modify by the type of dst which is either a Host or Service object.
 
         - `dst`: a Host or Service object to be added to the alert
         """
         if isinstance(dst, Host):
-            self.detector_alert.add_dst_host(dst)
+            if dst != None:
+                self.detector_alert.add_dst_host(dst)
+            if src != None:
+                self.detector_alert.add_src_host(src)
         elif isinstance(dst, Service):
             self.detector_alert.add_service(dst)
         else:
@@ -96,6 +104,9 @@ class RedActionResults:
 
     def add_metadata(self, host_or_subnet_name: str, metadata: Any) -> None:
         self.metadata[host_or_subnet_name] = metadata
+
+    def set_cost(self, cost) -> None:
+        self.cost = cost
 
     def __eq__(self, __value: object) -> bool:
         assert isinstance(__value, RedActionResults)

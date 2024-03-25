@@ -13,8 +13,10 @@ from .process import Process
 class HostType(BaseModel):
     name: str | None = None
     services: list[Service] = []
+    processes: list[Process] = []
     decoy: bool = False
-    os: str = ''
+    os: str = ""
+
 
 # not using this yet
 class ArpEntry(BaseModel):
@@ -29,50 +31,56 @@ class ArpTable(BaseModel):
 
 class Host(NetworkObject):
     def __init__(self, name: str, subnet: Subnet, host_type: HostType | None, **kwargs):
-        '''
+        """
         :param str name: name of host
         :param Subnet subnet: subnet to be connected to
         :param str host_type: type of host
         :param list[FirewallRule] | list[None] **firewall_rules: list of FirewallRules
         :param list[Service] | list[None] **services: list of services
-        '''
-        super().__init__(name, kwargs.get('firewall_rules', []))
+        """
+        super().__init__(name, kwargs.get("firewall_rules", []))
         self.subnet: Subnet = subnet
         self.host_type: HostType | None = host_type
-        self.services: list[Service] = kwargs.get('services', [])
+        self.services: list[Service] = kwargs.get("services", [])
         self.is_compromised: bool = False  # Default to not compromised
         self.mac_address = self._generate_mac_address()
+        self.default_route = None
         self.routes = set()
         self.decoy = False
-        
+        self.cves = []
         # apply any HostType details
         if self.host_type:
             self._apply_host_type(self.host_type)
 
+        # all_vulnerabilities = []
+        # for s in self.services:
+        #    temp_vulns = [v.name for v in s.vulns]
+        #    all_vulnerabilities.extend(temp_vulns)
+        # self.vulnerabilities = list(set(all_vulnerabilities))
+        self.vulnerabilities = []
+        self.processes = []
 
     def __str__(self) -> str:
         str = f'Host(name="{self.name}", subnet="{self.subnet.name}", '
         str += f' host_type="{self.host_type}"'
         return str
 
-
     def __repr__(self) -> str:
-        str = f'Host(name={self.name!r}, subnet={self.subnet!r}, '
-        str += f'host_type={self.host_type!r}, firewall_rules={self.firewall_rules!r}, '
-        str += f'services={self.services!r}, dns_server={self.dns_server!r}'
+        str = f"Host(name={self.name!r}, subnet={self.subnet!r}, "
+        str += f"host_type={self.host_type!r}, firewall_rules={self.firewall_rules!r}, "
+        str += f"services={self.services!r}, dns_server={self.dns_server!r}"
         return str
 
-
     def _apply_host_type(self, host_type: HostType) -> None:
-        '''
+        """
         Override/update Host attributes from defined HostType
-        
+
         For example, this allows the flexibility to use services defined in
         the HostType as well as custom defined services elsewhere (i.e. the
         network config file).
 
         :param HostType host_type: Host type to apply to self
-        '''
+        """
         # using sets to join and dedup
         host_type_services = set(host_type.services)
         host_services = set(self.services)
@@ -81,60 +89,53 @@ class Host(NetworkObject):
         self.services: list[Service] = deduped_services
         self.decoy: bool = host_type.decoy
 
-        self.default_route = None
-        self.routes = []
-        self.cves = []
-
     def _generate_mac_address(self) -> str:
-        '''Generates a random MAC address'''
+        """Generates a random MAC address"""
+
         def _generate_hextet() -> str:
-            return '{:02x}'.format(random.randint(0,255))
+            return "{:02x}".format(random.randint(0, 255))
+
         # TODO: should we randomly generate all 6 hextets?
-        mac_prefix = '46:6f:6f'
-        return mac_prefix + ':{}:{}:{}'.format(_generate_hextet(),
-                                               _generate_hextet(),
-                                               _generate_hextet())
+        mac_prefix = "46:6f:6f"
+        return mac_prefix + ":{}:{}:{}".format(
+            _generate_hextet(), _generate_hextet(), _generate_hextet()
+        )
 
     def set_ip(self, ip: ipa.IPv4Address | ipa.IPv6Address):
-        '''
+        """
         Manually set IP address of host
 
         :param (IPv4Address | IPv6Address) ip: IP object
-        '''
+        """
         self.ip_address = ip
 
-
     def set_ip_from_str(self, ip: str) -> None:
-        '''
+        """
         Manually set IP address of host from a given str
 
         :param str ip: IP
         :raises ValueError:
-        '''
+        """
         ip_obj = self.generate_ip_object(ip)
         self.ip_address = ip_obj
 
-
     def set_dns(self, ip: ipa.IPv4Address | ipa.IPv6Address):
-        '''
+        """
         Manually set DNS IP address of host
 
         :param (IPv4Address | IPv6Address) ip: IP object
-        '''
+        """
         self.dns_server = ip
 
-
     def set_dns_from_str(self, ip: str) -> None:
-        '''
+        """
         Manually set DNS IP address of host from a given str
 
         :param str ip: IP
         :raises ValueError:
-        '''
+        """
         ip_obj = self.generate_ip_object(ip)
         self.dns_server = ip_obj
-
-
 
     def get_dhcp_lease(self):
         self.subnet.assign_dhcp_lease(self)
@@ -142,13 +143,11 @@ class Host(NetworkObject):
     def define_services(self, services: list[Service]):
         self.services = services
 
-
     def get_services(self) -> list[Service]:
         return self.services
 
-
     def add_service(self, name: str, port: int, **kwargs) -> None:
-        '''
+        """
         Adds a service to the defined services for a host
 
         :param str name: name of service
@@ -158,14 +157,16 @@ class Host(NetworkObject):
         :param list **vulns: optional, default=[]
         :param str **description: optional, default=''
         :param bool **decoy: optional, default=False
-        '''
-        service = Service(name=name,
-                          port=port,
-                          protocol=kwargs.get('protocol', 'tcp'),
-                          version=kwargs.get('version', ''),
-                          vulns=kwargs.get('vulns', []),
-                          description=kwargs.get('desc', ''),
-                          decoy=kwargs.get('decoy', False))
+        """
+        service = Service(
+            name=name,
+            port=port,
+            protocol=kwargs.get("protocol", "tcp"),
+            version=kwargs.get("version", ""),
+            vulns=kwargs.get("vulns", []),
+            description=kwargs.get("desc", ""),
+            decoy=kwargs.get("decoy", False),
+        )
         if service not in self.services:
             self.services.append(service)
         else:
@@ -174,19 +175,30 @@ class Host(NetworkObject):
                 if service == existing_service:
                     existing_service = service
 
-
     def remove_service(self, service_name: str) -> None:
-        '''
+        """
         Removes an existing service from defined services for host
 
         :param str service_name: name of existing fw rule (case insensitive)
-        '''
+        """
         if self.services is None:
             return
         # iterate over existing services and discard if service.name equals
         # the service_name param
-        updated_services = [service for service in self.services if 
-                service.name.lower() != service_name.lower()]
-        
+        updated_services = [
+            service
+            for service in self.services
+            if service.name.lower() != service_name.lower()
+        ]
+
         # update services
         self.services = updated_services
+
+    def add_process(self, process_name: str, process_privilege_level: str):
+        self.processes.append(
+            Process(name=process_name, privilege=process_privilege_level)
+        )
+
+    def remove_process(self, process_name: str):
+        new_processes = [p for p in self.processes if p.name != process_name]
+        self.processes = new_processes

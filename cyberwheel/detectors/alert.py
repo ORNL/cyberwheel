@@ -21,6 +21,9 @@ class Alert:
     def add_dst_host(self, host: Host) -> None:
         self.dst_hosts.append(host)
 
+    def add_src_host(self, host: Host) -> None:
+        self.src_host = host
+
     def add_service(self, service: Service) -> None:
         self.services.append(service)
 

@@ -11,6 +11,7 @@ topology:
       - user02
       - user03
       - admin_workstation
+      - server04
     - server_subnet:
       - server01
       - server02
@@ -144,7 +145,7 @@ hosts:
       - dest: 192.168.2.0/24
         via: 192.168.0.1
   user02:
-    type: user_workstation
+    type: workstation
     subnet: user_subnet
     firewall:
       - name: foo
@@ -152,10 +153,10 @@ hosts:
         port: 3389
         desc: just testing FirewallRule init
   user03:
-    type: User Workstation
+    type: workstation
     subnet: user_subnet
   admin_workstation:
-    type: Admin Workstation
+    type: workstation
     subnet: user_subnet
     firewall:
       - name: allow SSH
@@ -164,24 +165,27 @@ hosts:
 
   # Server hosts
   server01:
-    type:
+    type: web_server
     subnet: server_subnet
   server02:
-    type:
+    type: web_server
     subnet: server_subnet
   server03:
-    type:
+    type: web_server
     subnet: server_subnet
+  server04:
+    type: web_server
+    subnet: user_subnet
 
   # DMZ hosts
   dmz01:
-    type:
+    type: workstation
     subnet: dmz_subnet
   dmz02:
-    type:
+    type: workstation
     subnet: dmz_subnet
   dmz03:
-    type:
+    type: workstation
     subnet: dmz_subnet
     firewall:
       - name: foo
@@ -190,7 +194,7 @@ hosts:
         port: 443
         proto: tcp
   dmz_jump_box:
-    type:
+    type: workstation
     subnet: dmz_subnet
     firewall:
       - name: allow SSH

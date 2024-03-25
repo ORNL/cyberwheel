@@ -10,18 +10,13 @@ from pprint import pprint, pformat
 import random
 
 net = Network("test")
-net = net.create_network_from_yaml("network/simple_network_config.yaml")
+net = net.create_network_from_yaml()
 hosts = net.get_all_hosts()
-# print([h.ip_address for h in hosts])
 user_hosts = []
 for h in hosts:
-    # print(h.type)
-    if h.type != None and "User Workstation" in h.type:
+    if h.host_type != None and "workstation" in h.host_type.name.lower():
         user_hosts.append(h)
-# user_hosts = [h for h in hosts if "Workstation" in h.type]
 entry_host = random.choice(user_hosts)
-print(entry_host.subnet.connected_hosts)
-print(entry_host.ip_address)
 kc_agent = KillChainAgent(entry_host=entry_host)
 
 for i in range(100):
@@ -29,10 +24,12 @@ for i in range(100):
     print(
         f"------------------------\n{kc_agent.history.step}\n------------------------"
     )
-    print("Known Info:")
+    print()
+    print("Hosts:")
     for k, v in kc_agent.history.hosts.items():
-        print(f"Host {k}: {v.type}")
+        print(f"\tHost {k}: {v.type}")
     print("\nAction:")
-    print(kc_agent.history.history[i].info)
+    print("\t" + kc_agent.history.history[i].info)
+
     print("\n")
     time.sleep(0.5)

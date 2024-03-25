@@ -23,6 +23,14 @@ class KillChainPhase(RedAction):
     Base class for defining a KillChainPhase. Any new Killchain Phase (probably not needed) should inherit from this class.
     """
 
+    action_cost = {
+        "Discovery": -10,
+        "Reconnaissance": -20,
+        "LateralMovement": -50,
+        "PrivilegeEscalation": -100,
+        "Impact": -500,
+    }
+
     def __init__(
         self,
         src_host: Host,
@@ -220,6 +228,7 @@ class PrivilegeEscalation(KillChainPhase):
         # if not check_vulnerability(self.target_service, self.techniques): #TODO: Will need to implement this
         #    # If the service is not vulnerable, then the attack cannot be performed at all
         #    return self.action_results
+        self.action_results.modify_alert(src=self.src_host)
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
@@ -228,10 +237,11 @@ class PrivilegeEscalation(KillChainPhase):
             for p in host.processes:
                 if p.name == "malware.exe":
                     p.escalate_privilege()
-            self.action_results.modify_alert(host)
+            self.action_results.modify_alert(dst=host)
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)
             self.action_results.add_successful_action(host)
+            self.action_results.set_cost(self.action_cost["PrivilegeEscalation"])
         return self.action_results
 
 
@@ -430,11 +440,12 @@ class LateralMovement(KillChainPhase):
         # if not check_vulnerability(self.target_service, self.techniques): #TODO: This will need to be implemented for LateralMovement
         # If the service is not vulnerable, then the attack cannot be performed at all
         #    return self.action_results
+        self.action_results.modify_alert(src=self.src_host)
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
                 continue
-            self.action_results.modify_alert(host)
+            self.action_results.modify_alert(dst=host)
             self.src_host.remove_process(
                 process_name="malware.exe"
             )  # Remove malware from source host
@@ -445,6 +456,7 @@ class LateralMovement(KillChainPhase):
                 self.action_results.modify_alert(self.target_service)
                 # This action needs to be done to a Host before it can be privilege escalated.
             self.action_results.add_successful_action(host)
+            self.action_results.set_cost(self.action_cost["LateralMovement"])
         return self.action_results
 
 
@@ -599,15 +611,17 @@ class Impact(KillChainPhase):
         # if not check_vulnerability(self.target_service, self.techniques): # TODO: Will need to implement this.
         #    # If the service is not vulnerable, then the attack cannot be performed at all
         #    return self.action_results
+        self.action_results.modify_alert(src=self.src_host)
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
                 continue
             host.is_compromised = True
-            self.action_results.modify_alert(host)
+            self.action_results.modify_alert(dst=host)
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)
             self.action_results.add_successful_action(host)
+            self.action_results.set_cost(self.action_cost["Impact"])
         return self.action_results
 
 
@@ -650,16 +664,19 @@ class Reconnaissance(KillChainPhase):
         This action scans the vulnerabilities on a Host and relays the information to the red agent.
         """
         # This class should return the vulnerbailities to the red agent
+        self.action_results.modify_alert(src=self.src_host)
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
                 continue
-            self.action_results.modify_alert(host)
+            self.action_results.modify_alert(dst=host)
             self.action_results.add_metadata(
-                host.name, {"vulnerabilities": host.vulnerabilities, "type": host.type}
+                host.name,
+                {"vulnerabilities": host.vulnerabilities, "type": host.host_type.name},
             )  # NOTE: Host does not have vulnerabilities assocated yet?
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)
                 # This action needs to be done to a Host before it can be exploited with LateralMovement
             self.action_results.add_successful_action(host)
+            self.action_results.set_cost(self.action_cost["Reconnaissance"])
         return self.action_results

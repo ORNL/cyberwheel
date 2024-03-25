@@ -24,17 +24,19 @@ class PingSweep(RedAction):
         super().__init__(src_host, target_service, target_hosts, techniques)
 
     def sim_execute(self) -> RedActionResults:
+        self.action_results.modify_alert(src=self.src_host)
         for host in self.target_hosts:
             if not validate_attack(host, self.target_service):
                 continue
             subnet_hosts = host.subnet.connected_hosts
+            self.action_results.modify_alert(dst=host)
             self.action_results.add_metadata(
                 host.subnet.name, {"subnet_scanned": host.subnet}
             )
             for h in subnet_hosts:
                 # Check if the attack is valid against this specific host
-                self.action_results.add_host(h)
-                self.action_results.modify_alert(host)
+                # self.action_results.add_host(h)
+                # self.action_results.modify_alert(host)
                 self.action_results.add_metadata(
                     host.name, {"ip_address": host.ip_address}
                 )
@@ -42,4 +44,5 @@ class PingSweep(RedAction):
                 self.action_results.add_successful_action(
                     host
                 )  # Add host to list of success
+                self.action_results.set_cost(self.action_cost["Discovery"])
         return self.action_results

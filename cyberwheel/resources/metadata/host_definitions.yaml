@@ -21,7 +21,7 @@ host_types:
     services:
       - name: rdp
         port: 3389
-        protocol:
+        protocol: tcp
     decoy: false
     os: windows
   web_server:

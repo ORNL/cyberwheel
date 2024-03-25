@@ -1,47 +1,120 @@
-from typing import List
+from typing import Dict, List
 
-from cyberwheel.network.network_base import Network
 from cyberwheel.blue_actions.actions.decoys.deploy_decoy_host import DeployDecoyHost, random_decoy
+from cyberwheel.blue_actions.actions.decoys.remove_decoy import RemoveDecoyHost
 from cyberwheel.blue_actions.blue_base import BlueAction
+from cyberwheel.network.host import Host, HostType
+from cyberwheel.network.network_base import Network
+from cyberwheel.network.service import Service
+from cyberwheel.network.subnet import Subnet
+
+class DeployedHost:
+    def __init__(self, host: Host, subnet: Subnet)-> None:
+        self.host = host
+        self.subnet = subnet
+
+    def __eq__(self, __value: object) -> bool:
+        return isinstance(__value, DeployedHost) and self.host == __value.host and self.subnet == __value.subnet
+
+
 
 class DecoyBlueAgent:
-    def __init__(self, network: Network):
+    """
+    A blue agent that only deploys decoys. Currently, only decoy hosts are
+    implemented, so this agent can only deploy or remove decoy hosts
+    from a subnet. It is also capable of performing a NOOP as an action.
+
+    Each time the agent deploys a decoy, an initial negative reward is given. This represents
+    the extra computation resources and other costs of initially deploying a decoy.
+
+    There is also a negative recurring reward for each decoy that is deployed. This represents
+    the maitainence costs, such as energy consumed, and continued use of computational resources. 
+    The sum of these recurring costs are added to the initial reward. 
+
+    Removal of a decoy is also possible. It removes the decoy host from the subnet. Right now,
+    the idea is to have this action have an initial reward of 0 but removes the recurring cost
+    of the decoy.
+
+    Positive rewards are gained at the detector stage. When a red action is performed against
+    a decoy host, the detector will detect it with 100% accuracy. If this happens, then
+    a positive reward will be given because the red agent fell for the decoy.
+    """
+    def __init__(self, network: Network, decoy_info: Dict[str, any], host_defs: Dict[str, any])-> None:
         self.network = network
         self.subnets = self.network.get_all_subnets()
-        self.num_hosts = len(network.get_hosts())
         self.history = [0 for i in range(self.num_hosts)]
-       
+        self.decoy_info = decoy_info
+        self.num_decoy_types = len(self.decoy_info)
 
-        # Keep track of actions that have recurring rewards
+        # TODO Make host type objects from decoy info
+        
+        self.host_types = []    
+        self.rewards = []    
+        for decoy_name in decoy_info:
+            info = decoy_info[decoy_name]
+            reward = info['reward']
+            recurring = info['recurring_reward']
+            type_info = host_defs[info['type']]
+            services = []
+            for service_info in type_info['services']:
+                services.append(Service(service_info['name'], service_info['port'], service_info['protocol']))
+            host_type = HostType(decoy_name, services=services, decoy=True)
+            self.host_types.append(host_type)
+            self.rewards.append((reward, recurring))
+
+        # Keep track of actions that have recurring rewards.
+        # Use the base BlueAction class here to allow for
+        # a variety of recurring actions.
         self.recurring_actions: List[BlueAction] = []
 
 
     def act(self, action):
         # Even if the agent choses to do nothing, the recurring rewards of 
         # previous actions still need to be summed.
-        rec_rew = self.calc_recurring_reward_sum()
+        rec_rew = self._calc_recurring_reward_sum()
 
         # Decide what action to take
-        if action[0] == 0:
-            return rec_rew
-        host_index = action[0] - 1
+        decoy_index = self._get_decoy_type_index(action[0])
+        action_type = self._get_action_type(action[0])
         subnet_index = action[1]
 
         # Perform the action
         selected_subnet = self.subnets[subnet_index]
-        decoy = random_decoy(self.network, selected_subnet)        
-        _, rew = decoy.execute()
         
-        # Add the action if it has a recurring reward
-        self.recurring_actions.append(decoy)
-    
-    
+        # NOOP
+        if action_type == 0:
+            return rec_rew
+        # Deploy
+        elif action_type == 1:
+            decoy_type = self.host_types[decoy_index]
+            reward = self.rewards[decoy_index][0]
+            recurring_reward = self.rewards[decoy_index][1]
+            decoy = DeployDecoyHost(self.network, selected_subnet, decoy_type, reward=reward, recurring_reward=recurring_reward)        
+            rew = decoy.execute()
+            self.recurring_actions.append(decoy)
+        # TODO Remove
+        # Get the host from the right DeployDecoyHost action in self.recurring_actions
+        # Remove that host from the network
+        # Remove the action from self.recurring_actions
+        # NOTE There shouldn't be any conflicts with the observation space here because 
+        #      the observation space only looks at real hosts
+        elif action_type == 2:
+            decoy_type = self.host_types[decoy_index]
+            for rec_action in self.recurring_actions:
+                if rec_action.host == decoy_type and rec_action.subnet == selected_subnet:
+                    removed_host = rec_action.host
+                    remove = RemoveDecoyHost(self.network, removed_host)
+                    remove.execute()
+                    i = self.recurring_actions.index(removed_host)
+                    self.recurring_actions.pop(i)
+                    break
+        else:
+            # Might get rid of this
+            raise ValueError("The action provided is not within this agent's action space.")
+
         return rew + rec_rew
     
-
-    
-
-    def calc_recurring_reward_sum(self)->int:
+    def _calc_recurring_reward_sum(self)->int:
         """
         Calculates the sum of all recurring rewards for this agent.
         """
@@ -49,3 +122,31 @@ class DecoyBlueAgent:
         for recurring_action in self.recurring_actions:
            sum = recurring_action.calc_recurring_reward(sum)
         return sum
+    
+    def _get_decoy_type_index(self, action: int)-> int:
+        """
+        Does some math to calculate which decoy host type is to be used. 
+        Returns an `int` that is the index of a decoy host type in the
+        list of decoy host types.
+
+        The list of decoy host types has a length of N where N is the 
+        number of different host types that can be deployed. N is assumed
+        to be the same for each subnet. It also assumes 1 NOOP and no other
+        actions besides deploy/remove decoy. 
+        
+        `_get_decoy_type_index()` converts an integer I in the range (0, 2*N + 1] to be in the range [0, N] (decoy type). If
+        I = 0, then it returns -1.
+
+        Pretty much, this just determines which decoy type the RL chose to use.
+        
+        NOTE: This just gets the decoy's host type. Whether to deploy or remove the
+        decoy is determined in `_get_action_type()`.
+        """
+        return (action - 1) % self.num_decoy_types if action else -1
+
+    def _get_action_type(self, action: int)-> int:
+        """
+        Determines which type of action to perform.
+        """
+        return (action - 1) / self.num_decoy_types + 1 if action else action
+    

@@ -1,9 +1,9 @@
 # Example decoy hosts
 decoy1:
-  type: User Workstation
+  type: mail_server
   reward: -10
   recurring_reward: -1
 decoy2:
-  type: Network Firewall
+  type: file_server
   reward: -20
   recurring_reward: -2

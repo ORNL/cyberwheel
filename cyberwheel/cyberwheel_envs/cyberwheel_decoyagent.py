@@ -1,17 +1,16 @@
-import yaml
 from importlib.resources import files
-from typing import Dict
-
 import gymnasium as gym
 from gymnasium import spaces
+from typing import Dict, Iterable, List
+import yaml
 
-from network.network_base import Network
-from network.host import Host
 from .cyberwheel import Cyberwheel
-from redagents.killchain_agent import KillChainAgent
 from blueagents.decoy_blue import DecoyBlueAgent
 from blueagents.observation import HistoryObservation
+from detectors.alert import Alert
 from detectors.detector import CoinFlipDetector
+from network.network_base import Network
+from network.host import Host
 from red_actions.red_base import RedActionResults
 from redagents.killchain_agent import KillChainAgent
 from red_actions.red_base import RedActionResults
@@ -37,7 +36,6 @@ def host_to_index_mapping(network: Network)-> Dict[Host, int]:
 
 
 class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
-
     metadata = {"render.modes": ["human"]}
 
     # def __init__(self, number_hosts, number_subnets, connect_subnets_probability, **kwargs):
@@ -73,7 +71,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         will be deployed.
         """
 
-        self.action_space = spaces.MultiDiscrete([num_decoys + 1, num_subnets])
+        self.action_space = spaces.MultiDiscrete([2*num_decoys+1, num_subnets])
 
         """
         [1 ... 2n], n = number of hosts
@@ -115,7 +113,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         blue_agent.act() should return sum(reward, sum of recurring rewards)
         It should probably provide an empty obs_vec since no updates are made to actual hosts?
         """
-        rew = self.blue_agent.act(action)
+        rew = self.blue_agent.act(action) 
 
         """
         I'm thinking that red_agent.act() should return the a RedActionResult. This class is returned by
@@ -133,13 +131,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             red_action.detector_alert
         )  # TODO: Need to filter this red alert through blue detector?
 
-        # red_agent.act()-> RedActionResult
-        # detector(rRedActionResult.alert) -> List[Alert]
-        # update_obs(List[Alert]->obs_vec)
-
-        red_action_reward: RedActionResults = self.calculate_red_reward(red_action_result)
-        alerts = self.detector.obs(red_action_reward.detector_alert)
-        obs_vec = self.alert_converter.create_obs_vector(alerts)
+        red_action_reward = self._calculate_red_reward(red_action_result)
+        alerts = self.detector.obs(red_action_result.detector_alert)
+        obs_vec =  self._get_obs(alerts)
         net_reward = red_action_reward + rew
 
         if self.current_step >= self.max_steps:  # Maximal number of steps
@@ -176,19 +170,24 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             reward = red_action.cost
         return reward
 
+    def _get_obs(self, alerts: List[Alert])-> Iterable:
+        return self.alert_converter.create_obs_vector(alerts)
+    
+    def _reset_obs(self)-> Iterable:
+        return self.alert_converter.reset_obs_vector()
     def flatten_red_alert(red_alert):
         pass
 
     def reset(self, seed=None, options=None):
+            self.current_step = 0
+            self.network = Network.create_network_from_yaml(self.config_file_path)
+            self.red_agent = KillChainAgent(self.network.get_random_host())
+            self.blue_agent = DecoyBlueAgent(self.network)
 
-        self.current_step = 0
+            self.alert_converter = HistoryObservation(self.observation_space.shape, host_to_index_mapping(self.network))
+            self.detector = CoinFlipDetector()
 
-        # self.network = RandomNetwork(self.number_hosts,self.number_subnets,self.connect_subnets_probability)
-        self.network = Network.create_network_from_yaml(self.config_file_path)
-        self.red_agent = LongestPathRedAgent(self.network)
-        self.blue_agent = DecoyBlueAgent(self.network)
-
-        return self._get_obs(), {}  # observation, info
+            return self._reset_obs(), {} 
 
     # can implement existing GUI here???
     def render(self, mode="human"):

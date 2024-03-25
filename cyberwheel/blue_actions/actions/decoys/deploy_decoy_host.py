@@ -18,7 +18,7 @@ def get_host_types() -> List[dict[str, any]]:
 
 class DeployDecoyHost(BlueAction):
     def __init__(self, network: Network, subnet: Subnet, type: HostType,
-                 obs_vec: List, reward: int = 0, recurring_reward: int = 0) -> None:
+                 obs_vec: List=[], reward: int = 0, recurring_reward: int = 0) -> None:
         """
             A class that allows the blue agent to create a decoy host.
             ### Parameters
@@ -47,9 +47,9 @@ class DeployDecoyHost(BlueAction):
         return s
 
 
-    def execute(self) -> Tuple[List[int], int]:
+    def execute(self) ->  int:
         self.host = self.network.create_decoy_host(self.type.name, self.subnet, self.type)
-        return [], self.reward                                                                                                                                                                                                                                              
+        return self.reward                                                                                                                                                                                                                                              
 
 
 def deploy_host_from_yaml(decoy_name: str, path: str, network: Network, subnet: Subnet)-> DeployDecoyHost:

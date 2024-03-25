@@ -20,6 +20,9 @@ class AlertsConversion:
         """create_obs_vector() maps alerts to the blue observation space represented by a vector"""
         pass
 
+    def reset_obs_vector(self) -> Iterable:
+        """Resets the obs_vector and returns the observation of the initial state"""
+
     def set_network(self, network: Network) -> None:
         self.network = network
 
@@ -45,7 +48,7 @@ class HistoryObservation(AlertsConversion):
     def __init__(self, _len: int, mapping: Dict[Host, int])-> None:
         self.len = _len
         self.mapping = mapping
-        self.obs_vec = np.zeros((_len, 2))
+        self.obs_vec = np.zeros((2, self.len))
 
     def create_obs_vector(self, alerts: Iterable[Alert]) -> Iterable:
         # Refresh the non-history portion of the obs_vec
@@ -55,6 +58,10 @@ class HistoryObservation(AlertsConversion):
             index = self.mapping[alerted_host]
             self.obs_vec[0][index] = 1
             self.obs_vec[1][index] = 1
+        return self.obs_vec
+    
+    def reset_obs_vector(self) -> Iterable:
+        self.obs_vec = np.zeros((2,self.len))
         return self.obs_vec
 
 

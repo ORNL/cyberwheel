@@ -23,13 +23,7 @@ class KillChainPhase(RedAction):
     Base class for defining a KillChainPhase. Any new Killchain Phase (probably not needed) should inherit from this class.
     """
 
-    action_cost = {
-        "Discovery": -10,
-        "Reconnaissance": -20,
-        "LateralMovement": -50,
-        "PrivilegeEscalation": -100,
-        "Impact": -500,
-    }
+    
 
     def __init__(
         self,
@@ -228,7 +222,7 @@ class PrivilegeEscalation(KillChainPhase):
         # if not check_vulnerability(self.target_service, self.techniques): #TODO: Will need to implement this
         #    # If the service is not vulnerable, then the attack cannot be performed at all
         #    return self.action_results
-        self.action_results.modify_alert(src=self.src_host)
+        self.action_results.detector_alert.add_src_host(self.src_host)
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
@@ -440,7 +434,7 @@ class LateralMovement(KillChainPhase):
         # if not check_vulnerability(self.target_service, self.techniques): #TODO: This will need to be implemented for LateralMovement
         # If the service is not vulnerable, then the attack cannot be performed at all
         #    return self.action_results
-        self.action_results.modify_alert(src=self.src_host)
+        self.action_results.detector_alert.add_src_host(self.src_host)
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
@@ -611,7 +605,7 @@ class Impact(KillChainPhase):
         # if not check_vulnerability(self.target_service, self.techniques): # TODO: Will need to implement this.
         #    # If the service is not vulnerable, then the attack cannot be performed at all
         #    return self.action_results
-        self.action_results.modify_alert(src=self.src_host)
+        self.action_results.detector_alert.add_src_host(self.src_host)
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
@@ -664,7 +658,8 @@ class Reconnaissance(KillChainPhase):
         This action scans the vulnerabilities on a Host and relays the information to the red agent.
         """
         # This class should return the vulnerbailities to the red agent
-        self.action_results.modify_alert(src=self.src_host)
+        # self.action_results.modify_alert(src=self.src_host)
+        self.action_results.detector_alert.add_src_host(self.src_host)
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):

@@ -140,7 +140,7 @@ class KillChainAgent(RedAgent):
 
         # Update the Overall Step History, regardless of action success
         self.history.update_step(
-            (action, self.current_host, target_host), success=success
+            (action, self.current_host, target_host), success, action_results
         )
 
         # If the agent has scanned the Host AND the Subnet it's a part of, advance from the Discover Step
@@ -315,9 +315,15 @@ class KillChainAgent(RedAgent):
                 return False
             # Choose a random server and move to it
             target_host = random.choice(servers)
-            target_service = random.choice(
-                self.history.hosts[target_host.name].services
-            )
+            print(self.history.hosts[target_host.name].services)
+            if self.history.hosts[target_host.name].services:
+                target_service = random.choice(
+                    self.history.hosts[target_host.name].services
+                )
+            else:
+                target_service = Service(name="ssh")
+
+
             action_results = LateralMovement(
                 self.current_host, target_service, [target_host]
             ).sim_execute()
@@ -325,7 +331,7 @@ class KillChainAgent(RedAgent):
             # Update the current host after doing this, assuming LateralMovement is successful
             success = target_host in action_results.attack_success
             self.history.update_step(
-                (LateralMovement, self.current_host, target_host), success=success
+                (LateralMovement, self.current_host, target_host), success, action_results
             )
             if (
                 success

@@ -136,14 +136,14 @@ subnets:
 host_type_config: resources/metadata/host_definitions.json
 hosts:
 
-  # User hosts
-  user01:
-    type: example
-    subnet: user_subnet
-    firewall:  # if firewall is undefined or empty assume 'allow all'
-    routes:
-      - dest: 192.168.2.0/24
-        via: 192.168.0.1
+  # # User hosts
+  # user01:
+  #   type: example
+  #   subnet: user_subnet
+  #   firewall:  # if firewall is undefined or empty assume 'allow all'
+  #   routes:
+  #     - dest: 192.168.2.0/24
+  #       via: 192.168.0.1
   user02:
     type: workstation
     subnet: user_subnet

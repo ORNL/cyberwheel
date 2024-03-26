@@ -30,7 +30,7 @@ def host_to_index_mapping(network: Network)-> Dict[Host, int]:
     mapping:  Dict[Host, int] = {}
     i = 0
     for host in network.get_nondecoy_hosts():
-        mapping[host] = i
+        mapping[host.name] = i
         i += 1
     return mapping
 
@@ -40,12 +40,11 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
     # def __init__(self, number_hosts, number_subnets, connect_subnets_probability, **kwargs):
     def __init__(
-        self, network_config="config.yaml", decoy_host_file="decoy_hosts.yaml", **kwargs
+        self, network_config="example_config.yaml", decoy_host_file="decoy_hosts.yaml", host_def_file="host_definitions.yaml", **kwargs
     ):
         network_conf_file = files("cyberwheel.network").joinpath(network_config)
-        decoy_conf_file = files("cyberwheel.resources.metadata").joinpath(
-            decoy_host_file
-        )
+        decoy_conf_file = files("cyberwheel.resources.metadata").joinpath(decoy_host_file)
+        host_conf_file = files("cyberwheel.resources.metadata").joinpath(host_def_file)
 
         super().__init__(config_file_path=network_conf_file)
 
@@ -55,12 +54,17 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         # Create action space. Decoy action for each decoy type for each subnet.
         # Length = num_decoy_host_types * num_subnets
         with open(decoy_conf_file, "r") as f:
-            decoy_info = yaml.safe_load(f)
-        self.decoy_types = list(decoy_info.keys())
-        num_decoys = len(self.decoy_types)
-        num_subnets = len(self.network.get_all_subnets)
-        num_hosts = len(self.network.get_hosts())
+            self.decoy_info = yaml.safe_load(f)
 
+        with open(host_conf_file, "r") as f:
+            self.host_defs = yaml.safe_load(f)['host_types']
+        
+        self.decoy_types = list(self.decoy_info.keys())
+
+        num_decoys = len(self.decoy_types)
+        num_subnets = len(self.network.get_all_subnets())
+        num_hosts = len(self.network.get_hosts())
+        print(self.decoy_types)
         """
         There needs to be an action for deploying each host on each subnet.
         action_space[0] == which decoy host type to deploy
@@ -72,25 +76,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         """
 
         self.action_space = spaces.MultiDiscrete([2*num_decoys+1, num_subnets])
-
-        """
-        [1 ... 2n], n = number of hosts
-
-        n = 4
-
-        [0, 0, 1, 0, 0, 0, 0, 0]
-        [0, 0, 0, 0, 0, 0, 1, 0]
-        [0, 1, 0, 0, 0, 0, 1, 0]
-        [0, 1, 0, 0, 0, 1, 1, 0]
-        [0, 0, 0, 0, 0, 1, 1, 0]
-
-        Changed this to be a 2d vector to make indexing easier:
-        v = [[1 ... n],[1 ... n]]
-        [[0, 0, 1, 0], [0, 0, 0, 0]]
-        v[0] is what is passed by the detector
-        v[1] is the history of each host
-        """
-        self.observation_space = spaces.MultiBinary([num_hosts-1, num_hosts-1])
+        self.observation_space = spaces.MultiBinary([2, num_hosts])
         self.alert_converter = HistoryObservation(self.observation_space.shape, host_to_index_mapping(self.network))
 
         hosts = self.network.get_all_hosts()
@@ -101,7 +87,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         entry_host = random.choice(user_hosts)
 
         self.red_agent = KillChainAgent(entry_host)
-        self.blue_agent = DecoyBlueAgent(self.network)
+        self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
         self.detector = CoinFlipDetector()
         
     def step(self, action):
@@ -125,14 +111,13 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         """
         self.red_agent.act()  # red_action includes action, and target of action
 
-        red_action = self.red_agent.history.red_action_history[-1]  # red action results
+        red_action_result = self.red_agent.history.red_action_history[-1]  # red action results
 
-        red_alert = (
-            red_action.detector_alert
-        )  # TODO: Need to filter this red alert through blue detector?
+        red_alert = red_action_result.detector_alert
+          # TODO: Need to filter this red alert through blue detector?
 
         red_action_reward = self._calculate_red_reward(red_action_result)
-        alerts = self.detector.obs(red_action_result.detector_alert)
+        alerts = self.detector.obs(red_alert)
         obs_vec =  self._get_obs(alerts)
         net_reward = red_action_reward + rew
 
@@ -143,9 +128,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
         self.current_step += 1
 
-        return self._get_obs(), net_reward, done, False, {}
+        return obs_vec, net_reward, done, False, {}
 
-    def calculate_red_reward(red_action: RedActionResults) -> int:
+    def _calculate_red_reward(self, red_action: RedActionResults) -> int:
         if len(red_action.detector_alert.dst_hosts) == 0:
             return 0
         target: Host = red_action.detector_alert.dst_hosts[0]
@@ -178,16 +163,16 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
     def flatten_red_alert(red_alert):
         pass
 
-    def reset(self, seed=None, options=None):
-            self.current_step = 0
-            self.network = Network.create_network_from_yaml(self.config_file_path)
-            self.red_agent = KillChainAgent(self.network.get_random_host())
-            self.blue_agent = DecoyBlueAgent(self.network)
+        print("RESET")
+        self.current_step = 0
+        self.network = Network.create_network_from_yaml(self.config_file_path)
+        self.red_agent = KillChainAgent(self.network.get_random_host())
+        self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
 
-            self.alert_converter = HistoryObservation(self.observation_space.shape, host_to_index_mapping(self.network))
-            self.detector = CoinFlipDetector()
+        self.alert_converter = HistoryObservation(self.observation_space.shape, host_to_index_mapping(self.network))
+        self.detector = CoinFlipDetector()
 
-            return self._reset_obs(), {} 
+        return self._reset_obs(), {} 
 
     # can implement existing GUI here???
     def render(self, mode="human"):

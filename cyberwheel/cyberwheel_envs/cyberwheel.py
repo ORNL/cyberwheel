@@ -4,7 +4,6 @@ from cyberwheel.network.network_base import Network
 class Cyberwheel:
 
     def __init__(self, **kwargs):
-        super().__init__()
         # use config_file_path kwarg if supplied
         # self.config_file_path = kwargs.get('config_file_path', 'network/config.yaml')
         self.config_file_path = kwargs.get("config_file_path")

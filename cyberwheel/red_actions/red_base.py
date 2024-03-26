@@ -76,23 +76,23 @@ class RedActionResults:
         """
         self.discovered_hosts.append(host)
 
-    def modify_alert(self, dst: destination = None, src: source = None) -> None:
+    def modify_alert(self, dst: destination, src: source = None) -> None:
         """
         Modifies the RedActionResults' alert by adding either to alert.dst_hosts or alert.services. It selects which list to modify by the type of dst which is either a Host or Service object.
 
         - `dst`: a Host or Service object to be added to the alert
         """
-        if isinstance(dst, Host):
-            if dst != None:
-                self.detector_alert.add_dst_host(dst)
-            if src != None:
-                self.detector_alert.add_src_host(src)
-        elif isinstance(dst, Service):
-            self.detector_alert.add_service(dst)
-        else:
-            raise TypeError(
-                "RedActionResults.modify_alert(): dst needs to be Host or Service"
-            )
+        # if isinstance(dst, Host):
+        if dst != None:
+            self.detector_alert.add_dst_host(dst)
+        if src != None:
+            self.detector_alert.add_src_host(src)
+        # elif isinstance(dst, Service):
+        #     self.detector_alert.add_service(dst)
+        # else:
+        #     raise TypeError(
+        #         f"RedActionResults.modify_alert(): dst needs to be Host or Service not {type(dst)}"
+        #     )
 
     def add_successful_action(self, host: Host) -> None:
         """
@@ -123,8 +123,14 @@ class RedAction:
     """
     Base class for defining red actions. New actions should inherit from this class and define sim_execute().
     """
-
-    def __init__(self, src_host, target_service, target_hosts, techniques) -> None:
+    action_cost = {
+        "Discovery": -10,
+        "Reconnaissance": -20,
+        "LateralMovement": -50,
+        "PrivilegeEscalation": -100,
+        "Impact": -500,
+    }
+    def __init__(self, src_host: Host, target_service, target_hosts, techniques) -> None:
         """
         - `src_host`: Host from which the attack originates.
 

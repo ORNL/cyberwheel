@@ -82,9 +82,11 @@ class Host(NetworkObject):
         :param HostType host_type: Host type to apply to self
         """
         # using sets to join and dedup
-        host_type_services = set(host_type.services)
-        host_services = set(self.services)
-        deduped_services = list(host_services.union(host_type_services))
+        deduped_services = []
+        if self.services:
+            host_type_services = set(host_type.services)
+            host_services = set(self.services)
+            deduped_services = list(host_services.union(host_type_services))
 
         self.services: list[Service] = deduped_services
         self.decoy: bool = host_type.decoy

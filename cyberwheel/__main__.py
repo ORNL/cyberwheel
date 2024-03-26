@@ -1,4 +1,4 @@
-from cyberwheel_envs.cyberwheel_singleagent import *
+from cyberwheel_envs.cyberwheel_decoyagent import *
 import os
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3 import PPO
@@ -22,7 +22,7 @@ def make_env(env_id: str, rank: int, seed: int = 0):
 
     def _init():
         # env = SingleAgentCyberwheel(50,1,1)  # Create an instance of the Cyberwheel environment
-        env = SingleAgentCyberwheel.create_from_yaml("network/example_config.yaml")
+        env = DecoyAgentCyberwheel()
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         log_file = f"monitor_vecenv_logs/{env_id}_{rank}"
         env = Monitor(env, log_file, allow_early_resets=True)
@@ -35,7 +35,7 @@ def make_env(env_id: str, rank: int, seed: int = 0):
 def debug_env(env):
     # It will check your custom environment and output additional warnings if needed
     # Use this to debug changes but not when running - it can cause some meaningless errors on reset()
-    env = SingleAgentCyberwheel.create_from_yaml("network/example_config.yaml")
+    env = DecoyAgentCyberwheel()
     check_env(env)
 
 
@@ -56,7 +56,7 @@ def main():
     #                       render=False)
 
     # Training the PPO model (you may need to adjust the number of steps and other hyperparameters)
-    model.learn(total_timesteps=10000)
+    model.learn(total_timesteps=10)
     # , callback=eval_callback)
 
     # Save the trained model
@@ -68,7 +68,7 @@ def main():
     # Create a new environment to evaluate the trained model
     # evaluate_policy cannot use vectorized environments
     env = Monitor(
-        SingleAgentCyberwheel.create_from_yaml("network/example_config.yaml"),
+        DecoyAgentCyberwheel(),
         "monitor_logs/",
     )
 

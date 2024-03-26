@@ -42,7 +42,6 @@ class DecoyBlueAgent:
     def __init__(self, network: Network, decoy_info: Dict[str, any], host_defs: Dict[str, any])-> None:
         self.network = network
         self.subnets = self.network.get_all_subnets()
-        self.history = [0 for i in range(self.num_hosts)]
         self.decoy_info = decoy_info
         self.num_decoy_types = len(self.decoy_info)
 
@@ -57,11 +56,10 @@ class DecoyBlueAgent:
             type_info = host_defs[info['type']]
             services = []
             for service_info in type_info['services']:
-                services.append(Service(service_info['name'], service_info['port'], service_info['protocol']))
-            host_type = HostType(decoy_name, services=services, decoy=True)
+                services.append(Service.create_service_from_dict(service_info))
+            host_type = HostType(name=decoy_name, services=services, decoy=True)
             self.host_types.append(host_type)
             self.rewards.append((reward, recurring))
-
         # Keep track of actions that have recurring rewards.
         # Use the base BlueAction class here to allow for
         # a variety of recurring actions.
@@ -72,7 +70,7 @@ class DecoyBlueAgent:
         # Even if the agent choses to do nothing, the recurring rewards of 
         # previous actions still need to be summed.
         rec_rew = self._calc_recurring_reward_sum()
-
+        rew = 0
         # Decide what action to take
         decoy_index = self._get_decoy_type_index(action[0])
         action_type = self._get_action_type(action[0])
@@ -104,13 +102,12 @@ class DecoyBlueAgent:
                 if rec_action.host == decoy_type and rec_action.subnet == selected_subnet:
                     removed_host = rec_action.host
                     remove = RemoveDecoyHost(self.network, removed_host)
-                    remove.execute()
+                    rew = remove.execute()
                     i = self.recurring_actions.index(removed_host)
                     self.recurring_actions.pop(i)
                     break
         else:
-            # Might get rid of this
-            raise ValueError("The action provided is not within this agent's action space.")
+            raise ValueError(f"The action provided is not within this agent's action space: {action}, {action_type}")
 
         return rew + rec_rew
     
@@ -148,5 +145,5 @@ class DecoyBlueAgent:
         """
         Determines which type of action to perform.
         """
-        return (action - 1) / self.num_decoy_types + 1 if action else action
+        return (action - 1) // self.num_decoy_types + 1 if action else action
     

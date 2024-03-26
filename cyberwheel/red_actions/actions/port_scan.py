@@ -25,7 +25,7 @@ class PortScan(RedAction):
         super().__init__(src_host, target_service, target_hosts, techniques)
 
     def sim_execute(self) -> RedActionResults:
-        self.action_results.modify_alert(src=self.src_host)
+        self.action_results.detector_alert.add_src_host(self.src_host)
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):

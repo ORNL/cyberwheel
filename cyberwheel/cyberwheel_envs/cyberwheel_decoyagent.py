@@ -163,6 +163,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
     def flatten_red_alert(red_alert):
         pass
 
+    def reset(self, seed=None, options=None):
         print("RESET")
         self.current_step = 0
         self.network = Network.create_network_from_yaml(self.config_file_path)

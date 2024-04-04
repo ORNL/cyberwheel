@@ -135,7 +135,10 @@ class Subnet(NetworkObject):
 
 
     def remove_connected_host(self, host) -> None:
-        self.connected_hosts.remove(host)
+        for c in self.connected_hosts:
+            if c.name == host.name:
+                self.connected_hosts.remove(host)
+                break
 
 
     def get_connected_hostnames(self) -> list[str]:

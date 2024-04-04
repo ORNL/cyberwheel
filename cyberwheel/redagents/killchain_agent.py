@@ -108,7 +108,7 @@ class KillChainAgent(RedAgent):
         # Decide whether to use LateralMovement to jump to another Host. This should only happen if there is a Server available to attack.
         do_lateral_movement = self.change_target()
         if do_lateral_movement:
-            return
+            return LateralMovement
 
         # If staying on current host, decide whether to
         # A. Further execute current host's killchain
@@ -164,7 +164,7 @@ class KillChainAgent(RedAgent):
             self.history.update_step(
                 (LateralMovement, self.current_host, target_host), success=success
             )
-            return
+            return LateralMovement
 
         # print(f"Target Host: {target_host_name}")
 
@@ -205,6 +205,8 @@ class KillChainAgent(RedAgent):
         # Store any new information of Hosts/Subnets as metadata in its History
         for h_name in action_results.metadata.keys():
             self.add_host_info(h_name, action_results.metadata[h_name])
+        
+        return action
 
     def select_service(
         self, target_host: Host, action: Type[KillChainPhase]

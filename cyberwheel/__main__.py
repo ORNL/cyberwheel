@@ -56,7 +56,7 @@ def main():
     #                       render=False)
 
     # Training the PPO model (you may need to adjust the number of steps and other hyperparameters)
-    model.learn(total_timesteps=10)
+    model.learn(total_timesteps=10, log_interval=1)
     # , callback=eval_callback)
 
     # Save the trained model
@@ -72,7 +72,7 @@ def main():
         "monitor_logs/",
     )
 
-    mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
+    mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=2)
     print(f"Mean reward: {mean_reward} +/- {std_reward}")
 
 

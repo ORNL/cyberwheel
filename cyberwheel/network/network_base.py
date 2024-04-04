@@ -601,8 +601,9 @@ class Network:
         if host.ip_address is not None:
             ip: ipa.IPv4Address | ipa.IPv6Address = host.ip_address
             host.subnet.available_ips.append(ip)
-        self.remove_node(host)
-        host.subnet.remove_connected_host(host)
+        if host in self.get_hosts():
+            self.remove_node(host)
+            host.subnet.remove_connected_host(host)
         # TODO
         pass
 
@@ -617,6 +618,7 @@ class Network:
         :param IPv4Address | IPv6Address **dns_server:
         """
         host = self.add_host_to_subnet(*args, decoy=True, **kwargs)
+        self.draw()
         return host
 
     @staticmethod

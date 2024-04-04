@@ -5,8 +5,8 @@ from typing import Dict, Iterable, List
 import yaml
 
 from .cyberwheel import Cyberwheel
-from blueagents.decoy_blue import DecoyBlueAgent
-from blueagents.observation import HistoryObservation
+from blue_agents.decoy_blue import DecoyBlueAgent
+from blue_agents.observation import HistoryObservation
 from detectors.alert import Alert
 from detectors.detector import CoinFlipDetector
 from network.network_base import Network
@@ -14,6 +14,8 @@ from network.host import Host
 from red_actions.red_base import RedActionResults
 from redagents.killchain_agent import KillChainAgent
 from red_actions.red_base import RedActionResults
+from red_actions.red_base import action_cost as red_rewards
+from .reward import Reward
 import random
 
 # import numpy as np
@@ -35,6 +37,14 @@ def host_to_index_mapping(network: Network) -> Dict[Host, int]:
         i += 1
     return mapping
 
+def decoy_alerted(alerts: List[Alert]) -> bool:
+    for alert in alerts:
+        if alert.src_host.decoy:
+            return True
+        for dst_host in alert.dst_hosts:
+            if dst_host.decoy:
+                return True
+    return False
 
 class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
     metadata = {"render.modes": ["human"]}
@@ -54,8 +64,8 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         host_conf_file = files("cyberwheel.resources.metadata").joinpath(host_def_file)
 
         super().__init__(config_file_path=network_conf_file)
-
-        self.max_steps = 100
+        self.total = 0
+        self.max_steps = 25
         self.current_step = 0
 
         # Create action space. Decoy action for each decoy type for each subnet.
@@ -92,6 +102,11 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         )
         self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
         self.detector = CoinFlipDetector()
+        
+        blue_rewards: Dict[str, int | float] = {}
+        for decoy in self.decoy_info:
+            blue_rewards[decoy] = (self.decoy_info[decoy]['reward'], self.decoy_info[decoy]['recurring_reward'])
+        self.reward_calculator = Reward(red_rewards, blue_rewards)
 
     def step(self, action):
         """
@@ -112,11 +127,12 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
               update the observation vector
             - Whether the action was successful or not
         """
-        self.red_agent.act()  # red_action includes action, and target of action
 
+        blue_action_name, rec_id, successful = self.blue_agent.act(action)
+        self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id, successful)
+        
+        red_action_name = self.red_agent.act().__name__  # red_action includes action, and target of action
         action_metadata = self.red_agent.history.history[-1]
-
-        red_action_step = action_metadata.step
 
         red_action_type, red_action_src, red_action_dst = action_metadata.action
 
@@ -125,38 +141,33 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         red_action_str = "Success - " if red_action_success else "Failed - "
 
         red_action_str += f"{red_action_type.__name__} from {red_action_src.name} to {red_action_dst.name}"
-
-        red_action_result = self.red_agent.history.red_action_history[
-            -1
-        ]  # red action results
-
+        red_action_result = self.red_agent.history.red_action_history[-1]  # red action results
         red_alert = red_action_result.detector_alert
-        # TODO: Need to filter this red alert through blue detector?
 
-        red_action_reward = self._calculate_red_reward(red_action_result)
+        # red_action_reward = self._calculate_red_reward(red_action_result)
         alerts = self.detector.obs(red_alert)
-        obs_vec = self._get_obs(alerts)
-        net_reward = red_action_reward + rew
+        obs_vec =  self._get_obs(alerts)
 
         if self.current_step >= self.max_steps:  # Maximal number of steps
             done = True
         else:
             done = False
-
         self.current_step += 1
 
-        return (
-            obs_vec,
-            net_reward,
-            done,
-            False,
-            {"action": {"Blue": blue_action, "Red": red_action_str}},
-        )
+        x = decoy_alerted(alerts)
+        reward = self.reward_calculator.calculate_reward(red_action_name, blue_action_name, x, successful)
+        self.total += reward
+        return obs_vec, reward, done, False, {"action": {"Blue": blue_action, "Red": red_action_str}}
 
     def _calculate_red_reward(self, red_action: RedActionResults) -> int:
         if len(red_action.detector_alert.dst_hosts) == 0:
             return 0
         target: Host = red_action.detector_alert.dst_hosts[0]
+        source: Host = red_action.detector_alert.src_host
+        if target.decoy:
+            return 100
+        if source.decoy:
+            return 100
 
         if "server" in target.host_type.name:
             # if action == "Discovery" or action == "Reconnaissance": # If its a discovery or recon on a server
@@ -165,7 +176,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             #    reward = -10
             # elif action == "Impact": # If its an impact on a server
             #    reward = -100
-            reward = red_action.cost * 2
+            reward = red_action.cost
         elif "user" in target.host_type.name:
             # if action == "Discovery" or action == "Reconnaissance": # If its a discovery or recon on a user
             #    reward = -0.5
@@ -188,6 +199,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         pass
 
     def reset(self, seed=None, options=None):
+        # print("RESET")\
+        print(f"Reward: {self.total}")
+        self.total = 0 
         self.current_step = 0
         self.network = Network.create_network_from_yaml(self.config_file_path)
         self.red_agent = KillChainAgent(
@@ -199,7 +213,8 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             self.observation_space.shape, host_to_index_mapping(self.network)
         )
         self.detector = CoinFlipDetector()
-        return self._reset_obs(), {}
+        self.reward_calculator.reset()
+        return self._reset_obs(), {} 
 
     # can implement existing GUI here???
     def render(self, mode="human"):
@@ -208,3 +223,4 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
     # if you open any other processes close them here
     def close(self):
         pass
+

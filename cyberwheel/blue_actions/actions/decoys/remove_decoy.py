@@ -20,10 +20,10 @@ class RemoveDecoyHost(BlueAction):
         
         self.network: Network = network
         self.host: Host = host
-        self.reward: int = 0
+        self.reward: int = -5
 
 
     def execute(self) -> int:
         self.network.remove_host_from_subnet(self.host)
-        self.host = Host()
-        return self.cost
+        # self.host = Host()
+        return self.reward

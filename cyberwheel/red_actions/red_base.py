@@ -12,6 +12,13 @@ targets = Union[List[Host], List[Subnet]]
 destination = Union[Host, Service]
 source = Union[Host, None]
 
+action_cost = {
+    "Discovery": -1,
+    "Reconnaissance": -2,
+    "LateralMovement": -4,
+    "PrivilegeEscalation": -8,
+    "Impact": -16,
+}
 
 def check_vulnerability(service: Service, techniques: List[Technique]) -> bool:
     """

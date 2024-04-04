@@ -7,7 +7,6 @@ network:
 topology:
   - core_router:
     - user_subnet:
-      - user01
       - user02
       - user03
       - admin_workstation
@@ -24,6 +23,17 @@ topology:
     # should the red agent start here or can we assume initial foothold already occured?
     - internet:
 
+    - user_subnet2:
+      - user11
+      - user12
+      - user13
+      - user14
+      - user15
+      - user16
+      - user17
+      - user18
+      - server11
+
 # Routers
 routers:
   core_router:
@@ -32,40 +42,11 @@ routers:
       - user_subnet
       - server_subnet
       - dmz_subnet
+      - user_subnet2
     routes:
       - dest: 10.0.0.0/8
         via: 10.0.0.1
     firewall:
-      # default to 'allow all' if no rules defined
-      ### this is antithetical to how firewalls work in the real world,
-      ### but seemed pragmatic in our case
-
-      ## this example rule is basically an 'allow all' rule since none of the
-      ## fields have values. The behavior is the same if a field is not defined
-      #- name: example rule
-      #  src:   # this value can be 'all', None, some_host, or some_subnet
-      #  dest:  # this value can be 'all', None, some_host, or some_subnet
-      #  port:  # this value can be 'all', None, or any int 1 - 65535
-      #  proto: # this value can be 'all', None, 'tcp', or 'udp'. default = 'tcp'
-      #  desc:  # human friendly description
-
-      ## implied 'allow all' from defined src if no other criteria defined
-      #- name: allow all from user subnet
-      #  src: user_subnet
-
-      ## allow server_subnet to all
-      #- name: allow all from server subnet
-      #  src: server_subnet
-      #  # can also explicitly define an 'allow all' rule using the 'all' value
-      #  dest: all
-
-      ## only 443/tcp is allowed into dmz_subnet
-      #- name: allow all https traffic into DMZ
-      #  src: all
-      #  dest: dmz_subnet
-      #  port: 443
-      #  # tcp is always the default
-      #  proto: tcp
 
 # Subnets
 subnets:
@@ -125,6 +106,24 @@ subnets:
     #    src: all
     #    dest: dmz_subnet
     #    port: 443
+  
+  user_subnet2:
+      router: core_router
+      ip_range: 192.168.0.0/24
+      dns_server: 192.168.0.1
+      firewall:
+        # allow any traffic originating from server_subnet
+        - name: allow all from server_subnet
+          src: server_subnet
+
+        # only traffic allowed from dmz is from jump box on dest port 22
+        ## dest='all' and proto='tcp' is implied here
+        - name: allow ssh from dmz_jump_box
+          src: dmz_jump_box
+          port: 22
+
+        - src: internet
+
 
   # should we visualize the internet as another "subnet"?
   internet:

@@ -25,7 +25,7 @@ class Reward(RewardCalculator):
         self.recurring_actions: List[RecurringAction] = []
 
     # TODO: Need to figure out how to add positive reward for a red action targeting a decoy
-    def calculate_reward(self, red_action: str, blue_action: str, red_action_alerted: bool, blue_success: bool) -> int | float:
+    def calculate_reward(self, red_action: str, blue_action: str, red_action_alerted: bool) -> int | float:
         # if red_action not in self.red_rewards:
         #     raise KeyError(f"Unknown red action: {red_action}")
         # if blue_action not in self.blue_rewards:   
@@ -35,13 +35,13 @@ class Reward(RewardCalculator):
         else:
             r = self.red_rewards[red_action]
 
-        if blue_action == "" and blue_success:
+        if blue_action == "" and self.blue_success:
             b = 0
-        elif blue_success:
+        elif self.blue_success:
             b = self.blue_rewards[blue_action][0]
         else:
             b = -100
-            
+
         return r + b + self.sum_recurring()
 
     def sum_recurring(self) -> int | float:
@@ -60,12 +60,9 @@ class Reward(RewardCalculator):
                 break
 
     def handle_blue_action_output(self, blue_action: str, rec_id: str, successful: str):
-        if not successful:
-            pass
-        
+        self.blue_success = successful
         if blue_action:
             self.add_recurring_action(rec_id, blue_action)
-            return
         else:
             self.remove_recurring_action(rec_id)
 

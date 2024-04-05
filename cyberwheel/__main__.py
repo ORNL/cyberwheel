@@ -56,7 +56,7 @@ def main():
     #                       render=False)
 
     # Training the PPO model (you may need to adjust the number of steps and other hyperparameters)
-    model.learn(total_timesteps=10, log_interval=1)
+    model.learn(total_timesteps=130, log_interval=1)
     # , callback=eval_callback)
 
     # Save the trained model

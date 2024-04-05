@@ -76,7 +76,6 @@ class DecoyBlueAgent:
     def act(self, action):
         # Even if the agent choses to do nothing, the recurring rewards of
         # previous actions still need to be summed.
-        # rec_rew = self._calc_recurring_reward_sum()
         rew = 0
         # Decide what action to take
         decoy_index = self._get_decoy_type_index(action)
@@ -96,7 +95,6 @@ class DecoyBlueAgent:
         # Deploy Host
         elif action_type == 1:
             decoy_type = self.host_types[decoy_index]
-            # print("add", selected_subnet.name, decoy_type.name )
             id = uuid.uuid4().hex
             action_name = decoy_type.name
             reward = self.rewards[decoy_index][0]
@@ -105,12 +103,10 @@ class DecoyBlueAgent:
             decoy.execute()
             self.deployed_hosts.append(DeployedHost(id, decoy.host))
             successful = True
-            # self.recurring_actions.append(RecurringAction(name, decoy))
 
         # Remove Host
         elif action_type == 2:
             decoy_type = self.host_types[decoy_index]
-            # print("removed", selected_subnet.name, decoy_type.name )
             # Check if the host we want to remove is already on the network
             # We can do this by seeing if a host shares the same host name and subnet name
             for deployed_host in self.deployed_hosts:
@@ -121,22 +117,6 @@ class DecoyBlueAgent:
                     self.deployed_hosts.remove(deployed_host)
                     successful = True
                     break
-            
-            # for rec_action in self.recurring_actions:
-            #     if rec_action.action.host.name == decoy_type.name and rec_action.action.subnet.name == selected_subnet.name:
-            #         removed_host = rec_action.action.host
-            #         remove = RemoveDecoyHost(self.network, removed_host)
-            #         rew = remove.execute()
-            #         i = self.recurring_actions.index(rec_action)   
-            #         removed_action = self.recurring_actions.pop(i)
-            #         successful = True
-            #         break
-            
-            # We don't want the agent to remove hosts that don't exist.
-            # Try to get the agent to learn this behavior by returning a large negative reward 
-            # if not successful:
-            #     rew = -100
-
         else:
             raise ValueError(f"The action provided is not within this agent's action space: {action}, {action_type}")
         

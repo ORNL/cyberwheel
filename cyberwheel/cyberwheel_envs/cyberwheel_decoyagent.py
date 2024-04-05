@@ -125,7 +125,6 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         red_alert = red_action_result.detector_alert
         alerts = self.detector.obs(red_alert)
         obs_vec =  self._get_obs(alerts)
-        print(obs_vec)
         if self.current_step >= self.max_steps:  # Maximal number of steps
             done = True
         else:

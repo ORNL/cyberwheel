@@ -20,8 +20,8 @@ from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from cyberwheel.blueagents.decoy_blue import DecoyBlueAgent
-from cyberwheel.redagents.killchain_agent import KillChainAgent
+from cyberwheel.blue_agents.decoy_blue import DecoyBlueAgent
+from cyberwheel.red_agents.killchain_agent import KillChainAgent
 from cyberwheel.cyberwheel_envs.cyberwheel_decoyagent import *
 
 from stable_baselines3.common.env_checker import check_env

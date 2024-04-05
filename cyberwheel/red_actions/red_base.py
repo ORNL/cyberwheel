@@ -123,14 +123,18 @@ class RedAction:
     """
     Base class for defining red actions. New actions should inherit from this class and define sim_execute().
     """
+
     action_cost = {
-        "Discovery": -10,
-        "Reconnaissance": -20,
-        "LateralMovement": -50,
-        "PrivilegeEscalation": -100,
-        "Impact": -500,
+        "Discovery": -1,
+        "Reconnaissance": -2,
+        "LateralMovement": -5,
+        "PrivilegeEscalation": -10,
+        "Impact": -50,
     }
-    def __init__(self, src_host: Host, target_service, target_hosts, techniques) -> None:
+
+    def __init__(
+        self, src_host: Host, target_service, target_hosts, techniques
+    ) -> None:
         """
         - `src_host`: Host from which the attack originates.
 

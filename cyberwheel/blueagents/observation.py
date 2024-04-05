@@ -43,28 +43,27 @@ class TestObservation(AlertsConversion):
                     observation_vector[index] = 1
             index += 1
         return observation_vector
-    
+
+
 class HistoryObservation(AlertsConversion):
-    def __init__(self, shape: Tuple[int,int], mapping: Dict[Host, int])-> None:
+    def __init__(self, shape: int, mapping: Dict[Host, int]) -> None:
         self.shape = shape
         self.mapping = mapping
         self.obs_vec = np.zeros(shape)
 
     def create_obs_vector(self, alerts: Iterable[Alert]) -> Iterable:
         # Refresh the non-history portion of the obs_vec
-        self.obs_vec[0] = np.zeros(self.shape[1])
+        obs_length = len(self.obs_vec)
+        barrier = obs_length // 2
+        for i in range(barrier):
+            self.obs_vec[i] = 0
         for alert in alerts:
             alerted_host = alert.src_host
             index = self.mapping[alerted_host.name]
-            self.obs_vec[0][index] = 1
-            self.obs_vec[1][index] = 1
+            self.obs_vec[index] = 1
+            self.obs_vec[index + barrier] = 1
         return self.obs_vec
-    
+
     def reset_obs_vector(self) -> Iterable:
         self.obs_vec = np.zeros(self.shape)
         return self.obs_vec
-
-
-
-        
-

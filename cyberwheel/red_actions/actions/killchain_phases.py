@@ -23,8 +23,6 @@ class KillChainPhase(RedAction):
     Base class for defining a KillChainPhase. Any new Killchain Phase (probably not needed) should inherit from this class.
     """
 
-    
-
     def __init__(
         self,
         src_host: Host,
@@ -359,12 +357,9 @@ class Discovery(KillChainPhase):
 
         is_portscanned = h in self.scanned_hosts
 
-        print(f"Is portscanned: {is_portscanned}")
-
         # Check if agent already has subnet info on Subnet with a Pingsweep
         s = h.subnet
         is_pingsweeped = s in self.scanned_subnets
-        print(f"Is pingsweeped: {is_pingsweeped}")
 
         if not is_pingsweeped and not is_portscanned:  # If it has done neither
             return PingSweep(

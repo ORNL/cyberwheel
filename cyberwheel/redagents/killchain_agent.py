@@ -126,12 +126,12 @@ class KillChainAgent(RedAgent):
             )
             return
 
-        print(f"Target Host: {target_host_name}")
+        # print(f"Target Host: {target_host_name}")
 
         # Run the appropriate action, given the target Host. Stores Results of action, and action type.
         action_results, action = self.run_action(target_host)
 
-        print(f"{action} - {target_host_name}")
+        # print(f"{action} - {target_host_name}")
 
         # Store success value of action
         success = (
@@ -202,7 +202,6 @@ class KillChainAgent(RedAgent):
         if (
             action == Discovery
         ):  # If it's a Discovery attack, need to pass some more metadata
-            print("IS DISCOVERY")
             scanned_hosts = [
                 self.history.mapping[h]
                 for h, v in self.history.hosts.items()
@@ -293,9 +292,9 @@ class KillChainAgent(RedAgent):
 
         """
         current_host_type = self.history.hosts[self.current_host.name].type
-        print(
-            f"Current Host: {self.current_host.name}\nCurrent Host Type: {current_host_type}"
-        )
+        # print(
+        #    f"Current Host: {self.current_host.name}\nCurrent Host Type: {current_host_type}"
+        # )
 
         # If the current host is a Server or Unknown (NOTE: This shouldn't happen), stay on it and continue attacking.
         if current_host_type == "Unknown" or current_host_type == "Server":
@@ -309,20 +308,17 @@ class KillChainAgent(RedAgent):
                 if h.type == "Server"
             ]
             server_names = [s.name for s in servers]
-            print(server_names)
             # If there are no known Server hosts reachable, just keep attacking current Host
             if len(servers) == 0:
                 return False
             # Choose a random server and move to it
             target_host = random.choice(servers)
-            print(self.history.hosts[target_host.name].services)
             if self.history.hosts[target_host.name].services:
                 target_service = random.choice(
                     self.history.hosts[target_host.name].services
                 )
             else:
                 target_service = Service(name="ssh")
-
 
             action_results = LateralMovement(
                 self.current_host, target_service, [target_host]
@@ -331,7 +327,9 @@ class KillChainAgent(RedAgent):
             # Update the current host after doing this, assuming LateralMovement is successful
             success = target_host in action_results.attack_success
             self.history.update_step(
-                (LateralMovement, self.current_host, target_host), success, action_results
+                (LateralMovement, self.current_host, target_host),
+                success,
+                action_results,
             )
             if (
                 success

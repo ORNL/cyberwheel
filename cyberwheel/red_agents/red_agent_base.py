@@ -19,6 +19,10 @@ class RedAgent(ABC):
     @abstractmethod
     def act(self):
         pass
+    
+    @abstractmethod
+    def get_reward_map(self):
+        pass
 
 
 class KnownHostInfo:

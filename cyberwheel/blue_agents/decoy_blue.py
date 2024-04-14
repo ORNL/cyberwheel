@@ -11,6 +11,7 @@ from cyberwheel.network.host import Host, HostType
 from cyberwheel.network.network_base import Network
 from cyberwheel.network.service import Service
 from cyberwheel.network.subnet import Subnet
+from cyberwheel.reward.reward import RewardMap
 
 class DeployedHost():
     def __init__(self, id: str, host: Host) -> None:
@@ -51,32 +52,23 @@ class DecoyBlueAgent:
         self.decoy_info = decoy_info
         self.num_decoy_types = len(self.decoy_info)
         self.action_space_length = 2 * self.num_decoy_types * len(self.subnets) + 1
-
-        # TODO Make host type objects from decoy info
-
-        self.host_types = []
-        self.rewards = []
-        for decoy_name in decoy_info:
-            info = decoy_info[decoy_name]
-            reward = info["reward"]
-            recurring = info["recurring_reward"]
-            type_info = host_defs[info["type"]]
-            services = []
-            for service_info in type_info["services"]:
-                services.append(Service.create_service_from_dict(service_info))
-            host_type = HostType(name=decoy_name, services=services, decoy=True)
-            self.host_types.append(host_type)
-            self.rewards.append((reward, recurring))
-        # Keep track of actions that have recurring rewards.
-        # Use the base BlueAction class here to allow for
-        # a variety of recurring actions.
+        self.host_defs = host_defs
+        self._load_host_types()
+        self._load_rewards()
         self.recurring_actions: List[Tuple[str, str]] = []
         self.deployed_hosts: List[DeployedHost] = []
 
     def act(self, action):
+        """
+        Takes the action selected by the RL agent
+        
+        It returns:
+        - The name of the action it took (to index into the reward map)
+        - The uuid as a string of hex digits belonging to the action (to differtiate this action from others)
+        - Whether the action succeeded or failed
+        """
         # Even if the agent choses to do nothing, the recurring rewards of
         # previous actions still need to be summed.
-        rew = 0
         # Decide what action to take
         decoy_index = self._get_decoy_type_index(action)
         action_type = self._get_action_type(action)
@@ -121,15 +113,29 @@ class DecoyBlueAgent:
             raise ValueError(f"The action provided is not within this agent's action space: {action}, {action_type}")
         
         return action_name, id, successful
-    
-    def _calc_recurring_reward_sum(self)->int:
-        """
-        Calculates the sum of all recurring rewards for this agent.
-        """
-        sum = 0
-        for recurring_action in self.recurring_actions:
-           sum = recurring_action.action.calc_recurring_reward(sum)
-        return sum
+
+    def get_reward_map(self) -> RewardMap:
+        return self.reward_map
+
+    def _load_rewards(self)-> None:
+        self.rewards = []
+        self.reward_map: RewardMap = {}
+        for decoy_name in self.decoy_info:
+            info = self.decoy_info[decoy_name]
+            rewards = (info["reward"], info["recurring_reward"])
+            self.rewards.append(rewards)
+            self.reward_map[decoy_name] = rewards
+
+    def _load_host_types(self)-> None:
+        self.host_types = []
+        for decoy_name in self.decoy_info:
+            info = self.decoy_info[decoy_name]
+            type_info = self.host_defs[info["type"]]
+            services = []
+            for service_info in type_info["services"]:
+                services.append(Service.create_service_from_dict(service_info))
+            host_type = HostType(name=decoy_name, services=services, decoy=True)
+            self.host_types.append(host_type)
 
     def _get_subnet_index(self, action: int) -> int:
         return (action - 1) % len(self.subnets)

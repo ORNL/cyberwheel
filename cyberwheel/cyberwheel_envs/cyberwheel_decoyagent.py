@@ -12,11 +12,10 @@ from detectors.detector import CoinFlipDetector
 from network.network_base import Network
 from network.host import Host
 from red_actions.red_base import RedActionResults
-from redagents.killchain_agent import KillChainAgent
+from red_agents.killchain_agent import KillChainAgent
 from red_actions.red_base import RedActionResults
-from red_actions.red_base import action_cost as red_rewards
-from .reward import Reward
-import random
+from reward.reward import Reward
+import random     
 
 # import numpy as np
 
@@ -102,10 +101,8 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
         self.detector = CoinFlipDetector()
         
-        blue_rewards: Dict[str, int | float] = {}
-        for decoy in self.decoy_info:
-            blue_rewards[decoy] = (self.decoy_info[decoy]['reward'], self.decoy_info[decoy]['recurring_reward'])
-        self.reward_calculator = Reward(red_rewards, blue_rewards)
+
+        self.reward_calculator = Reward(self.red_agent.get_reward_map(), self.blue_agent.get_reward_map())
 
     def step(self, action):
         blue_action_name, rec_id, successful = self.blue_agent.act(action)
@@ -122,9 +119,14 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
         red_action_str += f"{red_action_type.__name__} from {red_action_src.name} to {red_action_dst.name}"
         red_action_result = self.red_agent.history.red_action_history[-1]  # red action results
-        red_alert = red_action_result.detector_alert
-        alerts = self.detector.obs(red_alert)
+        alerts = self.detector.obs(red_action_result.detector_alert)
         obs_vec =  self._get_obs(alerts)
+
+
+        x = decoy_alerted(alerts)
+        reward = self.reward_calculator.calculate_reward(red_action_name, blue_action_name, x)
+        self.total += reward
+
         if self.current_step >= self.max_steps:  # Maximal number of steps
             done = True
         else:
@@ -134,7 +136,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         x = decoy_alerted(alerts)
         reward = self.reward_calculator.calculate_reward(red_action_name, blue_action_name, x)
         self.total += reward
-        return obs_vec, reward, done, False, {"action": {"Blue": blue_action, "Red": red_action_str}}
+        return obs_vec, reward, done, False, {"action": {"Blue": blue_action_name, "Red": red_action_str}}
 
     def _get_obs(self, alerts: List[Alert])-> Iterable:
         return self.alert_converter.create_obs_vector(alerts)

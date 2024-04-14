@@ -12,14 +12,6 @@ targets = Union[List[Host], List[Subnet]]
 destination = Union[Host, Service]
 source = Union[Host, None]
 
-action_cost = {
-    "Discovery": -1,
-    "Reconnaissance": -2,
-    "LateralMovement": -4,
-    "PrivilegeEscalation": -8,
-    "Impact": -16,
-}
-
 def check_vulnerability(service: Service, techniques: List[Technique]) -> bool:
     """
     Checks to see if the action can be used with the given service. This is accomplished by checking the techniques' cves against the service's cves.
@@ -131,13 +123,6 @@ class RedAction:
     Base class for defining red actions. New actions should inherit from this class and define sim_execute().
     """
 
-    action_cost = {
-        "Discovery": -1,
-        "Reconnaissance": -2,
-        "LateralMovement": -5,
-        "PrivilegeEscalation": -10,
-        "Impact": -50,
-    }
 
     def __init__(
         self, src_host: Host, target_service, target_hosts, techniques

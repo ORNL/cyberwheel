@@ -1,17 +1,18 @@
+from typing import Type, Any, Dict, Tuple
 from typing import List
 from cyberwheel.red_actions.actions.killchain_phases import *
-from cyberwheel.redagents.red_agent_base import (
+from cyberwheel.red_agents.red_agent_base import (
     KnownSubnetInfo,
     RedAgent,
     AgentHistory,
     KnownHostInfo,
 )
 from cyberwheel.red_actions.actions.killchain_phases import KillChainPhase
-from typing import Type, Any, Dict, Tuple
 from cyberwheel.network.network_base import Network
 
 from copy import deepcopy
 
+from cyberwheel.reward.reward import RewardMap
 
 class KillChainAgent(RedAgent):
     def __init__(
@@ -395,3 +396,12 @@ class KillChainAgent(RedAgent):
             return True
         else:
             return False
+
+    def get_reward_map(self) -> RewardMap:
+        return {
+                "Discovery": (-1, 0),
+                "Reconnaissance": (-2, 0),
+                "LateralMovement": (-4, 0),
+                "PrivilegeEscalation": (-8, 0),
+                "Impact": (-16,0),
+                }

@@ -1,8 +1,7 @@
 from abc import abstractmethod
-from typing import Dict, List, Tuple
-import uuid
+from typing import Dict, List, NewType, Tuple
 
-from cyberwheel.blue_actions.blue_base import BlueAction
+RewardMap = NewType('RewardMap', Dict[str, Tuple[int | float, int | float]])
 
 class RecurringAction():
     def __init__(self, id: str, action: str) -> None:
@@ -19,21 +18,16 @@ class RewardCalculator():
         raise NotImplementedError
     
 class Reward(RewardCalculator):
-    def __init__(self, red_rewards: Dict[str, int | float], blue_rewards: Dict[str, Tuple[int | float, int | float]]) -> None:
+    def __init__(self, red_rewards: RewardMap, blue_rewards: RewardMap) -> None:
         self.red_rewards = red_rewards
         self.blue_rewards = blue_rewards
         self.recurring_actions: List[RecurringAction] = []
 
-    # TODO: Need to figure out how to add positive reward for a red action targeting a decoy
     def calculate_reward(self, red_action: str, blue_action: str, red_action_alerted: bool) -> int | float:
-        # if red_action not in self.red_rewards:
-        #     raise KeyError(f"Unknown red action: {red_action}")
-        # if blue_action not in self.blue_rewards:   
-        #     raise KeyError(f"Unknown blue action: {blue_action}")
         if red_action_alerted:
             r = 100
         else:
-            r = self.red_rewards[red_action]
+            r = self.red_rewards[red_action][0]
 
         if blue_action == "" and self.blue_success:
             b = 0

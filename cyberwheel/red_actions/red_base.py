@@ -141,14 +141,19 @@ class RedAction:
         self.target_hosts = target_hosts
         self.techniques = techniques
         self.action_results = RedActionResults()
+        self.name = ""
 
     @abstractmethod
     def sim_execute(self) -> RedActionResults | type[NotImplementedError]:
         pass
 
-    def get_techniques(self):
-        return self.techniques
-
     @abstractmethod
     def perfect_alert(self):
         pass
+
+    def get_techniques(self):
+        return self.techniques
+    
+    @classmethod
+    def get_name(cls):
+        return cls.name

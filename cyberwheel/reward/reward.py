@@ -23,13 +23,13 @@ class Reward(RewardCalculator):
         self.blue_rewards = blue_rewards
         self.recurring_actions: List[RecurringAction] = []
 
-    def calculate_reward(self, red_action: str, blue_action: str, red_action_alerted: bool) -> int | float:
+    def calculate_reward(self, red_action: str, blue_action: str, blue_success: bool, red_action_alerted: bool) -> int | float:
         if red_action_alerted:
             r = 100
         else:
             r = self.red_rewards[red_action][0]
 
-        if blue_action == "" and self.blue_success:
+        if blue_action == "" and blue_success:
             b = 0
         elif self.blue_success:
             b = self.blue_rewards[blue_action][0]
@@ -53,8 +53,7 @@ class Reward(RewardCalculator):
                 self.recurring_actions.pop(i)
                 break
 
-    def handle_blue_action_output(self, blue_action: str, rec_id: str, successful: str):
-        self.blue_success = successful
+    def handle_blue_action_output(self, blue_action: str, rec_id: str):
         if blue_action:
             self.add_recurring_action(rec_id, blue_action)
         else:

@@ -108,7 +108,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         blue_action_name, rec_id, successful = self.blue_agent.act(action)
         self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id, successful)
         
-        red_action_name = self.red_agent.act().__name__  # red_action includes action, and target of action
+        red_action_name = self.red_agent.act().get_name()  # red_action includes action, and target of action
         action_metadata = self.red_agent.history.history[-1]
 
         red_action_type, red_action_src, red_action_dst = action_metadata.action
@@ -118,10 +118,10 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         red_action_str = "Success - " if red_action_success else "Failed - "
 
         red_action_str += f"{red_action_type.__name__} from {red_action_src.name} to {red_action_dst.name}"
-        red_action_result = self.red_agent.history.red_action_history[-1]  # red action results
+        red_action_result = self.red_agent.history.recent_history() # red action results
+        
         alerts = self.detector.obs(red_action_result.detector_alert)
         obs_vec =  self._get_obs(alerts)
-
 
         x = decoy_alerted(alerts)
         reward = self.reward_calculator.calculate_reward(red_action_name, blue_action_name, x)

@@ -22,7 +22,7 @@ class DeployedHost():
         return self.host.name == type.name and self.host.subnet.name == subnet.name
 
 
-class DecoyBlueAgent:
+class DecoyBlueAgent(BlueAction):
     """
     A blue agent that only deploys decoys. Currently, only decoy hosts are
     implemented, so this agent can only deploy or remove decoy hosts

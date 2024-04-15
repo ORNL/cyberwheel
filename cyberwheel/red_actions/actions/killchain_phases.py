@@ -74,7 +74,7 @@ class InitialAccess(KillChainPhase):
     services, or may be limited-use due to changing passwords.
     """
 
-    name: str
+    name: str = "initial-access"
     valid_os: List[str]
 
     def __init__(
@@ -99,7 +99,6 @@ class InitialAccess(KillChainPhase):
     def sim_execute(self):
         return NotImplementedError
 
-
 class Execution(KillChainPhase):
     """
     Execution Killchain Phase Attack. As described by MITRE:
@@ -112,7 +111,7 @@ class Execution(KillChainPhase):
     PowerShell script that does Remote System Discovery.
     """
 
-    name: str
+    name: str = "execution"
     valid_os: List[str]
 
     def __init__(
@@ -150,7 +149,7 @@ class Persistence(KillChainPhase):
     code or adding startup code.
     """
 
-    name: str
+    name: str = "persistence"
     valid_os: List[str]
 
     def __init__(
@@ -194,7 +193,7 @@ class PrivilegeEscalation(KillChainPhase):
     These techniques often overlap with Persistence techniques, as OS features that let an adversary persist can execute in an elevated context.
     """
 
-    name: str
+    name: str = "privilege-escalation"
     valid_os: List[str]
 
     def __init__(
@@ -211,7 +210,7 @@ class PrivilegeEscalation(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        self.name = "privilege-escalation"
+        # self.name = "privilege-escalation"
         self.valid_os = valid_os
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
@@ -233,7 +232,7 @@ class PrivilegeEscalation(KillChainPhase):
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)
             self.action_results.add_successful_action(host)
-            self.action_results.set_cost(self.action_cost["PrivilegeEscalation"])
+            # self.action_results.set_cost(self.action_cost["PrivilegeEscalation"])
         return self.action_results
 
 
@@ -249,7 +248,7 @@ class DefenseEvasion(KillChainPhase):
     are cross-listed here when those techniques include the added benefit of subverting defenses.
     """
 
-    name: str
+    name: str = "defense-evasion"
     valid_os: List[str]
 
     def __init__(
@@ -266,7 +265,7 @@ class DefenseEvasion(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        self.name = "defense-evasion"
+        # self.name = "defense-evasion"
         self.valid_os = valid_os
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
@@ -286,7 +285,7 @@ class CredentialAccess(KillChainPhase):
     to systems, make them harder to detect, and provide the opportunity to create more accounts to help achieve their goals.
     """
 
-    name: str
+    name: str = "credential-access"
     valid_os: List[str]
 
     def __init__(
@@ -303,7 +302,7 @@ class CredentialAccess(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        self.name = "credential-access"
+        # self.name = "credential-access"
         self.valid_os = valid_os
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
@@ -325,7 +324,7 @@ class Discovery(KillChainPhase):
     this post-compromise information-gathering objective.
     """
 
-    name: str
+    name: str = "discovery"
     valid_os: List[str]
 
     def __init__(
@@ -344,7 +343,7 @@ class Discovery(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        self.name = "discovery"
+        # self.name = "discovery"
         self.valid_os = valid_os
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
@@ -405,7 +404,7 @@ class LateralMovement(KillChainPhase):
     or use legitimate credentials with native network and operating system tools, which may be stealthier.
     """
 
-    name: str
+    name: str = "lateral-movement"
     valid_os: List[str]
 
     def __init__(
@@ -422,7 +421,7 @@ class LateralMovement(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        self.name = "lateral-movement"
+        # self.name = "lateral-movement"
         self.valid_os = valid_os
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
@@ -447,7 +446,7 @@ class LateralMovement(KillChainPhase):
                 self.action_results.modify_alert(self.target_service)
                 # This action needs to be done to a Host before it can be privilege escalated.
             self.action_results.add_successful_action(host)
-            self.action_results.set_cost(self.action_cost["LateralMovement"])
+            # self.action_results.set_cost(self.action_cost["LateralMovement"])
         return self.action_results
 
 
@@ -463,7 +462,7 @@ class Collection(KillChainPhase):
     and email. Common collection methods include capturing screenshots and keyboard input.
     """
 
-    name: str
+    name: str = "collection"
     valid_os: List[str]
 
     def __init__(
@@ -480,7 +479,7 @@ class Collection(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        self.name = "collection"
+        # self.name = "collection"
         self.valid_os = valid_os
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
@@ -501,7 +500,7 @@ class Exfiltration(KillChainPhase):
     channel or an alternate channel and may also include putting size limits on the transmission.
     """
 
-    name: str
+    name: str = "exfiltration"
     valid_os: List[str]
 
     def __init__(
@@ -518,7 +517,7 @@ class Exfiltration(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        self.name = "exfiltration"
+        # self.name = "exfiltration"
         self.valid_os = valid_os
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
@@ -538,7 +537,7 @@ class CommandAndControl(KillChainPhase):
     establish command and control with various levels of stealth depending on the victim's network structure and defenses.
     """
 
-    name: str
+    name: str = "command-and-control"
     valid_os: List[str]
 
     def __init__(
@@ -555,7 +554,7 @@ class CommandAndControl(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        self.name = "command-and-control"
+        # self.name = "command-and-control"
         self.valid_os = valid_os
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
@@ -576,7 +575,7 @@ class Impact(KillChainPhase):
     through on their end goal or to provide cover for a confidentiality breach.
     """
 
-    name: str
+    name: str = "impact"
     valid_os: List[str]
 
     def __init__(
@@ -593,7 +592,7 @@ class Impact(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        self.name = "impact"
+        # self.name = "impact"
         self.valid_os = valid_os
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
@@ -612,7 +611,7 @@ class Impact(KillChainPhase):
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)
             self.action_results.add_successful_action(host)
-            self.action_results.set_cost(self.action_cost["Impact"])
+            # self.action_results.set_cost(self.action_cost["Impact"])
         return self.action_results
 
 
@@ -628,7 +627,7 @@ class Reconnaissance(KillChainPhase):
     Initial Access, to scope and prioritize post-compromise objectives, or to drive and lead further Reconnaissance efforts.
     """
 
-    name: str
+    name: str = "reconnaissance"
     valid_os: List[str]
 
     def __init__(
@@ -645,7 +644,7 @@ class Reconnaissance(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        self.name = "reconnaissance"
+        # self.name = "reconnaissance"
         self.valid_os = valid_os
         if load_techniques:
             self.load_valid_techniques(self.name, self.valid_os)
@@ -674,5 +673,5 @@ class Reconnaissance(KillChainPhase):
                 self.action_results.modify_alert(self.target_service)
                 # This action needs to be done to a Host before it can be exploited with LateralMovement
             self.action_results.add_successful_action(host)
-            self.action_results.set_cost(self.action_cost["Reconnaissance"])
+            # self.action_results.set_cost(self.action_cost["Reconnaissance"])
         return self.action_results

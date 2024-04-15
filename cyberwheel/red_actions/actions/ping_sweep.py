@@ -47,5 +47,4 @@ class PingSweep(RedAction):
                 self.action_results.add_successful_action(
                     host
                 )  # Add host to list of success
-            self.action_results.set_cost(self.action_cost["Discovery"])
         return self.action_results

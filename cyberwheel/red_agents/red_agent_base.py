@@ -8,8 +8,8 @@ from ray import init
 from cyberwheel.red_actions.red_base import RedAction
 from cyberwheel.network.network_base import Host, Subnet
 from cyberwheel.network.service import Service
-
 from cyberwheel.red_actions.red_base import RedActionResults
+from cyberwheel.reward.reward import RewardMap
 
 
 class RedAgent(ABC):
@@ -17,11 +17,11 @@ class RedAgent(ABC):
         pass
 
     @abstractmethod
-    def act(self):
+    def act(self) -> str:
         pass
     
     @abstractmethod
-    def get_reward_map(self):
+    def get_reward_map(self) -> RewardMap:
         pass
 
 
@@ -121,3 +121,6 @@ class AgentHistory:
         self.step += 1
         self.history.append(StepInfo(self.step, action=action, success=success))
         self.red_action_history.append(red_action_results)
+
+    def recent_history(self) -> RedActionResults:
+        return self.red_action_history[-1]

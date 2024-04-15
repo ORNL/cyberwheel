@@ -35,5 +35,5 @@ class PortScan(RedAction):
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)
             self.action_results.add_successful_action(host)
-            self.action_results.set_cost(self.action_cost["Discovery"])
+            # self.action_results.set_cost(self.action_cost["Discovery"])
         return self.action_results

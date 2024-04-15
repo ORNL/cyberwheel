@@ -167,12 +167,8 @@ class KillChainAgent(RedAgent):
             )
             return LateralMovement
 
-        # print(f"Target Host: {target_host_name}")
-
         # Run the appropriate action, given the target Host. Stores Results of action, and action type.
         action_results, action = self.run_action(target_host)
-
-        # print(f"{action} - {target_host_name}")
 
         # Store success value of action
         success = (
@@ -399,9 +395,9 @@ class KillChainAgent(RedAgent):
 
     def get_reward_map(self) -> RewardMap:
         return {
-                "Discovery": (-1, 0),
-                "Reconnaissance": (-2, 0),
-                "LateralMovement": (-4, 0),
-                "PrivilegeEscalation": (-8, 0),
-                "Impact": (-16,0),
+                "discovery": (-1, 0),
+                "reconnaissance": (-2, 0),
+                "lateral-movement": (-4, 0),
+                "privilege-escalation": (-8, 0),
+                "impact": (-16,0),
                 }

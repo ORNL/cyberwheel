@@ -91,7 +91,7 @@ class DecoyBlueAgent(BlueAction):
             decoy_type = self.host_types[decoy_index]
             id = uuid.uuid4().hex
             action_name = decoy_type.name
-            print(action_name, selected_subnet.name, end=" ")
+            #print(action_name, selected_subnet.name, end=" ")
             reward = self.rewards[decoy_index][0]
             recurring_reward = self.rewards[decoy_index][1]
             decoy = DeployDecoyHost(self.network, selected_subnet, decoy_type, reward=reward, recurring_reward=recurring_reward)        

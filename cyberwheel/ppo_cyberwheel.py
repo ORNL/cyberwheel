@@ -24,16 +24,6 @@ from cyberwheel.blue_agents.decoy_blue import DecoyBlueAgent
 from cyberwheel.red_agents.killchain_agent import KillChainAgent
 from cyberwheel.cyberwheel_envs.cyberwheel_decoyagent import *
 
-from stable_baselines3.common.env_checker import check_env
-from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import SubprocVecEnv
-from stable_baselines3.common.utils import set_random_seed
-from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.vec_env import VecMonitor
-from stable_baselines3.common.evaluation import evaluate_policy
-from stable_baselines3.common.callbacks import EvalCallback
-
-
 def parse_args():
     # fmt: off
     parser = argparse.ArgumentParser()
@@ -243,11 +233,9 @@ def make_env(env_id: str, rank: int, seed: int = 0):
     """
 
     def _init():
-        # env = SingleAgentCyberwheel(50,1,1)  # Create an instance of the Cyberwheel environment
         env = DecoyAgentCyberwheel()
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
-        log_file = f"monitor_vecenv_logs/{env_id}_{rank}"
-        env = Monitor(env, log_file, allow_early_resets=True)
+        env = gym.wrappers.RecordEpisodeStatistics(env)     # This tracks the rewards of the environment that it wraps. Used for logging
         return env
 
     return _init
@@ -389,7 +377,7 @@ if __name__ == "__main__":
 
     global_step = 0
     start_time = time.time()
-    resets = np.array(envs.reset()[0][0])
+    resets = np.array(envs.reset()[0])
     next_obs = torch.Tensor(resets).to(device)
     next_done = torch.zeros(args.num_envs).to(device)
     num_updates = args.total_timesteps // args.batch_size
@@ -398,7 +386,7 @@ if __name__ == "__main__":
     for update in range(1, num_updates + 1):
         # We need to manually reset the environment for CAGE. Most environments don't require this.
         # NOTE: When a curriculum is being used, this will automatically change the environment task.
-        resets = np.array(envs.reset()[0][0])
+        resets = np.array(envs.reset()[0])
         next_obs = torch.Tensor(resets).to(device)
 
         # Annealing the rate if instructed to do so.
@@ -426,10 +414,7 @@ if __name__ == "__main__":
             # Execute the selected action in the environment to collect experience for training.
             # action_list = [action]
             # print(action.cpu().numpy())
-            if step == 0:
-                temp_action = np.array([action])
-            else:
-                temp_action = action.cpu().numpy()
+            temp_action = action.cpu().numpy()
             next_obs, reward, done, _, info = envs.step(temp_action)
             rewards[step] = torch.tensor(reward).to(device).view(-1)
             next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(

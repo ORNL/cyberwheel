@@ -72,7 +72,7 @@ class Reward(RewardCalculator):
             x = self.range[0] - len(self.recurring_actions)
             sum -= calc_quadratic(x, a=self.scaling_factor*1.5)
 
-        print(len(self.recurring_actions), sum, end=" ")
+        #print(len(self.recurring_actions), sum, end=" ")
         return sum
 
     def add_recurring_action(self, id: str, action: str)-> None:

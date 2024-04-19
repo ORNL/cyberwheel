@@ -11,13 +11,9 @@ from detectors.alert import Alert
 from detectors.detector import CoinFlipDetector
 from network.network_base import Network
 from network.host import Host
-from red_actions.red_base import RedActionResults
 from red_agents.killchain_agent import KillChainAgent
-from red_actions.red_base import RedActionResults
 from reward.reward import Reward
 import random     
-
-# import numpy as np
 
 
 def host_to_index_mapping(network: Network) -> Dict[Host, int]:
@@ -38,8 +34,6 @@ def host_to_index_mapping(network: Network) -> Dict[Host, int]:
 
 def decoy_alerted(alerts: List[Alert]) -> bool:
     for alert in alerts:
-        if alert.src_host.decoy:
-            return True
         for dst_host in alert.dst_hosts:
             if dst_host.decoy:
                 return True
@@ -63,7 +57,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
         super().__init__(config_file_path=network_conf_file)
         self.total = 0
-        self.max_steps = 200
+        self.max_steps = 50
         self.current_step = 0
 
         # Create action space. Decoy action for each decoy type for each subnet.
@@ -83,10 +77,6 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         There needs to be an action for deploying each host on each subnet.
         action_space[0] == which decoy host type to deploy
         action_space[1] == which subnet to deploy it on
-
-        The size of action_space[0] is num_decoys+1 because the agent may
-        decide not to deploy a decoy. If action_space[0] == 0, no new hosts
-        will be deployed.
         """
 
         self.action_space = spaces.Discrete(2 * num_decoys * num_subnets + 1)
@@ -102,11 +92,11 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         self.detector = CoinFlipDetector()
         
 
-        self.reward_calculator = Reward(self.red_agent.get_reward_map(), self.blue_agent.get_reward_map())
+        self.reward_calculator = Reward(self.red_agent.get_reward_map(), self.blue_agent.get_reward_map(), r=(2,5), scaling_factor=10)
 
     def step(self, action):
         blue_action_name, rec_id, successful = self.blue_agent.act(action)
-        self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id, successful)
+        self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id)
         
         red_action_name = self.red_agent.act().get_name()  # red_action includes action, and target of action
         action_metadata = self.red_agent.history.history[-1]
@@ -121,14 +111,22 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         red_action_result = self.red_agent.history.recent_history() # red action results
         
         alerts = self.detector.obs(red_action_result.detector_alert)
-        obs_vec =  self._get_obs(alerts)
+        obs_vec = self._get_obs(alerts)
 
+        # print(blue_action_name, red_action_name)
         x = decoy_alerted(alerts)
-        reward = self.reward_calculator.calculate_reward(red_action_name, blue_action_name, x)
+        print(x, end=" ")
+        reward = self.reward_calculator.calculate_reward(red_action_name, blue_action_name, successful, x)
+        print(reward)
         self.total += reward
 
         if self.current_step >= self.max_steps:  # Maximal number of steps
             done = True
+        # elif red_action_name == "impact" and not x:
+        #     done = True
+        # elif x:
+        #     print("ACCESSED DECOY")
+        #     done = True
         else:
             done = False
         self.current_step += 1

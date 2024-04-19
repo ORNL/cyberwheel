@@ -1,21 +1,21 @@
 # Example decoy hosts
 decoy1:
   type: mail_server
-  reward: 0
+  reward: -4
   recurring_reward: -0.2
 decoy2:
   type: file_server
-  reward: 0
+  reward: -6
   recurring_reward: -0.3
 decoy3:
   type: web_server
-  reward: 0
+  reward: -2
   recurring_reward: -0.1
 decoy4:
   type: ssh_jump_server
-  reward: 0
+  reward: -2
   recurring_reward: -0.1
 decoy5:
   type: proxy_server
-  reward: 0
+  reward: -4
   recurring_reward: -0.2

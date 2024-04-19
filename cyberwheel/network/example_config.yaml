@@ -10,7 +10,6 @@ topology:
       - user02
       - user03
       - admin_workstation
-      - server04
     - server_subnet:
       - server01
       - server02
@@ -32,7 +31,6 @@ topology:
       - user16
       - user17
       - user18
-      - server11
 
 # Routers
 routers:
@@ -172,9 +170,9 @@ hosts:
   server03:
     type: web_server
     subnet: server_subnet
-  server04:
-    type: web_server
-    subnet: user_subnet
+  # server04:
+  #   type: web_server
+  #   subnet: user_subnet
 
   # DMZ hosts
   dmz01:

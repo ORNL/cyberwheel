@@ -25,6 +25,10 @@ class CoinFlipDetector(Detector):
         alerted_hosts = [Alert(src_host=perfect_alert.src_host, dst_hosts=[host], services=perfect_alert.services) for host in perfect_alert.dst_hosts if host.decoy]
         return alerted_hosts
 
+class DecoyDetector(Detector):
+    """A detector that only gives alerts for hosts that access decoys"""
+    def obs(self, perfect_alert: Alert) -> Iterable[Alert]:
+        return [Alert(src_host=perfect_alert.src_host, dst_hosts=[host], services=perfect_alert.services) for host in perfect_alert.dst_hosts if host.decoy]
 
 class PerfectDetector(Detector):
     def obs(self, perfect_alert: Alert) -> Iterable[Alert]:

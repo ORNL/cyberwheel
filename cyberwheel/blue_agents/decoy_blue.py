@@ -83,12 +83,15 @@ class DecoyBlueAgent(BlueAction):
         # NOOP
         if action_type == 0:
             successful = True
+            action_name = "nothing"
 
         # Deploy Host
         elif action_type == 1:
+           
             decoy_type = self.host_types[decoy_index]
             id = uuid.uuid4().hex
             action_name = decoy_type.name
+            print(action_name, selected_subnet.name, end=" ")
             reward = self.rewards[decoy_index][0]
             recurring_reward = self.rewards[decoy_index][1]
             decoy = DeployDecoyHost(self.network, selected_subnet, decoy_type, reward=reward, recurring_reward=recurring_reward)        
@@ -99,6 +102,7 @@ class DecoyBlueAgent(BlueAction):
         # Remove Host
         elif action_type == 2:
             decoy_type = self.host_types[decoy_index]
+            action_name = "remove"
             # Check if the host we want to remove is already on the network
             # We can do this by seeing if a host shares the same host name and subnet name
             for deployed_host in self.deployed_hosts:
@@ -111,7 +115,6 @@ class DecoyBlueAgent(BlueAction):
                     break
         else:
             raise ValueError(f"The action provided is not within this agent's action space: {action}, {action_type}")
-        
         return action_name, id, successful
 
     def get_reward_map(self) -> RewardMap:
@@ -125,6 +128,10 @@ class DecoyBlueAgent(BlueAction):
             rewards = (info["reward"], info["recurring_reward"])
             self.rewards.append(rewards)
             self.reward_map[decoy_name] = rewards
+
+        # Add remove and nothing manually for right now
+        self.reward_map['remove'] = (-5, 0)
+        self.reward_map['nothing'] = (0, 0)
 
     def _load_host_types(self)-> None:
         self.host_types = []

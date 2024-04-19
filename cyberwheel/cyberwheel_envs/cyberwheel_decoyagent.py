@@ -131,9 +131,6 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             done = False
         self.current_step += 1
 
-        x = decoy_alerted(alerts)
-        reward = self.reward_calculator.calculate_reward(red_action_name, blue_action_name, x)
-        self.total += reward
         return obs_vec, reward, done, False, {"action": {"Blue": blue_action_name, "Red": red_action_str}}
 
     def _get_obs(self, alerts: List[Alert])-> Iterable:

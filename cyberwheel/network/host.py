@@ -47,6 +47,7 @@ class Host(NetworkObject):
         self.default_route = None
         self.routes = set()
         self.decoy = False
+        self.interfaces = []
         self.cves = []
         # apply any HostType details
         if self.host_type:

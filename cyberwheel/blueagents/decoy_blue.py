@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Any
 
 from cyberwheel.blue_actions.actions.decoys.deploy_decoy_host import (
     DeployDecoyHost,
@@ -48,7 +48,7 @@ class DecoyBlueAgent:
     """
 
     def __init__(
-        self, network: Network, decoy_info: Dict[str, any], host_defs: Dict[str, any]
+        self, network: Network, decoy_info: Dict[str, Any], host_defs: Dict[str, Any]
     ) -> None:
         self.network = network
         self.subnets = self.network.get_all_subnets()
@@ -89,9 +89,11 @@ class DecoyBlueAgent:
         # Perform the action
         selected_subnet = self.subnets[subnet_index]
 
+        blue_action_str = "no_op no_op"
+
         # NOOP
         if action_type == 0:
-            return rec_rew
+            pass
         # Deploy
         elif action_type == 1:
             decoy_type = self.host_types[decoy_index]
@@ -106,6 +108,7 @@ class DecoyBlueAgent:
             )
             rew = decoy.execute()
             self.recurring_actions.append(decoy)
+            blue_action_str = f"deploy {selected_subnet.name}"
         # TODO Remove
         # Get the host from the right DeployDecoyHost action in self.recurring_actions
         # Remove that host from the network
@@ -125,12 +128,13 @@ class DecoyBlueAgent:
                     i = self.recurring_actions.index(removed_host)
                     self.recurring_actions.pop(i)
                     break
+            blue_action_str = f"remove {selected_subnet.name}"
         else:
             raise ValueError(
                 f"The action provided is not within this agent's action space: {action}, {action_type}"
             )
 
-        return rew + rec_rew
+        return rew + rec_rew, blue_action_str
 
     def _calc_recurring_reward_sum(self) -> int:
         """

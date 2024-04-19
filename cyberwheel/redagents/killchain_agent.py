@@ -10,6 +10,8 @@ from cyberwheel.red_actions.actions.killchain_phases import KillChainPhase
 from typing import Type, Any, Dict, Tuple
 from cyberwheel.network.network_base import Network
 
+from copy import deepcopy
+
 
 class KillChainAgent(RedAgent):
     def __init__(
@@ -57,6 +59,7 @@ class KillChainAgent(RedAgent):
             - Default: [Discovery, Reconnaissance, PrivilegeEscalation, Impact]
             - NOTE: This is currently only functional with the default Killchain.
         """
+        # print("----------------------------------------------------------")
         self.name: str = name
         self.killchain: List[Type[KillChainPhase]] = (
             killchain  # NOTE: Look into having variable killchains depending on target host????
@@ -65,8 +68,43 @@ class KillChainAgent(RedAgent):
         self.history: AgentHistory = AgentHistory(
             initial_host=entry_host
         )  # Tracks the Red Agent's available and known information of attacks, hosts, and subnets
+        self.initial_network = deepcopy(network)
+        self.network = network
+
+    def update_network(
+        self, network
+    ):  # TODO: Should be called by environment when new decoy is added?
+        self.network = network
+
+    def check_network(self) -> Tuple[bool, Host]:
+        initial_host_names = [h.name for h in self.initial_network.get_hosts()]
+        current_hosts = self.network.get_hosts()
+
+        for h in current_hosts:
+            host_name = h.name
+            if (
+                host_name not in initial_host_names
+                and host_name not in self.history.hosts.keys()
+            ):
+                scanned_subnets = [
+                    self.history.mapping[s]
+                    for s, v in self.history.subnets.items()
+                    if v.is_scanned()
+                ]
+                if h.subnet in scanned_subnets:
+                    return True, h
+        return False, None
 
     def act(self):
+        # If network change, add new decoy host to self.history if subnet with host had already been pingsweeped.
+        network_change, new_host = self.check_network()
+        if (
+            network_change
+        ):  # TODO: Add the new host to self.history if the subnet is scanned. Else do nothing.
+            self.history.mapping[new_host.name] = new_host
+            self.history.hosts[new_host.name] = KnownHostInfo()
+            # TODO: In future, maybe make red agent do Discovery again, or have it recheck network intermittently.
+
         # Decide whether to use LateralMovement to jump to another Host. This should only happen if there is a Server available to attack.
         do_lateral_movement = self.change_target()
         if do_lateral_movement:
@@ -93,6 +131,8 @@ class KillChainAgent(RedAgent):
         target_host_name = known_hosts[max_host][0]
 
         target_host = self.history.mapping[target_host_name]
+
+        # print([f"{k}: {v.type}" for k, v in self.history.hosts.items()])
 
         # List of hosts with 'Unknown' host types
         unknown_host_types = [
@@ -154,6 +194,8 @@ class KillChainAgent(RedAgent):
                 self.history.hosts[target_host_name].is_scanned(),
             ]
         ):
+            # interfaced_non_subnet = [unsweeped_host for unsweeped_host in h.interfaces if unsweeped_host not in h.subnet.connected_hosts]
+            # return PingSweep(self.src_host, self.target_service, )
             self.history.hosts[target_host_name].update_killchain_step()
 
         # If the attack was successful, update the killchain of the target Host
@@ -221,7 +263,12 @@ class KillChainAgent(RedAgent):
             ).sim_execute()
             if target_host in results.attack_success:
                 self.history.hosts[target_host.name].scan()
-                self.history.subnets[target_host.subnet.name].scan()
+                if target_host.subnet.name in self.history.subnets:
+                    self.history.subnets[target_host.subnet.name].scan()
+                else:
+                    self.history.subnets[target_host.subnet.name] = KnownSubnetInfo(
+                        scanned=False
+                    )
 
             return (results, Discovery)
         else:
@@ -250,7 +297,7 @@ class KillChainAgent(RedAgent):
         * `type` : str
             - Adds the Host type to history.hosts[Host].type
 
-        * `subnet_scanned` : bool
+        * `subnet_scanned` : Subnet
             - If True, adds the list of Hosts on a subnet to history.subnets[Subnet].connected_hosts,
             and the available IPS of a Subnet to history.subnets[Subnet].available_ips
         """
@@ -261,14 +308,11 @@ class KillChainAgent(RedAgent):
                 self.history.hosts[host_name].services = v
             elif k == "type":
                 host_type = v
-                known_type = ""
+                known_type = "Unknown"
                 if "server" in host_type.lower():
                     known_type = "Server"
                 elif "workstation" in host_type.lower():
                     known_type = "User"
-                else:
-                    known_type = "Unknown"
-
                 self.history.hosts[host_name].type = known_type
             elif (
                 k == "subnet_scanned"
@@ -278,10 +322,21 @@ class KillChainAgent(RedAgent):
                     self.history.subnets[v.name] = KnownSubnetInfo(scanned=True)
                     self.history.subnets[v.name].connected_hosts = v.connected_hosts
                     self.history.subnets[v].available_ips = v.available_ips
+                    self.history.subnets[v].scan()
+                elif v.name not in self.history.mapping.keys():
+                    self.history.mapping[v.name] = v
+                    self.history.subnets[v.name] = KnownSubnetInfo(scanned=False)
+
                 for h in v.connected_hosts:
                     if h.name not in self.history.hosts.keys():
                         self.history.mapping[h.name] = h
                         self.history.hosts[h.name] = KnownHostInfo()
+            elif k == "interfaces":
+                for interfaced_host in v:
+                    if interfaced_host.name in self.history.hosts.keys():
+                        continue
+                    self.history.hosts[interfaced_host.name] = KnownHostInfo()
+                    self.history.mapping[interfaced_host.name] = interfaced_host
 
     def change_target(self) -> bool:
         """

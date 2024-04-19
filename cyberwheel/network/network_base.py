@@ -32,18 +32,18 @@ class Network:
     # TODO: remove these in favor of self.add_node()
     def add_subnet(self, subnet):
         self.add_node(subnet)
-        #self.graph.add_node(subnet.name, data=subnet)
+        # self.graph.add_node(subnet.name, data=subnet)
+
     def add_router(self, router):
         self.add_node(router)
-        #self.graph.add_node(router.name, data=router)
+        # self.graph.add_node(router.name, data=router)
+
     def add_host(self, host):
         self.add_node(host)
-        #self.graph.add_node(host.name, data=host)
-
+        # self.graph.add_node(host.name, data=host)
 
     def add_node(self, node) -> None:
         self.graph.add_node(node.name, data=node)
-
 
     def remove_node(self, node: NetworkObject) -> None:
         try:
@@ -51,7 +51,6 @@ class Network:
         except nx.NetworkXError as e:
             # TODO: raise custom exception?
             raise e
-
 
     def connect_nodes(self, node1, node2):
         self.graph.add_edge(node1, node2)
@@ -80,13 +79,28 @@ class Network:
     def get_random_host(self):
         all_hosts = self.get_all_hosts()
         return random.choice(all_hosts)
-    
-    def get_hosts(self) -> list[Host]:
-        return [host for _, host in self.graph.nodes(data='data') if isinstance(host, Host)]#type:ignore
 
-    def get_nondecoy_hosts(self)-> List[Host]:
-        return [host for _, host in self.graph.nodes(data='data') if isinstance(host, Host) and not host.decoy]
-    
+    def get_random_user_host(self):
+        hosts = self.get_hosts()
+        user_hosts = []
+        for h in hosts:
+            if h.host_type != None and "workstation" in h.host_type.name.lower():
+                user_hosts.append(h)
+        random_host = random.choice(user_hosts)
+        return random_host
+
+    def get_hosts(self) -> list[Host]:
+        return [
+            host for _, host in self.graph.nodes(data="data") if isinstance(host, Host)
+        ]  # type:ignore
+
+    def get_nondecoy_hosts(self) -> List[Host]:
+        return [
+            host
+            for _, host in self.graph.nodes(data="data")
+            if isinstance(host, Host) and not host.decoy
+        ]
+
     def update_host_compromised_status(self, host: str, is_compromised: bool):
         try:
             host_obj = self.get_node_from_name(host)
@@ -183,7 +197,6 @@ class Network:
         host_to_modify = self.get_node_from_name(host_id)
         host_to_modify.is_compromised = compromised
 
-
     # For debugging to view the network being generated
     def draw(self, **kwargs):
         labels: bool = kwargs.get("labels", False)
@@ -205,12 +218,17 @@ class Network:
         plt.savefig(filename, format="png")
 
     @classmethod
-    def create_network_from_yaml(cls, config_file_path=None): #type: ignore
+    def create_network_from_yaml(cls, config_file_path=None):  # type: ignore
         if config_file_path is None:
-            config_dir = files('cyberwheel.network')
-            config_file_path: PosixPath = config_dir.joinpath('example_config.yaml') #type:ignore
-            print('Using default network config file ({})'
-                    .format(config_file_path.absolute()))
+            config_dir = files("cyberwheel.network")
+            config_file_path: PosixPath = config_dir.joinpath(
+                "example_config.yaml"
+            )  # type:ignore
+            print(
+                "Using default network config file ({})".format(
+                    config_file_path.absolute()
+                )
+            )
 
         # Load the YAML config file
         with open(config_file_path, "r") as yaml_file:
@@ -221,22 +239,26 @@ class Network:
 
         ## parse topology
         # parse routers
-        for key, val in config['routers'].items():
-            router = Router(key,
-                            #val.get('routes', []),
-                            val.get('firewall', []))
+        for key, val in config["routers"].items():
+            router = Router(
+                key,
+                # val.get('routes', []),
+                val.get("firewall", []),
+            )
             # add router to network graph
             network.add_router(router)
 
             # instantiate subnets for this router
-            for key, val in config['subnets'].items():
-                if not val.get('router') == router.name:
+            for key, val in config["subnets"].items():
+                if not val.get("router") == router.name:
                     continue
-                subnet = Subnet(key,
-                                val.get('ip_range', ''),
-                                router,
-                                val.get('firewall', []),
-                                dns_server=val.get('dns_server'))
+                subnet = Subnet(
+                    key,
+                    val.get("ip_range", ""),
+                    router,
+                    val.get("firewall", []),
+                    dns_server=val.get("dns_server"),
+                )
                 # add subnet to network graph
                 network.add_subnet(subnet)
                 network.connect_nodes(subnet.name, router.name)
@@ -261,60 +283,72 @@ class Network:
                 for key, val in config["hosts"].items():
 
                     # is host attached to this subnet?
-                    if val['subnet'] != subnet.name:
+                    if val["subnet"] != subnet.name:
                         continue
 
                     # instantiate firewall rules, if defined
                     fw_rules = []
-                    if rules := val.get('firewall_rules'):
+                    if rules := val.get("firewall_rules"):
                         for rule in rules:
-                            fw_rules.append(FirewallRule(rule('name'), # type: ignore
-                                                         rule.get('src'),
-                                                         rule.get('port'),
-                                                         rule.get('proto'),
-                                                         rule.get('desc')))
+                            fw_rules.append(
+                                FirewallRule(
+                                    rule("name"),  # type: ignore
+                                    rule.get("src"),
+                                    rule.get("port"),
+                                    rule.get("proto"),
+                                    rule.get("desc"),
+                                )
+                            )
                     else:
                         # if not fw_rules defined insert 'allow all' rule
                         fw_rules.append(FirewallRule())
 
                     # TODO: wip
                     # instantiate HostType if defined
-                    if type_str := val.get('type'):
-                        conf_dir =  files('cyberwheel.resources.metadata')
+                    if type_str := val.get("type"):
+                        conf_dir = files("cyberwheel.resources.metadata")
                         # TODO: use create_host_type_from_yaml() instead?
-                        #conf_file = conf_dir.joinpath('host_definitions.json')
-                        #type = network.create_host_type_from_json(type_str, conf_file) #type: ignore
-                        conf_file = conf_dir.joinpath('host_definitions.yaml')
-                        type = network.create_host_type_from_yaml(type_str, conf_file) #type: ignore
+                        # conf_file = conf_dir.joinpath('host_definitions.json')
+                        # type = network.create_host_type_from_json(type_str, conf_file) #type: ignore
+                        conf_file = conf_dir.joinpath("host_definitions.yaml")
+                        type = network.create_host_type_from_yaml(type_str, conf_file)  # type: ignore
                     else:
                         type = None
 
                     # instantiate Services in network config file
-                    if services_dict := val.get('services'):
+                    if services_dict := val.get("services"):
                         services = [service for service in services_dict]
                         for service in services_dict.items():
-                            services.append(Service(name=service['name'],
-                                                    port=service['port'],
-                                                    protocol=service.get('protocol'),
-                                                    version=service.get('version'),
-                                                    vulns=service.get('vulns'),
-                                                    description=service.get('descscription'),
-                                                    decoy=service.get('decoy')))
+                            services.append(
+                                Service(
+                                    name=service["name"],
+                                    port=service["port"],
+                                    protocol=service.get("protocol"),
+                                    version=service.get("version"),
+                                    vulns=service.get("vulns"),
+                                    description=service.get("descscription"),
+                                    decoy=service.get("decoy"),
+                                )
+                            )
                     else:
                         services = []
-
+                    # TODO: Maybe integrate with routers instead
+                    interfaces = []
+                    if key in list(config["interfaces"].keys()):
+                        interfaces = config["interfaces"][key]
                     # instantiate host
                     host = network.add_host_to_subnet(
-                            name=key,
-                            subnet=subnet,
-                            host_type=type,
-                            firewall_rules=fw_rules,
-                            services=services
-                            )
+                        name=key,
+                        subnet=subnet,
+                        host_type=type,
+                        firewall_rules=fw_rules,
+                        services=services,
+                        interfaces=interfaces,
+                    )
 
-                    if routes := val.get('routes'):
+                    if routes := val.get("routes"):
                         host.add_routes_from_dict(routes)
-
+        network.initialize_interfacing()
         return network
 
     def get_node_from_name(self, node: str) -> NetworkObject:
@@ -332,19 +366,19 @@ class Network:
             raise e
 
     def get_all_hosts(self) -> list:
-        nodes_tuple = self.graph.nodes(data='data') #type: ignore
+        nodes_tuple = self.graph.nodes(data="data")  # type: ignore
         hosts = [obj for _, obj in nodes_tuple if isinstance(obj, Host)]
 
         return hosts
 
     def get_all_subnets(self) -> list:
-        nodes_tuple = self.graph.nodes(data='data') #type: ignore
+        nodes_tuple = self.graph.nodes(data="data")  # type: ignore
         subnets = [obj for _, obj in nodes_tuple if isinstance(obj, Subnet)]
 
         return subnets
 
     def get_all_routers(self) -> list:
-        nodes_tuple = self.graph.nodes(data='data') #type: ignore
+        nodes_tuple = self.graph.nodes(data="data")  # type: ignore
         routers = [obj for _, obj in nodes_tuple if isinstance(obj, Router)]
 
         return routers
@@ -520,13 +554,10 @@ class Network:
 
         return False
 
-
-    def add_host_to_subnet(self,
-                           name: str,
-                           subnet: Subnet,
-                           host_type: HostType | None,
-                           **kwargs) -> Host:
-        '''
+    def add_host_to_subnet(
+        self, name: str, subnet: Subnet, host_type: HostType | None, **kwargs
+    ) -> Host:
+        """
         Create host and add it to parent subnet and self.graph
 
         This method also requests a DHCP lease which includes setting IP, DNS,
@@ -537,13 +568,14 @@ class Network:
         :param HostType type:
         :param list[FirewallRule] **firewall_rules:
         :param list[Service] **services:
-        '''
-        host = Host(name,
-                    subnet,
-                    host_type,
-                    firewall_rules=kwargs.get('firewall_rules', []),
-                    services=kwargs.get('services'),
-                    )
+        """
+        host = Host(
+            name,
+            subnet,
+            host_type,
+            firewall_rules=kwargs.get("firewall_rules", []),
+            services=kwargs.get("services"),
+        )
         # add host to graph
         self.add_node(host)
         # connect node to parent subnet
@@ -551,9 +583,18 @@ class Network:
         # assign IP, DNS, route for subnet, and default route
         host.get_dhcp_lease()
         # set decoy status
-        host.decoy = kwargs.get('decoy', False)
+        host.decoy = kwargs.get("decoy", False)
+        host.interfaces = kwargs.get("interfaces", [])
         return host
 
+    def initialize_interfacing(self):
+        h_names = [h.name for h in self.get_all_hosts() if len(h.interfaces) > 0]
+        for h in h_names:
+            host = self.get_node_from_name(h)
+            interface_hosts = []
+            for i in host.interfaces:
+                interface_hosts.append(self.get_node_from_name(i))
+            host.interfaces = interface_hosts
 
     def remove_host_from_subnet(self, host: Host) -> None:
         # release DHCP lease
@@ -565,9 +606,8 @@ class Network:
         # TODO
         pass
 
-        
     def create_decoy_host(self, *args, **kwargs) -> Host:
-        '''
+        """
         Create decoy host and add it to subnet and self.graph
 
         :param str *name:
@@ -575,95 +615,94 @@ class Network:
         :param str *type:
         :param list[Service] **services:
         :param IPv4Address | IPv6Address **dns_server:
-        '''
+        """
         host = self.add_host_to_subnet(*args, decoy=True, **kwargs)
         return host
 
-
     @staticmethod
     def create_host_type_from_json(name: str, config_file: PathLike) -> HostType:
-        '''
+        """
         Return a matching HostType object from json file
 
         :param str name: host type name to match against
         :param str config_file: JSON config file path
         :raises HostTypeNotFoundError:
         :returns HostType:
-        '''
+        """
         with open(config_file) as f:
             config = json.load(f)
-        types: list = config['host_types']
+        types: list = config["host_types"]
 
-        host_type = [t for t in types if t['type'].lower() == name.lower()]
+        host_type = [t for t in types if t["type"].lower() == name.lower()]
         if not host_type:
-            msg = f'Host type ({name}) not found in config file ({config_file})'
+            msg = f"Host type ({name}) not found in config file ({config_file})"
             raise HostTypeNotFoundError(value=name, message=msg)
 
-        services_list = host_type[0]['services']
+        services_list = host_type[0]["services"]
         service_objects = []
         for service in services_list:
             # debug
-            print(f'{service=}')
-            service_objects.append(Service(name=name,
-                                           port=service.get('port'),
-                                           protocol=service.get('protocol'),
-                                           version=service.get('version'),
-                                           vulns=service.get('vulns'),
-                                           description=service.get('description'),
-                                           decoy=service.get('decoy')))
+            print(f"{service=}")
+            service_objects.append(
+                Service(
+                    name=name,
+                    port=service.get("port"),
+                    protocol=service.get("protocol"),
+                    version=service.get("version"),
+                    vulns=service.get("vulns"),
+                    description=service.get("description"),
+                    decoy=service.get("decoy"),
+                )
+            )
 
-        decoy = host_type[0].get('decoy', False)
-        os = host_type[0].get('os')
+        decoy = host_type[0].get("decoy", False)
+        os = host_type[0].get("os")
 
         return HostType(name=name, services=service_objects, decoy=decoy, os=os)
 
-
     @staticmethod
     def create_host_type_from_yaml(name: str, config_file: PathLike) -> HostType:
-        '''
+        """
         Return a matching HostType object from yaml file
 
         :param str name: host type name to match against
         :param str config_file: YAML config file path
         :raises HostTypeNotFoundError:
         :returns HostType:
-        '''
+        """
         with open(config_file) as f:
             config = yaml.safe_load(f)
-        types = config['host_types']
+        types = config["host_types"]
 
         # match name to defined host_type name
         host_type = {}
-        host_type_name = ''
-        for k,v in types.items():
+        host_type_name = ""
+        for k, v in types.items():
             if k == name.lower():
                 host_type_name = k
                 host_type = v
 
-        if 'host_type' not in locals():
-            msg = f'Host type ({name}) not found in config file ({config_file})'
+        if "host_type" not in locals():
+            msg = f"Host type ({name}) not found in config file ({config_file})"
             raise HostTypeNotFoundError(value=name, message=msg)
 
-        services_list = host_type.get('services', [])
+        services_list = host_type.get("services", [])
         service_objects = []
         for service in services_list:
-            #srv_name = service.get('name')
-            #srv_port = service.get('port')
-            #srv_proto = service.get('protocol')
-            #srv_version = service.get('version')
-            #srv_vulns = service.get('vulns')
-            #srv_desc = service.get('description')
-            #srv_decoy: bool = service.get('decoy', False)
-            service_objects.append(
-                    Service.create_service_from_dict(service)
-                    )
-        decoy: bool = host_type.get('decoy', False)
-        os: str = host_type.get('os', '')
+            # srv_name = service.get('name')
+            # srv_port = service.get('port')
+            # srv_proto = service.get('protocol')
+            # srv_version = service.get('version')
+            # srv_vulns = service.get('vulns')
+            # srv_desc = service.get('description')
+            # srv_decoy: bool = service.get('decoy', False)
+            service_objects.append(Service.create_service_from_dict(service))
+        decoy: bool = host_type.get("decoy", False)
+        os: str = host_type.get("os", "")
 
-        host_type = HostType(name=host_type_name,
-                             services=service_objects,
-                             decoy=decoy,
-                             os=os)
+        host_type = HostType(
+            name=host_type_name, services=service_objects, decoy=decoy, os=os
+        )
 
         return host_type
 

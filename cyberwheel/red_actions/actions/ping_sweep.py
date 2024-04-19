@@ -34,6 +34,8 @@ class PingSweep(RedAction):
             self.action_results.add_metadata(
                 host.subnet.name, {"subnet_scanned": host.subnet}
             )
+            for h in host.interfaces:
+                subnet_hosts.append(h)
             for h in subnet_hosts:
                 # Check if the attack is valid against this specific host
                 # self.action_results.add_host(h)
@@ -45,5 +47,5 @@ class PingSweep(RedAction):
                 self.action_results.add_successful_action(
                     host
                 )  # Add host to list of success
-                self.action_results.set_cost(self.action_cost["Discovery"])
+            self.action_results.set_cost(self.action_cost["Discovery"])
         return self.action_results

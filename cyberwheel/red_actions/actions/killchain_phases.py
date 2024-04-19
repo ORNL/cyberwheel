@@ -381,7 +381,9 @@ class Discovery(KillChainPhase):
                     self.target_hosts,
                     self.techniques,
                 ).sim_execute()
-        elif is_pingsweeped and is_portscanned:  # If it has done both
+        elif (
+            is_pingsweeped and is_portscanned
+        ):  # If it has done both, check for unsweeped interfaced hosts
             actions = [PortScan, PingSweep]
             action = random.choice(actions)
             return action(
@@ -662,7 +664,11 @@ class Reconnaissance(KillChainPhase):
             self.action_results.modify_alert(dst=host)
             self.action_results.add_metadata(
                 host.name,
-                {"vulnerabilities": host.vulnerabilities, "type": host.host_type.name},
+                {
+                    "vulnerabilities": host.vulnerabilities,
+                    "type": host.host_type.name,
+                    "interfaces": host.interfaces,
+                },
             )  # NOTE: Host does not have vulnerabilities assocated yet?
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)

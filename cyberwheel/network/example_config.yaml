@@ -199,3 +199,8 @@ hosts:
     firewall:
       - name: allow SSH
         port: 22
+interfaces:
+  user01:
+    - dmz01
+  dmz01:
+    - server01

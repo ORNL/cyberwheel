@@ -45,7 +45,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         network_config="example_config.yaml",
         decoy_host_file="decoy_hosts.yaml",
         host_def_file="host_definitions.yaml",
-        **kwargs
+        **kwargs,
     ):
         network_conf_file = files("cyberwheel.network").joinpath(network_config)
         decoy_conf_file = files("cyberwheel.resources.metadata").joinpath(
@@ -87,14 +87,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             self.observation_space.shape, host_to_index_mapping(self.network)
         )
 
-        hosts = self.network.get_all_hosts()
-        user_hosts = []
-        for h in hosts:
-            if h.host_type != None and "workstation" in h.host_type.name.lower():
-                user_hosts.append(h)
-        entry_host = random.choice(user_hosts)
-
-        self.red_agent = KillChainAgent(entry_host)
+        self.red_agent = KillChainAgent(
+            self.network.get_random_user_host(), network=self.network
+        )
         self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
         self.detector = CoinFlipDetector()
 
@@ -107,7 +102,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         blue_agent.act() should return sum(reward, sum of recurring rewards)
         It should probably provide an empty obs_vec since no updates are made to actual hosts?
         """
-        rew = self.blue_agent.act(action)
+        rew, blue_action = self.blue_agent.act(action)
 
         """
         I'm thinking that red_agent.act() should return the a RedActionResult. This class is returned by
@@ -118,6 +113,18 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             - Whether the action was successful or not
         """
         self.red_agent.act()  # red_action includes action, and target of action
+
+        action_metadata = self.red_agent.history.history[-1]
+
+        red_action_step = action_metadata.step
+
+        red_action_type, red_action_src, red_action_dst = action_metadata.action
+
+        red_action_success = action_metadata.success
+
+        red_action_str = "Success - " if red_action_success else "Failed - "
+
+        red_action_str += f"{red_action_type.__name__} from {red_action_src.name} to {red_action_dst.name}"
 
         red_action_result = self.red_agent.history.red_action_history[
             -1
@@ -138,7 +145,13 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
         self.current_step += 1
 
-        return obs_vec, net_reward, done, False, {}
+        return (
+            obs_vec,
+            net_reward,
+            done,
+            False,
+            {"action": {"Blue": blue_action, "Red": red_action_str}},
+        )
 
     def _calculate_red_reward(self, red_action: RedActionResults) -> int:
         if len(red_action.detector_alert.dst_hosts) == 0:
@@ -177,7 +190,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
     def reset(self, seed=None, options=None):
         self.current_step = 0
         self.network = Network.create_network_from_yaml(self.config_file_path)
-        self.red_agent = KillChainAgent(self.network.get_random_host())
+        self.red_agent = KillChainAgent(
+            self.network.get_random_user_host(), network=self.network
+        )
         self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
 
         self.alert_converter = HistoryObservation(

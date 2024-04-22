@@ -22,16 +22,6 @@ topology:
     # should the red agent start here or can we assume initial foothold already occured?
     - internet:
 
-    - user_subnet2:
-      - user11
-      - user12
-      - user13
-      - user14
-      - user15
-      - user16
-      - user17
-      - user18
-
 # Routers
 routers:
   core_router:
@@ -105,24 +95,6 @@ subnets:
     #    dest: dmz_subnet
     #    port: 443
 
-  user_subnet2:
-      router: core_router
-      ip_range: 192.168.0.0/24
-      dns_server: 192.168.0.1
-      firewall:
-        # allow any traffic originating from server_subnet
-        - name: allow all from server_subnet
-          src: server_subnet
-
-        # only traffic allowed from dmz is from jump box on dest port 22
-        ## dest='all' and proto='tcp' is implied here
-        - name: allow ssh from dmz_jump_box
-          src: dmz_jump_box
-          port: 22
-
-        - src: internet
-
-
   # should we visualize the internet as another "subnet"?
   internet:
     default_route:
@@ -148,7 +120,6 @@ hosts:
       - name: foo
         src: server01
         port: 3389
-        desc: just testing FirewallRule init
   user03:
     type: workstation
     subnet: user_subnet

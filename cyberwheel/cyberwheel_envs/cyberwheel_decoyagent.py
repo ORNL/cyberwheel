@@ -8,7 +8,7 @@ from .cyberwheel import Cyberwheel
 from blue_agents.decoy_blue import DecoyBlueAgent
 from blue_agents.observation import HistoryObservation
 from detectors.alert import Alert
-from detectors.detector import CoinFlipDetector, DecoyDetector
+from detectors.detector import DecoyDetector
 from network.network_base import Network
 from network.host import Host
 from red_agents.killchain_agent import KillChainAgent
@@ -94,6 +94,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         )
         self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
         self.detector = DecoyDetector()
+        
 
         self.reward_calculator = Reward(
             self.red_agent.get_reward_map(),

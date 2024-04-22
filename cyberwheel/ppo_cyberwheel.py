@@ -182,10 +182,7 @@ def run_evals(eval_queue, model, args, globalstep):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     torch.backends.cudnn.deterministic = args.torch_deterministic
-    env_funcs = [
-        make_env(args.seed, i, args.network_config, args.decoy_config, args.host_config)
-        for i in range(1)
-    ]
+    env_funcs = [make_env(args.seed, i, args.network_config, args.decoy_config, args.host_config, min_decoys=args.min_decoys, max_decoys=args.max_decoys, blue_reward_scaling=args.reward_scaling) for i in range(1)]
 
     # Load the agent
     sample_env = gym.vector.SyncVectorEnv(env_funcs)

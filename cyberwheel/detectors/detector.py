@@ -19,7 +19,8 @@ class CoinFlipDetector(Detector):
         flip = random.randint(0, 1)
         if flip:
             return [perfect_alert]
-
+        return []
+    
 class DecoyDetector(Detector):
     """A detector that only gives alerts for hosts that access decoys"""
     def obs(self, perfect_alert: Alert) -> Iterable[Alert]:

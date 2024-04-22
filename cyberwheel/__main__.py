@@ -35,7 +35,7 @@ def make_env(env_id: str, rank: int, seed: int = 0):
 def debug_env(env):
     # It will check your custom environment and output additional warnings if needed
     # Use this to debug changes but not when running - it can cause some meaningless errors on reset()
-    env = DecoyAgentCyberwheel()
+    env = DecoyAgentCyberwheel(network_config='/home/70d/RL_For_Cyber/cyberwheel/cyberwheel/network/network_generation/network-cac9fa081e8a4edd856345da364c79b3.yaml')
     check_env(env)
 
 

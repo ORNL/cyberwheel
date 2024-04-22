@@ -110,9 +110,9 @@ def parse_args():
     parser.add_argument("--host-config", help="Input the host config filename", type=str, default='host_definitions.yaml')
 
     # reward calculator args
-    parser.add_argument("--min-decoys", help="Minimum number of decoys that should be used", type=int, default=0)
-    parser.add_argument("--max-decoys", help="Maximum number of decoys that should be used", type=int, default=1)
-    parser.add_argument("--reward-scaling", help="Variable used to increase rewards", type=float, default=10.0)
+    parser.add_argument("--min-decoys", help="Minimum number of decoys that should be used", type=int, default=2)
+    parser.add_argument("--max-decoys", help="Maximum number of decoys that should be used", type=int, default=3)
+    parser.add_argument("--reward-scaling", help="Variable used to increase rewards", type=float, default=5.0)
 
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)   # Number of environment steps to performa backprop with
@@ -234,7 +234,8 @@ def task_space():
     return task_space
 
 
-def make_env(env_id: str, rank: int, seed: int = 0, min_decoys=0, max_decoys=1, blue_reward_scaling=10):
+def make_env(env_id: str, rank: int, network_config: str, decoy_host_file: str, host_def_file: str,
+              seed: int = 0, min_decoys=0, max_decoys=1, blue_reward_scaling=10):
     """
     Utility function for multiprocessed env.
 
@@ -245,7 +246,8 @@ def make_env(env_id: str, rank: int, seed: int = 0, min_decoys=0, max_decoys=1, 
     """
 
     def _init():
-        env = DecoyAgentCyberwheel(min_decoys=min_decoys, max_decoys=max_decoys, blue_reward_scaling=blue_reward_scaling)
+        env = DecoyAgentCyberwheel(network_config=network_config, decoy_host_file=decoy_host_file, host_def_file=decoy_host_file,
+                                   min_decoys=min_decoys, max_decoys=max_decoys, blue_reward_scaling=blue_reward_scaling)
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(env)     # This tracks the rewards of the environment that it wraps. Used for logging
         return env
@@ -353,7 +355,7 @@ if __name__ == "__main__":
     # For large neural networks you may need to use fewer environments.
     # NOTE: For debugging, you can change AsyncVectorENv to SyncVectorEnv (and reduce num_envs) to get more helpful stack traces.
 
-    env_funcs = [make_env(args.seed, i, min_decoys=args.min_decoys, max_decoys=args.max_decoys, blue_reward_scaling=args.reward_scaling) for i in range(args.num_envs)]
+    env_funcs = [make_env(args.seed, i, args.network_config, args.decoy_config, args.host_config, min_decoys=args.min_decoys, max_decoys=args.max_decoys, blue_reward_scaling=args.reward_scaling) for i in range(args.num_envs)]
     envs = (
         gym.vector.AsyncVectorEnv(env_funcs)
         if args.async_env

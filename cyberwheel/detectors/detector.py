@@ -19,11 +19,6 @@ class CoinFlipDetector(Detector):
         flip = random.randint(0, 1)
         if flip:
             return [perfect_alert]
-        
-
-        # If one of the destination hosts is a decoy, then this alert is always detected 
-        alerted_hosts = [Alert(src_host=perfect_alert.src_host, dst_hosts=[host], services=perfect_alert.services) for host in perfect_alert.dst_hosts if host.decoy]
-        return alerted_hosts
 
 class DecoyDetector(Detector):
     """A detector that only gives alerts for hosts that access decoys"""

@@ -47,6 +47,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         network_config="example_config.yaml",
         decoy_host_file="decoy_hosts.yaml",
         host_def_file="host_definitions.yaml",
+        min_decoys=0,
+        max_decoys=1,
+        blue_reward_scaling=10,
         **kwargs,
     ):
         network_conf_file = files("cyberwheel.network").joinpath(network_config)
@@ -54,7 +57,6 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             decoy_host_file
         )
         host_conf_file = files("cyberwheel.resources.metadata").joinpath(host_def_file)
-
         super().__init__(config_file_path=network_conf_file)
         self.total = 0
         self.max_steps = 50
@@ -92,7 +94,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         self.detector = CoinFlipDetector()
         
 
-        self.reward_calculator = Reward(self.red_agent.get_reward_map(), self.blue_agent.get_reward_map(), r=(2,5), scaling_factor=10)
+        self.reward_calculator = Reward(self.red_agent.get_reward_map(), self.blue_agent.get_reward_map(), r=(min_decoys, max_decoys), scaling_factor=blue_reward_scaling)
 
     def step(self, action):
         blue_action_name, rec_id, successful = self.blue_agent.act(action)
@@ -113,20 +115,12 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         alerts = self.detector.obs(red_action_result.detector_alert)
         obs_vec = self._get_obs(alerts)
 
-        # print(blue_action_name, red_action_name)
         x = decoy_alerted(alerts)
-        #print(x, end=" ")
         reward = self.reward_calculator.calculate_reward(red_action_name, blue_action_name, successful, x)
-        #print(reward)
         self.total += reward
 
         if self.current_step >= self.max_steps:  # Maximal number of steps
             done = True
-        # elif red_action_name == "impact" and not x:
-        #     done = True
-        # elif x:
-        #     print("ACCESSED DECOY")
-        #     done = True
         else:
             done = False
         self.current_step += 1
@@ -143,7 +137,6 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         pass
 
     def reset(self, seed=None, options=None):
-        #print(f"Reward: {self.total}")
         self.total = 0 
         self.current_step = 0
         self.network = Network.create_network_from_yaml(self.config_file_path)

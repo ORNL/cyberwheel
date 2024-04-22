@@ -19,3 +19,7 @@ decoy5:
   type: proxy_server
   reward: -4
   recurring_reward: -0.2
+decoy6:
+  type: workstation
+  reward: -4
+  recurring_reward: -0.2

@@ -50,9 +50,7 @@ class Reward(RewardCalculator):
         else:
             r = self.red_rewards[red_action][0]
 
-        if blue_action == "" and blue_success:
-            b = 0
-        elif blue_success:
+        if blue_success:
             b = self.blue_rewards[blue_action][0]
         else:
             b = -100
@@ -72,7 +70,7 @@ class Reward(RewardCalculator):
             x = self.range[0] - len(self.recurring_actions)
             sum -= calc_quadratic(x, a=self.scaling_factor*1.5)
 
-        #print(len(self.recurring_actions), sum, end=" ")
+        # print(len(self.recurring_actions), sum)
         return sum
 
     def add_recurring_action(self, id: str, action: str)-> None:
@@ -87,6 +85,8 @@ class Reward(RewardCalculator):
     def handle_blue_action_output(self, blue_action: str, rec_id: str):
         if blue_action == "remove":
             self.remove_recurring_action(rec_id)
+        elif blue_action == "failed":
+            return
         elif blue_action != "nothing":
             self.add_recurring_action(rec_id, blue_action)
 

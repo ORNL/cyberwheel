@@ -109,6 +109,11 @@ def parse_args():
     parser.add_argument("--decoy-config", help="Input the decoy config filename", type=str, default='decoy_hosts.yaml')
     parser.add_argument("--host-config", help="Input the host config filename", type=str, default='host_definitions.yaml')
 
+    # reward calculator args
+    parser.add_argument("--min-decoys", help="Minimum number of decoys that should be used", type=int, default=0)
+    parser.add_argument("--max-decoys", help="Maximum number of decoys that should be used", type=int, default=1)
+    parser.add_argument("--reward-scaling", help="Variable used to increase rewards", type=float, default=10.0)
+
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)   # Number of environment steps to performa backprop with
     args.minibatch_size = int(args.batch_size // args.num_minibatches)  # Number of environments steps to perform backprop with in each epoch
@@ -130,6 +135,9 @@ def evaluate(
     network_config: str,
     decoy_host_file: str,
     host_def_file: str,
+    min_decoys=0,
+    max_decoys=1,
+    blue_reward_scaling=10, 
     episodes=20,
     steps=100,
 ):
@@ -138,7 +146,7 @@ def evaluate(
     # You can evaluate small architectures on CPU, but if you increase the neural network size,
     # you may need to do fewer evaluations at a time on GPU.
     eval_device = torch.device("cpu")
-    env = create_cyberwheel_env(network_config, decoy_host_file, host_def_file)
+    env = create_cyberwheel_env(network_config, decoy_host_file, host_def_file, min_decoys=min_decoys, max_decoys=max_decoys, blue_reward_scaling=blue_reward_scaling)
     episode_rewards = []
     total_reward = 0
     # Standard evaluation loop to estimate mean episodic return
@@ -203,13 +211,17 @@ def evaluate_helper(args):
 
 
 def create_cyberwheel_env(
-    network_config: str, decoy_host_file: str, host_def_file: str
+    network_config: str, decoy_host_file: str, host_def_file: str, 
+    min_decoys: int, max_decoys: int, blue_reward_scaling: float
 ):
     """Create a Cyberwheel environment"""
     env = DecoyAgentCyberwheel(
         network_config=network_config,
         decoy_host_file=decoy_host_file,
         host_def_file=host_def_file,
+        min_decoys=min_decoys,
+        max_decoys=max_decoys,
+        blue_reward_scaling=blue_reward_scaling
     )
     return env
 
@@ -222,7 +234,7 @@ def task_space():
     return task_space
 
 
-def make_env(env_id: str, rank: int, seed: int = 0):
+def make_env(env_id: str, rank: int, seed: int = 0, min_decoys=0, max_decoys=1, blue_reward_scaling=10):
     """
     Utility function for multiprocessed env.
 
@@ -233,7 +245,7 @@ def make_env(env_id: str, rank: int, seed: int = 0):
     """
 
     def _init():
-        env = DecoyAgentCyberwheel()
+        env = DecoyAgentCyberwheel(min_decoys=min_decoys, max_decoys=max_decoys, blue_reward_scaling=blue_reward_scaling)
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(env)     # This tracks the rewards of the environment that it wraps. Used for logging
         return env
@@ -341,7 +353,7 @@ if __name__ == "__main__":
     # For large neural networks you may need to use fewer environments.
     # NOTE: For debugging, you can change AsyncVectorENv to SyncVectorEnv (and reduce num_envs) to get more helpful stack traces.
 
-    env_funcs = [make_env(args.seed, i) for i in range(args.num_envs)]
+    env_funcs = [make_env(args.seed, i, min_decoys=args.min_decoys, max_decoys=args.max_decoys, blue_reward_scaling=args.reward_scaling) for i in range(args.num_envs)]
     envs = (
         gym.vector.AsyncVectorEnv(env_funcs)
         if args.async_env

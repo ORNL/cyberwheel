@@ -46,7 +46,7 @@ class DecoyBlueAgent(BlueAction):
 
     def __init__(
         self, network: Network, decoy_info: Dict[str, Any], host_defs: Dict[str, Any]
-    ) -> None:
+        ) -> None:
         self.network = network
         self.subnets = self.network.get_all_subnets()
         self.decoy_info = decoy_info
@@ -78,7 +78,7 @@ class DecoyBlueAgent(BlueAction):
         selected_subnet = self.subnets[subnet_index]
         successful = False
         id = ""
-        action_name = ""
+        action_name = "failed"
         
         # NOOP
         if action_type == 0:
@@ -86,12 +86,10 @@ class DecoyBlueAgent(BlueAction):
             action_name = "nothing"
 
         # Deploy Host
-        elif action_type == 1:
-           
+        elif action_type == 1:# and (len(self.deployed_hosts) < self.decoy_limit or self.decoy_limit == -1):
             decoy_type = self.host_types[decoy_index]
             id = uuid.uuid4().hex
             action_name = decoy_type.name
-            #print(action_name, selected_subnet.name, end=" ")
             reward = self.rewards[decoy_index][0]
             recurring_reward = self.rewards[decoy_index][1]
             decoy = DeployDecoyHost(self.network, selected_subnet, decoy_type, reward=reward, recurring_reward=recurring_reward)        
@@ -113,8 +111,6 @@ class DecoyBlueAgent(BlueAction):
                     self.deployed_hosts.remove(deployed_host)
                     successful = True
                     break
-        else:
-            raise ValueError(f"The action provided is not within this agent's action space: {action}, {action_type}")
         return action_name, id, successful
 
     def get_reward_map(self) -> RewardMap:
@@ -144,10 +140,10 @@ class DecoyBlueAgent(BlueAction):
             host_type = HostType(name=decoy_name, services=services, decoy=True)
             self.host_types.append(host_type)
 
-    def _get_subnet_index(self, action: int) -> int:
-        return (action - 1) % len(self.subnets)
+    def _get_subnet_index(self, action: int, i=1) -> int:
+        return (action - i) % len(self.subnets)
 
-    def _get_decoy_type_index(self, action: int) -> int:
+    def _get_decoy_type_index(self, action: int, i=1) -> int:
         """
         Does some math to calculate which decoy host type is to be used.
         Returns an `int` that is the index of a decoy host type in the
@@ -165,7 +161,7 @@ class DecoyBlueAgent(BlueAction):
         decoy is determined in `_get_action_type()`.
         """
         # return (action - 1) % self.num_decoy_types if action else -1
-        return ((action - 1) % (self.num_decoy_types * len(self.subnets))) // len(
+        return ((action - i) % (self.num_decoy_types * len(self.subnets))) // len(
             self.subnets
         )
 

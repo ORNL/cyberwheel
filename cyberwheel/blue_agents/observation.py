@@ -8,7 +8,6 @@ from cyberwheel.network.host import Host
 from cyberwheel.detectors.alert import Alert
 
 
-#
 class AlertsConversion:
     """
     A base class for converting from detector produced alerts to blue observations.

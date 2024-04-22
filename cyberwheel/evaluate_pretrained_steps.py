@@ -19,8 +19,8 @@ from stable_baselines3.common.monitor import Monitor
 from pprint import pprint
 import yaml
 
-from cyberwheel.blueagents.decoy_blue import DecoyBlueAgent
-from cyberwheel.redagents.killchain_agent import KillChainAgent
+from cyberwheel.blue_agents.decoy_blue import DecoyBlueAgent
+from cyberwheel.red_agents.killchain_agent import KillChainAgent
 from cyberwheel.cyberwheel_envs.cyberwheel_decoyagent import *
 
 

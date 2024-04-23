@@ -12,6 +12,10 @@ def _none_to_list(dict_, key):
     if dict_[key] is None: dict_[key] = []  
 
 def make_firewall(name="", src="", dest="", port=0, protocol=""):
+    """
+    Creates a tuple from the function parameters that is in the order
+    that the `add_firewalls` methods.
+    """
     return (name, src, dest, port, protocol)
 
 
@@ -22,6 +26,13 @@ class NetworkYAMLGenerator():
     lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
 
     def __init__(self, network_name=f'network-{uuid.uuid4().hex}', desc="default description"):
+        """
+        A class to help generate network config files using YAML. It has methods to add routers, subnets, and hosts to the network.
+        Firewalls and routes can also be added to the appropriate network objects.
+
+        Calling the `output()` method will create the YAML file and automatically generate the network topology. 
+        """
+
         self.data = {
             "network": 
                 {"name": network_name, 
@@ -36,12 +47,12 @@ class NetworkYAMLGenerator():
 
         self.file_name = f"{network_name}.yaml"
 
-    def router(self, router_name: str, default_route: str):
+    def router(self, router_name: str, default_route=""):
         _none_to_dict(self.data, "routers")
         if router_name in self.data["routers"]:
             raise KeyError(f"key '{router_name}' already exists")
         self.data["routers"][router_name] = {}
-        self.data["routers"][router_name]["default_route"] = default_route
+        self.data["routers"][router_name]["default_route"] = default_route if default_route else None
         self.data["routers"][router_name]["routes_by_name"] = None
         self.data["routers"][router_name]["routes"] = None
         self.data["routers"][router_name]["firewall"] = None
@@ -171,8 +182,7 @@ class NetworkYAMLGenerator():
         _none_to_list(self.data[index][index2], "firewall")
         self.data[index][index2]["firewall"].append(firewall_object)
     
-    def topology(self):
-        # TODO These two for loops can probably be compressed into one somehow, though this isn't really important right now
+    def _topology(self):
         topology = {}
         for router in self.data["routers"]:
             topology[router] = None
@@ -202,10 +212,18 @@ class NetworkYAMLGenerator():
         self.data["topology"] = topology
 
     def _debug_output(self):
+        """
+        Print the network as a dictionary
+        """
         print(self.data)
 
     def output(self, path= "."):
-        self.topology()
+        """
+        Outputs the network as a YAML file.
+
+        `path`: the path to the directory where the file should be saved
+        """
+        self._topology()
         path = os.path.join(path, self.file_name)
         with open(path, "w") as w:
             yaml.safe_dump(self.data, w)

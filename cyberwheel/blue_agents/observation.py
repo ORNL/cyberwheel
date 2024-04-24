@@ -58,6 +58,8 @@ class HistoryObservation(AlertsConversion):
             self.obs_vec[i] = 0
         for alert in alerts:
             alerted_host = alert.src_host
+            if alerted_host.name not in self.mapping:
+                continue
             index = self.mapping[alerted_host.name]
             self.obs_vec[index] = 1
             self.obs_vec[index + barrier] = 1

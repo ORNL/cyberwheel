@@ -17,7 +17,7 @@ def get_host_types() -> List[dict[str, any]]:
     return host_defs['host_types']
 
 class DeployDecoyHost(BlueAction):
-    def __init__(self, network: Network, subnet: Subnet, type: HostType,
+    def __init__(self, name: str, network: Network, subnet: Subnet, type: HostType,
                  obs_vec: List=[], reward: int = 0, recurring_reward: int = 0) -> None:
         """
             A class that allows the blue agent to create a decoy host.
@@ -29,10 +29,11 @@ class DeployDecoyHost(BlueAction):
             - `recurring_reward`: the recurring effect this decoy has on the overall reward
         """
         super().__init__(obs_vec, reward=reward, recurring_reward=recurring_reward)
+        self.name: str = name
         self.network: Network = network
         self.subnet: Subnet = subnet
         self.type: HostType = type
-        self.host: Host = Host(self.type.name, self.subnet, self.type)  
+        self.host: Host = Host(self.name, self.subnet, self.type)  
     
     def __eq__(self, __value: object) -> bool:
         if not isinstance(__value, DeployDecoyHost):
@@ -48,7 +49,7 @@ class DeployDecoyHost(BlueAction):
 
 
     def execute(self) ->  int:
-        self.host = self.network.create_decoy_host(self.type.name, self.subnet, self.type)
+        self.host = self.network.create_decoy_host(self.name, self.subnet, self.type)
         return self.reward                                                                                                                                                                                                                                              
 
 

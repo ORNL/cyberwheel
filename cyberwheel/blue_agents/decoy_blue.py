@@ -89,10 +89,12 @@ class DecoyBlueAgent(BlueAction):
         elif action_type == 1:# and (len(self.deployed_hosts) < self.decoy_limit or self.decoy_limit == -1):
             decoy_type = self.host_types[decoy_index]
             id = uuid.uuid4().hex
-            action_name = decoy_type.name
+            decoy_key = list(self.decoy_info.keys())[decoy_index]
+            decoy_name = f"{decoy_key}-{id}"
+            action_name = decoy_key
             reward = self.rewards[decoy_index][0]
             recurring_reward = self.rewards[decoy_index][1]
-            decoy = DeployDecoyHost(self.network, selected_subnet, decoy_type, reward=reward, recurring_reward=recurring_reward)        
+            decoy = DeployDecoyHost(decoy_name, self.network, selected_subnet, decoy_type, reward=reward, recurring_reward=recurring_reward) 
             decoy.execute()
             self.deployed_hosts.append(DeployedHost(id, decoy.host))
             successful = True
@@ -137,7 +139,7 @@ class DecoyBlueAgent(BlueAction):
             services = []
             for service_info in type_info["services"]:
                 services.append(Service.create_service_from_dict(service_info))
-            host_type = HostType(name=decoy_name, services=services, decoy=True)
+            host_type = HostType(name=info["type"], services=services, decoy=True)
             self.host_types.append(host_type)
 
     def _get_subnet_index(self, action: int, i=1) -> int:

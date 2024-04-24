@@ -122,8 +122,8 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         red_action_result = (
             self.red_agent.history.recent_history()
         )  # red action results
-
-        alerts = self.detector.obs(red_action_result.detector_alert)
+        
+        alerts = self.detector.obs(red_action_result.detector_alert)    
         obs_vec = self._get_obs(alerts)
 
         x = decoy_alerted(alerts)

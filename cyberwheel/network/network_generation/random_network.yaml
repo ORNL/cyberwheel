@@ -1,0 +1,179 @@
+host_type_config:
+hosts:
+  host11:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host12:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: services
+  host13:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: workstation
+  host14:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host15:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host16:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: workstation
+  host17:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host18:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host19:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: services
+  host21:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host22:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: mail_server
+  host23:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host24:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host25:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: mail_server
+  host26:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: web_server
+  host27:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host28:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: services
+  host29:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: web_server
+  host31:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: services
+  host32:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host33:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: mail_server
+  host34:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host35:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: web_server
+  host36:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: mail_server
+interfaces:
+  host01:
+  - host11
+network:
+  desc: default description
+  name: random_network
+routers:
+  core_router:
+    default_route:
+    firewall:
+    routes:
+    routes_by_name:
+subnets:
+  subnet1:
+    dns_server: 192.168.0.1
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet2:
+    dns_server: 192.168.0.1
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet3:
+    dns_server: 192.168.0.1
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+topology:
+  core_router:
+    subnet1:
+    - host11
+    - host12
+    - host13
+    - host14
+    - host15
+    - host16
+    - host17
+    - host18
+    - host19
+    subnet2:
+    - host21
+    - host22
+    - host23
+    - host24
+    - host25
+    - host26
+    - host27
+    - host28
+    - host29
+    subnet3:
+    - host31
+    - host32
+    - host33
+    - host34
+    - host35
+    - host36

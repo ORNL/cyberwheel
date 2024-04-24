@@ -1,0 +1,124 @@
+host_type_config:
+hosts:
+  dmz0:
+    firewall:
+    routes:
+    subnet: dmz_subnet
+    type: workstation
+  dmz1:
+    firewall:
+    routes:
+    subnet: dmz_subnet
+    type: workstation
+  dmz2:
+    firewall:
+    routes:
+    subnet: dmz_subnet
+    type: workstation
+  dmz3:
+    firewall:
+    routes:
+    subnet: dmz_subnet
+    type: workstation
+  dmz4:
+    firewall:
+    routes:
+    subnet: dmz_subnet
+    type: workstation
+  host0:
+    firewall:
+    routes:
+    subnet: user_subnet1
+    type: workstation
+  host1:
+    firewall:
+    routes:
+    subnet: user_subnet1
+    type: workstation
+  host2:
+    firewall:
+    routes:
+    subnet: user_subnet1
+    type: workstation
+  host3:
+    firewall:
+    routes:
+    subnet: user_subnet1
+    type: workstation
+  host4:
+    firewall:
+    routes:
+    subnet: user_subnet1
+    type: workstation
+  server0:
+    firewall:
+    routes:
+    subnet: server_subnet1
+    type: proxy_server
+  server1:
+    firewall:
+    routes:
+    subnet: server_subnet1
+    type: mail_server
+  server2:
+    firewall:
+    routes:
+    subnet: server_subnet1
+    type: ssh_jump_server
+  server3:
+    firewall:
+    routes:
+    subnet: server_subnet1
+    type: ssh_jump_server
+  server4:
+    firewall:
+    routes:
+    subnet: server_subnet1
+    type: proxy_server
+interfaces:
+  dmz1:
+  - server2
+  host4:
+  - dmz2
+network:
+  desc: default description
+  name: 15-host-network
+routers:
+  core_router:
+    default_route:
+    firewall:
+    routes:
+    routes_by_name:
+subnets:
+  dmz_subnet:
+    firewall:
+    ip_range: 192.168.4.0/24
+    router: core_router
+  server_subnet1:
+    firewall:
+    ip_range: 192.168.1.0/24
+    router: core_router
+  user_subnet1:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+topology:
+  core_router:
+    dmz_subnet:
+    - dmz0
+    - dmz1
+    - dmz2
+    - dmz3
+    - dmz4
+    server_subnet1:
+    - server0
+    - server1
+    - server2
+    - server3
+    - server4
+    user_subnet1:
+    - host0
+    - host1
+    - host2
+    - host3
+    - host4

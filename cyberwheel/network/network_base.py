@@ -215,8 +215,10 @@ class Network:
         )
 
         # Display the graph
-        plt.savefig(filename, format="png")
-
+        if filename != "":
+            plt.savefig(filename, format="png")
+        else:
+            plt.show()
     @classmethod
     def create_network_from_yaml(cls, config_file_path=None):  # type: ignore
         if config_file_path is None:
@@ -619,6 +621,7 @@ class Network:
         """
         host = self.add_host_to_subnet(*args, decoy=True, **kwargs)
         self.draw()
+        print(len(self.get_hosts()))
         return host
 
     @staticmethod

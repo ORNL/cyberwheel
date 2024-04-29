@@ -1,3 +1,4 @@
+import copy
 from importlib.resources import files
 import gymnasium as gym
 from gymnasium import spaces
@@ -8,7 +9,7 @@ from .cyberwheel import Cyberwheel
 from blue_agents.decoy_blue import DecoyBlueAgent
 from blue_agents.observation import HistoryObservation
 from detectors.alert import Alert
-from detectors.detector import DecoyDetector
+from detectors.detector import DecoyDetector, CoinFlipDetector
 from network.network_base import Network
 from network.host import Host
 from red_agents.killchain_agent import KillChainAgent
@@ -61,7 +62,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         host_conf_file = files("cyberwheel.resources.metadata").joinpath(host_def_file)
         super().__init__(config_file_path=network_conf_file)
         self.total = 0
-        self.max_steps = 50
+        self.max_steps = 100
         self.current_step = 0
 
         # Create action space. Decoy action for each decoy type for each subnet.
@@ -106,7 +107,6 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
     def step(self, action):
         blue_action_name, rec_id, successful = self.blue_agent.act(action)
         self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id)
-
         red_action_name = (
             self.red_agent.act().get_name()
         )  # red_action includes action, and target of action
@@ -125,7 +125,6 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         
         alerts = self.detector.obs(red_action_result.detector_alert)    
         obs_vec = self._get_obs(alerts)
-
         x = decoy_alerted(alerts)
         reward = self.reward_calculator.calculate_reward(
             red_action_name, blue_action_name, successful, x
@@ -158,7 +157,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
     def reset(self, seed=None, options=None):
         self.total = 0
         self.current_step = 0
-        self.network = Network.create_network_from_yaml(self.config_file_path)
+
+        # There's a performance issue here
+        self.network.reset()       
         self.red_agent = KillChainAgent(
             self.network.get_random_user_host(), network=self.network
         )

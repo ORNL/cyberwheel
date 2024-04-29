@@ -22,6 +22,7 @@ class Network:
     def __init__(self, name=""):
         self.graph = nx.Graph(name=name)
         self.name = name
+        self.decoys = []
 
     def __iter__(self):
         return iter(self.graph)
@@ -55,6 +56,8 @@ class Network:
     def connect_nodes(self, node1, node2):
         self.graph.add_edge(node1, node2)
 
+    # def disconnect_nodes(self, node1, node2):
+    #     self.graph.remove_edge(node1, node2)
     # def define_routing_rules(self, router, routes):
     #    if router.name in self.graph.nodes:
     #        data_object = self.graph.nodes[router.name]['data']
@@ -201,12 +204,29 @@ class Network:
     def draw(self, **kwargs):
         labels: bool = kwargs.get("labels", False)
         filename: str = kwargs.get("filename", "networkx_graph.png")
+        colors = []
+        for _, node in self.graph.nodes(data="data"):
+            if isinstance(node, Host):
+                if node.decoy:
+                    colors.append("blue")
+                elif node.host_type.name == "workstation":
+                    colors.append("green")
+                elif "server" in node.host_type.name:
+                    colors.append("red")
+                else:
+                    colors.append("black")
+            elif isinstance(node, Subnet):
+                colors.append("cyan")
+            elif isinstance(node, Router):
+                colors.append("orange")
+            else:
+                colors.append("black")
 
         plt.clf()  # clear
         nx.draw(
             self.graph,
             with_labels=labels,
-            node_color="skyblue",
+            node_color=colors,
             node_size=30,
             font_size=12,
             font_color="black",
@@ -219,6 +239,7 @@ class Network:
             plt.savefig(filename, format="png")
         else:
             plt.show()
+    
     @classmethod
     def create_network_from_yaml(cls, config_file_path=None):  # type: ignore
         if config_file_path is None:
@@ -620,9 +641,13 @@ class Network:
         :param IPv4Address | IPv6Address **dns_server:
         """
         host = self.add_host_to_subnet(*args, decoy=True, **kwargs)
-        self.draw()
-        print(len(self.get_hosts()))
+        self.decoys.append(host)
         return host
+
+    def reset(self):
+        for decoy in self.decoys:
+            self.remove_host_from_subnet(decoy)
+        self.decoys = []
 
     @staticmethod
     def create_host_type_from_json(name: str, config_file: PathLike) -> HostType:

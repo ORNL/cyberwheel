@@ -193,6 +193,8 @@ def run_evals(eval_queue, model, args, globalstep):
     # Run evaluations in multiprocessing pool
     with multiprocessing.Pool(processes=args.max_eval_workers) as pool:
         # Create a list of arguments for the evaluate_helper function.
+        
+        # TODO instead of giving network_config, maybe make the network here and give a deep copy of the network to each env?
         args_list = [
             (
                 eval_agent,
@@ -384,6 +386,7 @@ if __name__ == "__main__":
     # For large neural networks you may need to use fewer environments.
     # NOTE: For debugging, you can change AsyncVectorENv to SyncVectorEnv (and reduce num_envs) to get more helpful stack traces.
 
+    # TODO Load network from yaml here?
     env_funcs = [
         make_env(
             args.seed,
@@ -452,6 +455,7 @@ if __name__ == "__main__":
             optimizer.param_groups[0]["lr"] = lrnow
 
         # Run an episode in each environment. This loop collects experience which is later used for optimization.
+        episode_start = time.time_ns()
         for step in range(0, args.num_steps):
             global_step += 1 * args.num_envs
             obs[step] = next_obs
@@ -475,11 +479,17 @@ if __name__ == "__main__":
             next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(
                 done
             ).to(device)
-
+        end_time = time.time_ns()
+        episode_time = (end_time - episode_start) / (10**9)
         # Calculate and log the mean reward for this episode.
         mean_rew = rewards.sum(axis=0).mean()
         print(f"global_step={global_step}, episodic_return={mean_rew}")
         writer.add_scalar("charts/episodic_return", mean_rew, global_step)
+        writer.add_scalar(
+                f"evaluation/episodic_runtime",
+                episode_time,
+                global_step,
+            )
 
         # bootstrap value if not done
         # Calculate advantages used to optimize the policy and returns which are compared to values to optimize the critic.

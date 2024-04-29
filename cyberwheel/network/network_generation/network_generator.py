@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 import yaml 
@@ -45,7 +46,7 @@ class NetworkYAMLGenerator():
             "topology": None,
                 }
 
-        self.file_name = f"{network_name}.yaml"
+        self.file_name = f"{network_name}"
 
     def router(self, router_name: str, default_route=""):
         _none_to_dict(self.data, "routers")
@@ -217,14 +218,24 @@ class NetworkYAMLGenerator():
         """
         print(self.data)
 
-    def output(self, path= "."):
+    def output_yaml(self, path="."):
         """
         Outputs the network as a YAML file.
 
         `path`: the path to the directory where the file should be saved
         """
         self._topology()
-        path = os.path.join(path, self.file_name)
+        path = os.path.join(path, self.file_name + ".yaml")
         with open(path, "w") as w:
             yaml.safe_dump(self.data, w)
 
+    def output_json(self, path="."):
+        """
+        Outputs the network as a JSON file.
+
+        `path`: the path to the directory where the file should be saved
+        """
+        self._topology()
+        path = os.path.join(path, self.file_name + ".json")
+        with open(path, "w") as w:
+            json.dump(self.data, w)

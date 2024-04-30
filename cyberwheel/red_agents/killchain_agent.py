@@ -69,8 +69,9 @@ class KillChainAgent(RedAgent):
         self.history: AgentHistory = AgentHistory(
             initial_host=entry_host
         )  # Tracks the Red Agent's available and known information of attacks, hosts, and subnets
-        self.initial_network = deepcopy(network)
+        # self.initial_network = deepcopy(network)
         self.network = network
+        self.initial_host_names = set(self.network.get_host_names())
 
     def update_network(
         self, network
@@ -78,22 +79,19 @@ class KillChainAgent(RedAgent):
         self.network = network
 
     def check_network(self) -> Tuple[bool, Host]:
-        initial_host_names = [h.name for h in self.initial_network.get_hosts()]
-        current_hosts = self.network.get_hosts()
-
-        for h in current_hosts:
-            host_name = h.name
-            if (
-                host_name not in initial_host_names
-                and host_name not in self.history.hosts.keys()
-            ):
-                scanned_subnets = [
-                    self.history.mapping[s]
-                    for s, v in self.history.subnets.items()
-                    if v.is_scanned()
-                ]
-                if h.subnet in scanned_subnets:
-                    return True, h
+        # initial_host_names = [h.name for h in self.initial_network.get_hosts()]
+        current_hosts = set(self.network.get_host_names())
+        new_hosts = current_hosts - (self.initial_host_names | set(self.history.hosts.keys()))
+        # print(len(new_hosts), len(current_hosts), len(self.initial_host_names), len(self.history.hosts.keys()))
+        for host_name in new_hosts:
+            h = self.network.get_node_from_name(host_name)
+            scanned_subnets = [
+                self.history.mapping[s]
+                for s, v in self.history.subnets.items()
+                if v.is_scanned()
+            ]
+            if h.subnet in scanned_subnets:
+                return True, h
         return False, None
 
     def act(self):

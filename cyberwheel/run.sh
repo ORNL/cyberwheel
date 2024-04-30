@@ -1,1 +1,1 @@
-python3 ppo_cyberwheel.py --exp-name test-merge-cdat --device cuda:0 --track --num-envs 1
+python3 ppo_cyberwheel.py --exp-name test --device cuda:0 --num-envs 1

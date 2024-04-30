@@ -96,7 +96,9 @@ class Network:
         return [
             host for _, host in self.graph.nodes(data="data") if isinstance(host, Host)
         ]  # type:ignore
-
+    def get_host_names(self)-> list[str]:
+        return [host.name for _, host in self.graph.nodes(data="data") if isinstance(host, Host)]
+    
     def get_nondecoy_hosts(self) -> List[Host]:
         return [
             host
@@ -259,7 +261,16 @@ class Network:
 
         # Create an instance of the Network class
         network = cls(name=config["network"].get("name"))
-
+        
+        conf_dir = files("cyberwheel.resources.metadata")
+        # TODO: use create_host_type_from_yaml() instead?
+        # conf_file = conf_dir.joinpath('host_definitions.json')
+        # type = network.create_host_type_from_json(type_str, conf_file) #type: ignore
+        conf_file = conf_dir.joinpath("host_definitions.yaml")
+        with open(conf_file) as f:
+            type_config = yaml.safe_load(f)
+        types = type_config["host_types"]
+        
         ## parse topology
         # parse routers
         for key, val in config["routers"].items():
@@ -329,12 +340,7 @@ class Network:
                     # TODO: wip
                     # instantiate HostType if defined
                     if type_str := val.get("type"):
-                        conf_dir = files("cyberwheel.resources.metadata")
-                        # TODO: use create_host_type_from_yaml() instead?
-                        # conf_file = conf_dir.joinpath('host_definitions.json')
-                        # type = network.create_host_type_from_json(type_str, conf_file) #type: ignore
-                        conf_file = conf_dir.joinpath("host_definitions.yaml")
-                        type = network.create_host_type_from_yaml(type_str, conf_file)  # type: ignore
+                        type = network.create_host_type_from_yaml(type_str, conf_file, types)  # type: ignore
                     else:
                         type = None
 
@@ -691,7 +697,7 @@ class Network:
         return HostType(name=name, services=service_objects, decoy=decoy, os=os)
 
     @staticmethod
-    def create_host_type_from_yaml(name: str, config_file: PathLike) -> HostType:
+    def create_host_type_from_yaml(name: str, config_file: PathLike, types) -> HostType:
         """
         Return a matching HostType object from yaml file
 
@@ -700,9 +706,7 @@ class Network:
         :raises HostTypeNotFoundError:
         :returns HostType:
         """
-        with open(config_file) as f:
-            config = yaml.safe_load(f)
-        types = config["host_types"]
+
 
         # match name to defined host_type name
         host_type = {}

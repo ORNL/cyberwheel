@@ -20,8 +20,6 @@ from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from cyberwheel.blue_agents.decoy_blue import DecoyBlueAgent
-from cyberwheel.red_agents.killchain_agent import KillChainAgent
 from cyberwheel.cyberwheel_envs.cyberwheel_decoyagent import *
 
 
@@ -119,7 +117,7 @@ def parse_args():
     args.batch_size = int(args.num_envs * args.num_steps)   # Number of environment steps to performa backprop with
     args.minibatch_size = int(args.batch_size // args.num_minibatches)  # Number of environments steps to perform backprop with in each epoch
     args.num_updates = args.total_timesteps // args.batch_size  # Total number of policy update phases
-    args.num_saves = 200    # Number of model saves and evaluations to run throughout training
+    args.num_saves = 1    # Number of model saves and evaluations to run throughout training
     args.save_frequency = int(args.num_updates / args.num_saves)    # Number of policy updates between each model save and evaluation
 
 
@@ -342,8 +340,7 @@ class Agent(nn.Module):
             action = probs.sample()
         return action, probs.log_prob(action), probs.entropy(), self.critic(x)
 
-
-if __name__ == "__main__":
+def main():
     args = parse_args()
     run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
     if args.track:
@@ -665,3 +662,8 @@ if __name__ == "__main__":
 
     envs.close()
     writer.close()
+
+
+
+if __name__ == "__main__":
+    main()

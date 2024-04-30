@@ -241,7 +241,7 @@ class Network:
             plt.savefig(filename, format="png")
         else:
             plt.show()
-    
+
     @classmethod
     def create_network_from_yaml(cls, config_file_path=None):  # type: ignore
         if config_file_path is None:

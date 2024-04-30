@@ -28,6 +28,7 @@ ipykernel = "^6.29.4"
 black = "^24.2.0"
 pre-commit = "^3.6.2"
 pyright = "^1.1.351"
+py-spy = "^0.3.14"
 
 [build-system]
 requires = ["poetry-core"]

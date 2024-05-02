@@ -41,16 +41,10 @@ class Alert():
 
         self.dst_hosts = dst_hosts
         self.services = services
-<<<<<<< HEAD
-        self.src_ip = src_host.ip_address if src_host is not None else None
-        self.dst_ips = [h.ip_address for h in dst_hosts]
-        self.dst_ports = [s.port for s in services]
-=======
 
         if self.src_host is not None: self.src_ip = self.src_host.ip_address
         if self.dst_hosts is not None: self.dst_ips = [h.ip_address for h in self.dst_hosts]
         if self.services is not None: self.dst_ports = [s.port for s in self.services]
->>>>>>> bd85256 (start hids-based detector)
 
         self.user = user
         self.command = command
@@ -97,9 +91,8 @@ class Alert():
         dst_hosts = len(self.dst_hosts) == len(__value.dst_hosts)
         if dst_hosts:
             for host in self.dst_hosts:
-                if host not in __value.dst_hosts:
-                    dst_hosts = False
-        services = len(self.services) == len(__value.services)
+                if host not in __value.dst_hosts:from .network_object import NetworkObject
+
         if services:
             for service in self.services:
                 if service not in __value.services:

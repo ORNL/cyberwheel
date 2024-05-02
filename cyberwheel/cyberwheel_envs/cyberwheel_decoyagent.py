@@ -105,15 +105,12 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         )
 
     def step(self, action):
-        print(f"begin step {self.current_step}")
         blue_action_name, rec_id, successful = self.blue_agent.act(action)
-        print("blue agen acted")
         self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id)
         red_action_name = (
             self.red_agent.act().get_name()
         )  # red_action includes action, and target of action
         
-        print("red agent acted")
         action_metadata = self.red_agent.history.history[-1]
 
         red_action_type, red_action_src, red_action_dst = action_metadata.action

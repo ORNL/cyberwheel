@@ -107,7 +107,7 @@ hosts:
 
   # User hosts
   user01:
-    type: example
+    type: workstation
     subnet: user_subnet
     firewall:  # if firewall is undefined or empty assume 'allow all'
     routes:

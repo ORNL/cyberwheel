@@ -183,5 +183,8 @@ pyrightconfig.json
 models/
 runs/
 wandb/
+graphs/
+action_logs/
+
 
 # End of https://www.toptal.com/developers/gitignore/api/python

@@ -13,8 +13,9 @@ from detectors.detector import DecoyDetector, CoinFlipDetector
 from network.network_base import Network
 from network.host import Host
 from red_agents.killchain_agent import KillChainAgent
-from reward.reward import Reward
-import random
+from reward.reward import Reward, StepDetectedReward
+from copy import deepcopy
+
 
 
 def host_to_index_mapping(network: Network) -> Dict[Host, int]:
@@ -53,6 +54,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         min_decoys=0,
         max_decoys=1,
         blue_reward_scaling=10,
+        reward_function="default",
         **kwargs,
     ):
         network_conf_file = files("cyberwheel.network").joinpath(network_config)
@@ -97,12 +99,23 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         self.detector = DecoyDetector()
         
 
-        self.reward_calculator = Reward(
-            self.red_agent.get_reward_map(),
-            self.blue_agent.get_reward_map(),
-            r=(min_decoys, max_decoys),
-            scaling_factor=blue_reward_scaling,
-        )
+        self.reward_function = reward_function
+
+        if reward_function == "step_detected":
+            self.reward_calculator = StepDetectedReward(
+                blue_rewards=self.blue_agent.get_reward_map(),
+                r=(min_decoys, max_decoys),
+                scaling_factor=blue_reward_scaling,
+                max_steps=self.max_steps,
+            )
+        else:
+            self.reward_calculator = Reward(
+                self.red_agent.get_reward_map(),
+                self.blue_agent.get_reward_map(),
+                r=(min_decoys, max_decoys),
+                scaling_factor=blue_reward_scaling,
+            )
+
 
     def step(self, action):
         blue_action_name, rec_id, successful = self.blue_agent.act(action)
@@ -127,9 +140,15 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         alerts = self.detector.obs(red_action_result.detector_alert)    
         obs_vec = self._get_obs(alerts)
         x = decoy_alerted(alerts)
-        reward = self.reward_calculator.calculate_reward(
-            red_action_name, blue_action_name, successful, x
-        )
+        if self.reward_function == "step_detected":
+            reward = self.reward_calculator.calculate_reward(
+                blue_action_name, successful, x, self.current_step
+            )
+        else:
+            reward = self.reward_calculator.calculate_reward(
+                red_action_name, blue_action_name, successful, x
+            )
+
         self.total += reward
 
         if self.current_step >= self.max_steps:  # Maximal number of steps
@@ -143,7 +162,13 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             reward,
             done,
             False,
-            {"action": {"Blue": blue_action_name, "Red": red_action_str}},
+            {
+                "action": {"Blue": blue_action_name, "Red": red_action_str},
+                "network": self.blue_agent.network,
+                "history": self.red_agent.history,
+                "killchain": self.red_agent.killchain,
+            },
+
         )
 
     def _get_obs(self, alerts: List[Alert]) -> Iterable:
@@ -160,7 +185,11 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         self.current_step = 0
 
         # There's a performance issue here
-        self.network.reset()       
+        self.network.reset()
+
+        #NOTE: Have we tested the deepcopy instead of removing decoys?
+        #self.network = deepcopy(self.network_copy)    
+         
         self.red_agent = KillChainAgent(
             self.network.get_random_user_host(), network=self.network
         )

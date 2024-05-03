@@ -15,7 +15,6 @@ import numpy as np
 import pandas as pd
 
 from torch.distributions.categorical import Categorical
-from stable_baselines3.common.monitor import Monitor
 from pprint import pprint
 import yaml
 
@@ -80,20 +79,19 @@ class Agent(nn.Module):
             action = probs.sample()
         return action, probs.log_prob(action), probs.entropy(), self.critic(x)
 
+def make_env(
+    env_id: str,
+    rank: int,
+    network_config: str,
+    decoy_host_file: str,
+    host_def_file: str,
+    seed: int = 0,
+    min_decoys=1,
+    max_decoys=1,
+    blue_reward_scaling=10,
+    reward_function="default",
 
-def create_cyberwheel_env(
-    network_config: str, decoy_host_file: str, host_def_file: str
 ):
-    """Create a Cyberwheel environment"""
-    env = DecoyAgentCyberwheel(
-        network_config=network_config,
-        decoy_host_file=decoy_host_file,
-        host_def_file=host_def_file,
-    )
-    return env
-
-
-def make_env(env_id: str, rank: int, seed: int = 0):
     """
     Utility function for multiprocessed env.
 
@@ -105,12 +103,17 @@ def make_env(env_id: str, rank: int, seed: int = 0):
 
     def _init():
         # env = SingleAgentCyberwheel(50,1,1)  # Create an instance of the Cyberwheel environment
-        env = DecoyAgentCyberwheel()
+        env = DecoyAgentCyberwheel(
+            network_config=network_config,
+            decoy_host_file=decoy_host_file,
+            host_def_file=host_def_file,
+            min_decoys=min_decoys,
+            max_decoys=max_decoys,
+            blue_reward_scaling=blue_reward_scaling,
+            reward_function=reward_function,
+        )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
-        log_file = f"monitor_vecenv_logs/{env_id}_{rank}"
-        env = Monitor(env, log_file, allow_early_resets=True)
         return env
-
     return _init
 
 
@@ -121,11 +124,6 @@ def parse_args():
         "--download-model",
         help="Download agent model from WandB. If present, requires --run flag.",
         action="store_true",
-    )
-    parser.add_argument(
-        "--config",
-        help="Network config to evaluate agent against",
-        default="example_config.yaml",
     )
     parser.add_argument(
         "--agent",
@@ -151,9 +149,53 @@ def parse_args():
         help="Override naming convention of graph storage directory.",
         default=None,
     )
-    args = parser.parse_args()
+    # network generation args
+    parser.add_argument(
+        "--network-config",
+        help="Input the network config filename",
+        type=str,
+        default="example_config.yaml",
+    )
+    parser.add_argument(
+        "--decoy-config",
+        help="Input the decoy config filename",
+        type=str,
+        default="decoy_hosts.yaml",
+    )
+    parser.add_argument(
+        "--host-config",
+        help="Input the host config filename",
+        type=str,
+        default="host_definitions.yaml",
+    )
 
-    print(args)
+    # reward calculator args
+    parser.add_argument(
+        "--min-decoys",
+        help="Minimum number of decoys that should be used",
+        type=int,
+        default=2,
+    )
+    parser.add_argument(
+        "--max-decoys",
+        help="Maximum number of decoys that should be used",
+        type=int,
+        default=3,
+    )
+    parser.add_argument(
+        "--reward-scaling",
+        help="Variable used to increase rewards",
+        type=float,
+        default=5.0,
+    )
+    parser.add_argument(
+        "--reward-function",
+        help="Which reward function to use. Current options: default | step_detected",
+        type=str,
+        default="default",
+    )
+
+    args = parser.parse_args()
 
     bool_run = args.run != None  # true if run given, false if run not given
 
@@ -168,9 +210,20 @@ if __name__ == "__main__":
     device = torch.device("cpu")  # "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Using device {device}")
 
-    config = args.config
+    env_funcs = [
+        make_env(
+            1,
+            0,
+            network_config=args.network_config,
+            decoy_host_file=args.decoy_config,
+            host_def_file=args.host_config,
+            min_decoys=args.min_decoys,
+            max_decoys=args.max_decoys,
+            blue_reward_scaling=args.reward_scaling,
+            reward_function=args.reward_function,
+        )
+    ]
 
-    env_funcs = [make_env(1, i) for i in range(1)]
     envs = gym.vector.SyncVectorEnv(env_funcs)
 
     agent = Agent(envs).to(device)
@@ -202,20 +255,24 @@ if __name__ == "__main__":
     if args.graph_name != None:
         now_str = args.graph_name
     else:
-        now_str = f"{experiment_name}_evaluate_{args.config}_killchainagent"
+        now_str = f"{experiment_name}_evaluate_{args.network_config.split('.')[0]}_killchainagent_{args.min_decoys}-{args.max_decoys}_scaling{args.reward_scaling}_{args.reward_function}reward"
     log_file = f"action_logs/{now_str}.csv"
 
     actions_df = pd.DataFrame()
     full_episodes = []
     full_steps = []
-    full_red_actions = []
+    full_red_action_type = []
+    full_red_action_src = []
+    full_red_action_dest = []
+    full_red_action_success = []
+
     full_blue_actions = []
     full_rewards = []
 
     for episode in tqdm(range(20)):
         blue_actions = []
         red_actions = []
-        for step in range(100):
+        for step in range(50):
             if step == 0:
                 obs = obs[0]
             obs = torch.Tensor(obs).to(device)
@@ -227,18 +284,34 @@ if __name__ == "__main__":
 
             # print(f"\n\n{action}\n\n")
             obs, rew, done, _, info = envs.step(action.cpu().numpy())
-            # obs = obs[0]
             rew = rew[0]
             done = done[0]
-            # info = info[0]
-            all_action = info["action"][0]
-            print(all_action)
+
+            if "final_observation" in list(info.keys()):
+                all_action = info["final_info"][0]["action"]
+                net = info["final_info"][0]["network"]
+                history = info["final_info"][0]["history"]
+                killchain = info["final_info"][0]["killchain"]
+            else:
+                all_action = info["action"][0]
+                net = info["network"][0]
+                history = info["history"][0]
+                killchain = info["killchain"][0]
+
             blue_action = all_action["Blue"]
             red_action = all_action["Red"]
+            red_action_parts = red_action.split(" ")
+            red_action_type = red_action_parts[2]
+            red_action_src = red_action_parts[4]
+            red_action_dest = red_action_parts[6]
+            red_action_success = red_action_parts[0] == "Success"
 
             full_episodes.append(episode)
             full_steps.append(step)
-            full_red_actions.append(red_action)
+            full_red_action_type.append(red_action_type)
+            full_red_action_src.append(red_action_src)
+            full_red_action_dest.append(red_action_dest)
+            full_red_action_success.append(red_action_success)
             full_blue_actions.append(blue_action)
             full_rewards.append(rew)
 
@@ -253,10 +326,14 @@ if __name__ == "__main__":
         {
             "episode": full_episodes,
             "step": full_steps,
-            "red_action": full_red_actions,
+            "red_action_success": full_red_action_success,
+            "red_action_type": full_red_action_type,
+            "red_action_src": full_red_action_src,
+            "red_action_dest": full_red_action_dest,
             "blue_action": full_blue_actions,
             "reward": full_rewards,
         }
+
     )
 
     actions_df.to_csv(log_file)
@@ -271,30 +348,3 @@ if __name__ == "__main__":
         print(f"Mean Episodic Reward: {float(total_reward) / episodes}")
 
     print(f"Total Time Elapsed: {total_time}")
-
-    print(actions_df)
-
-    # scenario_path = f"CybORG/CybORG/Shared/Scenarios/{scenario}.yaml"
-
-    # read_actions_csv = pd.read_csv(log_file)
-    # action_table = wandb.Table(dataframe=read_actions_csv)
-    # action_table_artifact = wandb.Artifact(
-    #    "action_artifact",
-    #    type="dataset"
-    #    )
-    # table_name = "test_action_table"
-    # action_table_artifact.add(action_table, table_name)
-    # action_table_artifact.add_file(log_file)
-
-    # run_name = args.run
-    # run = wandb.init(project="Cage", name=experiment_name)
-    # run.log({"actions": action_table})
-    # run.log_artifact(action_table_artifact)
-    # run.finish()
-
-    # if args.visualize:
-    #    frames, alt_rewards = visualize(scenario_path, log_file)
-    #    labels = ["Exploit", "Escalate", "Impact"]
-    #    for i in range(len(alt_rewards)):
-    #        print(f"# of successful {labels[i]} actions per episode: {alt_rewards[i]}")
-    #    print(f"View Graph At: http://127.0.0.1:8050/graphs/{now_str}")

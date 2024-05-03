@@ -112,6 +112,7 @@ def parse_args():
     parser.add_argument("--min-decoys", help="Minimum number of decoys that should be used", type=int, default=2)
     parser.add_argument("--max-decoys", help="Maximum number of decoys that should be used", type=int, default=3)
     parser.add_argument("--reward-scaling", help="Variable used to increase rewards", type=float, default=5.0)
+    parser.add_argument("--reward-function", help="Which reward function to use. Current options: default | step_detected", type=str, default="default")
 
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)   # Number of environment steps to performa backprop with
@@ -139,6 +140,7 @@ def evaluate(
     blue_reward_scaling=10,
     episodes=20,
     steps=100,
+    reward_function="default",
 ):
     """Evaluate 'blue_agent' in the 'scenario' task against the 'red_agent' strategy"""
     # We evaluate on CPU because learning is already happening on GPUs.
@@ -152,6 +154,7 @@ def evaluate(
         min_decoys=min_decoys,
         max_decoys=max_decoys,
         blue_reward_scaling=blue_reward_scaling,
+        reward_function=reward_function,
     )
     episode_rewards = []
     total_reward = 0
@@ -180,7 +183,21 @@ def run_evals(eval_queue, model, args, globalstep):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     torch.backends.cudnn.deterministic = args.torch_deterministic
-    env_funcs = [make_env(args.seed, i, args.network_config, args.decoy_config, args.host_config, min_decoys=args.min_decoys, max_decoys=args.max_decoys, blue_reward_scaling=args.reward_scaling) for i in range(1)]
+    env_funcs = [
+        make_env(
+            args.seed,
+            i,
+            args.network_config,
+            args.decoy_config,
+            args.host_config,
+            min_decoys=args.min_decoys,
+            max_decoys=args.max_decoys,
+            blue_reward_scaling=args.reward_scaling,
+            reward_function=args.reward_function,
+        )
+        for i in range(1)
+    ]
+
 
     # Load the agent
     sample_env = gym.vector.SyncVectorEnv(env_funcs)
@@ -201,21 +218,38 @@ def run_evals(eval_queue, model, args, globalstep):
                 args.host_config,
                 args.eval_episodes,
                 args.num_steps,
+                args.min_decoys,
+                args.max_decoys,
+                args.reward_scaling,
+                args.reward_function,
+
             )
         ]
         # Map the evaluate_helper function to the argument list using the pool
         results = pool.map(evaluate_helper, args_list)
         for result, args in zip(results, args_list):
-            _, scenario, red_agent, _, _, _ = args
+            _, network_config, decoy_config, _, _, _, min_decoys, max_decoys, reward_scaling, reward_function = args
             # Place evaluation results in eval_queue to be read by the main training process.
             # We need to pass these to the main process where wandb is running for logging.
-            eval_queue.put((scenario, red_agent, result, globalstep))
+            eval_queue.put((network_config, decoy_config, min_decoys, max_decoys, reward_scaling, reward_function, result, globalstep))
 
 
 def evaluate_helper(args):
     """Unpack arguments for evaluation"""
-    agent, network, decoy, host, episodes, steps = args
-    return evaluate(agent, network, decoy, host, episodes=episodes, steps=steps)
+    agent, network, decoy, host, episodes, steps, min, max, scaling, function = args
+    return evaluate(
+        agent,
+        network,
+        decoy,
+        host,
+        episodes=episodes,
+        steps=steps,
+        min_decoys=min,
+        max_decoys=max,
+        blue_reward_scaling=scaling,
+        reward_function=function,
+    )
+
 
 
 def create_cyberwheel_env(
@@ -225,6 +259,7 @@ def create_cyberwheel_env(
     min_decoys: int,
     max_decoys: int,
     blue_reward_scaling: float,
+    reward_function: str,
 ):
     """Create a Cyberwheel environment"""
     env = DecoyAgentCyberwheel(
@@ -234,17 +269,9 @@ def create_cyberwheel_env(
         min_decoys=min_decoys,
         max_decoys=max_decoys,
         blue_reward_scaling=blue_reward_scaling,
+        reward_function=reward_function,
     )
     return env
-
-
-def task_space():
-    """Calculates the task space from the set of scenarios and red agents"""
-    num_scenarios = len(args.scenarios)
-    num_red_strategies = len(args.red_strategies)
-    task_space = gym.spaces.MultiDiscrete((num_scenarios, num_red_strategies))
-    return task_space
-
 
 def make_env(
     env_id: str,
@@ -256,6 +283,7 @@ def make_env(
     min_decoys=0,
     max_decoys=1,
     blue_reward_scaling=10,
+    reward_function="default",
 ):
     """
     Utility function for multiprocessed env.
@@ -274,6 +302,7 @@ def make_env(
             min_decoys=min_decoys,
             max_decoys=max_decoys,
             blue_reward_scaling=blue_reward_scaling,
+            reward_function=reward_function,
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(
@@ -394,6 +423,7 @@ def main():
             min_decoys=args.min_decoys,
             max_decoys=args.max_decoys,
             blue_reward_scaling=args.reward_scaling,
+            reward_function=args.reward_function,
         )
         for i in range(args.num_envs)
     ]
@@ -616,9 +646,9 @@ def main():
 
             # Log eval results
             while not eval_queue.empty():
-                eval_scenario, eval_strategy, eval_return, eval_step = eval_queue.get()
+                eval_network_config, eval_decoy_config, eval_min_decoys, eval_max_decoys, eval_reward_scaling, eval_reward_function, eval_return, eval_step = eval_queue.get()
                 writer.add_scalar(
-                    f"evaluation/example_network_killchain_agent_episodic_return",
+                    f"evaluation/{eval_network_config.split('.')[0]}_{eval_decoy_config}_{eval_reward_scaling}|{eval_min_decoys}-{eval_max_decoys}_{eval_reward_function}rewardepisodic_return",
                     eval_return,
                     eval_step,
                 )
@@ -653,12 +683,13 @@ def main():
 
         # Process evaluation results
         while not eval_queue.empty():
-            eval_scenario, eval_strategy, eval_return, eval_step = eval_queue.get()
+            eval_network_config, eval_decoy_config, eval_min, eval_max, eval_scaling, eval_reward, eval_return, eval_step = eval_queue.get()
             writer.add_scalar(
-                f"evaluation/{eval_scenario}_{eval_strategy.__name__}_episodic_return",
+                f"evaluation/{eval_network_config.split('.')[0]}_{eval_decoy_config}_{eval_scaling}|{eval_min}-{eval_max}_{eval_reward}rewardepisodic_return",
                 eval_return,
                 eval_step,
             )
+
 
     envs.close()
     writer.close()

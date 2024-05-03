@@ -118,7 +118,7 @@ def parse_args():
     args.batch_size = int(args.num_envs * args.num_steps)   # Number of environment steps to performa backprop with
     args.minibatch_size = int(args.batch_size // args.num_minibatches)  # Number of environments steps to perform backprop with in each epoch
     args.num_updates = args.total_timesteps // args.batch_size  # Total number of policy update phases
-    args.num_saves = 1    # Number of model saves and evaluations to run throughout training
+    args.num_saves = 100    # Number of model saves and evaluations to run throughout training
     args.save_frequency = int(args.num_updates / args.num_saves)    # Number of policy updates between each model save and evaluation
 
 

@@ -81,17 +81,17 @@ class RedActionResults:
 
         - `dst`: a Host or Service object to be added to the alert
         """
-        # if isinstance(dst, Host):
-        if dst != None:
-            self.detector_alert.add_dst_host(dst)
-        if src != None:
-            self.detector_alert.add_src_host(src)
-        # elif isinstance(dst, Service):
-        #     self.detector_alert.add_service(dst)
-        # else:
-        #     raise TypeError(
-        #         f"RedActionResults.modify_alert(): dst needs to be Host or Service not {type(dst)}"
-        #     )
+        if isinstance(dst, Host):
+            if dst != None:
+                self.detector_alert.add_dst_host(dst)
+            if src != None:
+                self.detector_alert.add_src_host(src)
+        elif isinstance(dst, Service):
+            self.detector_alert.add_service(dst)
+        else:
+            raise TypeError(
+                f"RedActionResults.modify_alert(): dst needs to be Host or Service not {type(dst)}"
+            )
 
     def add_successful_action(self, host: Host) -> None:
         """

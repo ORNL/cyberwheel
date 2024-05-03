@@ -77,6 +77,9 @@ class Alert():
         if service in self.services:
             self.services.remove(service)
 
+    def add_techniques(self, techniques: List[str])-> None:
+        self.techniques.extend(techniques)
+
     def to_dict(self) -> Dict:
         d = deepcopy(self.__dict__)
         for k in self.__dict__.keys():

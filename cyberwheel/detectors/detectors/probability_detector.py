@@ -28,23 +28,20 @@ class ProbabilityDetector(Detector):
         for dst in perfect_alert.dst_hosts:
             detection_failed = True
             
+            techniques = set(perfect_alert.techniques) & set(self.technique_probabilites.keys())
             # Check to see if the detector can successfully detect the action based on the technique used
-            for technique in perfect_alert.techniques:
-                # Detector might not be able to detect the technique at all
-                if technique.name not in self.technique_probabilites:
-                    continue
-
+            for technique in techniques:
                 # Use probability of successful detection to determine if the action was noticed
-                detection_probability = float(self.technique_probabilites[technique.name])
+                detection_probability = float(self.technique_probabilites[technique])
                 if random.random() > detection_probability:
                     continue
                 
-                # Detector only has to be successful on 1 technique?
+                # Detector only has to be successful on 1 technique
                 detection_failed = False
                 break
         
             if detection_failed:
-                return alerts
+                continue
     
             new_alert = Alert(src_host=perfect_alert.src_host, dst_hosts=[dst], services=perfect_alert.services)
             alerts.append(new_alert)

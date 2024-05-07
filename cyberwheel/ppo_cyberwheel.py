@@ -115,7 +115,7 @@ def parse_args():
     parser.add_argument("--reward-scaling", help="Variable used to increase rewards", type=float, default=10.0)
 
     # detector args
-    parser.add_argument("--detector-config", help="Location of detector config file.", type=str, default="")
+    parser.add_argument("--detector-config", help="Location of detector config file.", type=str, default="decoys_only.yaml")
 
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)   # Number of environment steps to performa backprop with

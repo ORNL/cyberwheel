@@ -19,8 +19,8 @@ class ProbabilityDetector(Detector):
         A detector that can detect techniques with some probability.
         The techniques that a detector supports should be defined in a YAML file along with a probabilty of detection for that technique.
     """
-    def __init__(self) -> None:
-        self.technique_probabilites = _read_detector_yaml('resources/configs/nids_detector.yaml')
+    def __init__(self, config) -> None:
+        self.technique_probabilites = _read_detector_yaml(config)
 
     def obs(self, perfect_alert: Alert) -> Iterable[Alert]:
         alerts = []
@@ -31,6 +31,11 @@ class ProbabilityDetector(Detector):
                 new_alert = Alert(src_host=perfect_alert.src_host, dst_hosts=[dst], services=perfect_alert.services)
                 alerts.append(new_alert)
                 continue
+
+            # If the YAML file is empty, then only accessing decoys can create alerts
+            if not self.technique_probabilites:
+                continue
+
             techniques = set(perfect_alert.techniques) & set(self.technique_probabilites.keys())
             # Check to see if the detector can successfully detect the action based on the technique used
             for technique in techniques:

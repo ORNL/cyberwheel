@@ -10,7 +10,7 @@ from blue_agents.decoy_blue import DecoyBlueAgent
 from blue_agents.observation import HistoryObservation
 from detectors.alert import Alert
 # from detectors.detector import DecoyDetector, CoinFlipDetector
-from detectors.detectors.hids import HIDSDetector
+from detectors.detectors.probability_detector import ProbabilityDetector
 from network.network_base import Network
 from network.host import Host
 from red_agents import KillChainAgent, RecurringImpactAgent
@@ -108,7 +108,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         
 
         self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
-        self.detector = HIDSDetector(config=detector_config)
+        
+        detector_conf_file = files("cyberwheel.resources.configs").joinpath(detector_config)
+        self.detector = ProbabilityDetector(config=detector_conf_file)
         
 
         self.reward_function = reward_function
@@ -149,9 +151,8 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             self.red_agent.history.recent_history()
         )  # red action results
         # print(red_action_result.detector_alert.techniques)
-        alerts = self.detector.obs(red_action_result.detector_alert)    
+        alerts = self.detector.obs(red_action_result.detector_alert)   
         obs_vec = self._get_obs(alerts)
-        # print(obs_vec)
         x = decoy_alerted(alerts)
         if self.reward_function == "step_detected":
             reward = self.reward_calculator.calculate_reward(

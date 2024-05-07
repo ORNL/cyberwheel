@@ -8,6 +8,7 @@ from detectors.alert import Alert
 
 class NIDSDetector(ProbabilityDetector):
     def __init__(self) -> None:
+        """Network-based Intrusion Detection System Detector"""
         # self.network = network
         self.technique_probabilites = read_detector_yaml("/home/70d/cyberwheel/cyberwheel/resources/configs/nids.yaml")
 

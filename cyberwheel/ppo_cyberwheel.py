@@ -111,14 +111,17 @@ def parse_args():
     # reward calculator args
     parser.add_argument("--min-decoys", help="Minimum number of decoys that should be used", type=int, default=2)
     parser.add_argument("--max-decoys", help="Maximum number of decoys that should be used", type=int, default=3)
-    parser.add_argument("--reward-scaling", help="Variable used to increase rewards", type=float, default=5.0)
     parser.add_argument("--reward-function", help="Which reward function to use. Current options: default | step_detected", type=str, default="default")
+    parser.add_argument("--reward-scaling", help="Variable used to increase rewards", type=float, default=10.0)
+
+    # detector args
+    parser.add_argument("--detector-config", help="Location of detector config file.", type=str, default="")
 
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)   # Number of environment steps to performa backprop with
     args.minibatch_size = int(args.batch_size // args.num_minibatches)  # Number of environments steps to perform backprop with in each epoch
     args.num_updates = args.total_timesteps // args.batch_size  # Total number of policy update phases
-    args.num_saves = 100    # Number of model saves and evaluations to run throughout training
+    args.num_saves = 200    # Number of model saves and evaluations to run throughout training
     args.save_frequency = int(args.num_updates / args.num_saves)    # Number of policy updates between each model save and evaluation
 
 
@@ -132,6 +135,7 @@ def evaluate(
     network_config: str,
     decoy_host_file: str,
     host_def_file: str,
+    detector_config: str,
     min_decoys=0,
     max_decoys=1,
     blue_reward_scaling=10,
@@ -149,6 +153,7 @@ def evaluate(
         network_config,
         decoy_host_file,
         host_def_file,
+        detector_config,
         min_decoys=min_decoys,
         max_decoys=max_decoys,
         blue_reward_scaling=blue_reward_scaling,
@@ -184,20 +189,18 @@ def run_evals(eval_queue, model, args, globalstep):
     torch.backends.cudnn.deterministic = args.torch_deterministic
     env_funcs = [
         make_env(
-            args.seed,
-            i,
-            args.network_config,
-            args.decoy_config,
-            args.host_config,
-            min_decoys=args.min_decoys,
-            max_decoys=args.max_decoys,
-            blue_reward_scaling=args.reward_scaling,
-            reward_function=args.reward_function,
-            red_agent=args.red_agent
-        )
+            args.seed, 
+            i, 
+            args.network_config, 
+            args.decoy_config, 
+            args.host_config, 
+            args.detector_config, 
+            min_decoys=args.min_decoys, 
+            max_decoys=args.max_decoys, 
+            blue_reward_scaling=args.reward_scaling
+        ) 
         for i in range(1)
     ]
-
 
     # Load the agent
     sample_env = gym.vector.SyncVectorEnv(env_funcs)
@@ -216,6 +219,7 @@ def run_evals(eval_queue, model, args, globalstep):
                 args.network_config,
                 args.decoy_config,
                 args.host_config,
+                args.detector_config,
                 args.eval_episodes,
                 args.num_steps,
                 args.min_decoys,
@@ -228,7 +232,7 @@ def run_evals(eval_queue, model, args, globalstep):
         # Map the evaluate_helper function to the argument list using the pool
         results = pool.map(evaluate_helper, args_list)
         for result, args in zip(results, args_list):
-            _, network_config, decoy_config, _, _, _, min_decoys, max_decoys, reward_scaling, reward_function, red_agent = args
+            _, network_config, decoy_config, _, _, _, _, min_decoys, max_decoys, reward_scaling, reward_function, red_agent = args
             # Place evaluation results in eval_queue to be read by the main training process.
             # We need to pass these to the main process where wandb is running for logging.
             eval_queue.put((network_config, decoy_config, min_decoys, max_decoys, reward_scaling, reward_function, red_agent, result, globalstep))
@@ -236,12 +240,13 @@ def run_evals(eval_queue, model, args, globalstep):
 
 def evaluate_helper(args):
     """Unpack arguments for evaluation"""
-    agent, network, decoy, host, episodes, steps, min, max, scaling, function, red_agent = args
+    agent, network, decoy, host, detector, episodes, steps, min, max, scaling, function, red_agent = args
     return evaluate(
         agent,
         network,
         decoy,
         host,
+        detector,
         episodes=episodes,
         steps=steps,
         min_decoys=min,
@@ -257,6 +262,7 @@ def create_cyberwheel_env(
     network_config: str,
     decoy_host_file: str,
     host_def_file: str,
+    detector_config: str, 
     min_decoys: int,
     max_decoys: int,
     blue_reward_scaling: float,
@@ -268,6 +274,7 @@ def create_cyberwheel_env(
         network_config=network_config,
         decoy_host_file=decoy_host_file,
         host_def_file=host_def_file,
+        detector_config=detector_config,
         min_decoys=min_decoys,
         max_decoys=max_decoys,
         blue_reward_scaling=blue_reward_scaling,
@@ -282,6 +289,7 @@ def make_env(
     network_config: str,
     decoy_host_file: str,
     host_def_file: str,
+    detector_config: str, 
     seed: int = 0,
     min_decoys=0,
     max_decoys=1,
@@ -303,6 +311,7 @@ def make_env(
             network_config=network_config,
             decoy_host_file=decoy_host_file,
             host_def_file=host_def_file,
+            detector_config=detector_config,
             min_decoys=min_decoys,
             max_decoys=max_decoys,
             blue_reward_scaling=blue_reward_scaling,
@@ -425,6 +434,7 @@ def main():
             args.network_config,
             args.decoy_config,
             args.host_config,
+            args.detector_config,
             min_decoys=args.min_decoys,
             max_decoys=args.max_decoys,
             blue_reward_scaling=args.reward_scaling,

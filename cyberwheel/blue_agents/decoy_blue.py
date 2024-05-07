@@ -128,7 +128,7 @@ class DecoyBlueAgent(BlueAction):
             self.reward_map[decoy_name] = rewards
 
         # Add remove and nothing manually for right now
-        self.reward_map['remove'] = (-5, 0)
+        self.reward_map['remove'] = (-50, 0)
         self.reward_map['nothing'] = (0, 0)
 
     def _load_host_types(self)-> None:

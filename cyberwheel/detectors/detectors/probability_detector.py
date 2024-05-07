@@ -27,7 +27,10 @@ class ProbabilityDetector(Detector):
         
         for dst in perfect_alert.dst_hosts:
             detection_failed = True
-            
+            if dst.decoy:
+                new_alert = Alert(src_host=perfect_alert.src_host, dst_hosts=[dst], services=perfect_alert.services)
+                alerts.append(new_alert)
+                continue
             techniques = set(perfect_alert.techniques) & set(self.technique_probabilites.keys())
             # Check to see if the detector can successfully detect the action based on the technique used
             for technique in techniques:

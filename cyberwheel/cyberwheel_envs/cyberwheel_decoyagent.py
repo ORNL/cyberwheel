@@ -10,7 +10,7 @@ from blue_agents.decoy_blue import DecoyBlueAgent
 from blue_agents.observation import HistoryObservation
 from detectors.alert import Alert
 # from detectors.detector import DecoyDetector, CoinFlipDetector
-from detectors.detectors.nids import NIDSDetector
+from detectors.detectors.hids import HIDSDetector
 from network.network_base import Network
 from network.host import Host
 from red_agents import KillChainAgent, RecurringImpactAgent
@@ -52,6 +52,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         network_config="example_config.yaml",
         decoy_host_file="decoy_hosts.yaml",
         host_def_file="host_definitions.yaml",
+        detector_config="",
         min_decoys=0,
         max_decoys=1,
         blue_reward_scaling=10,
@@ -107,7 +108,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         
 
         self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
-        self.detector = NIDSDetector()
+        self.detector = HIDSDetector(config=detector_config)
         
 
         self.reward_function = reward_function

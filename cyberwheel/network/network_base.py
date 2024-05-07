@@ -23,6 +23,7 @@ class Network:
         self.graph = nx.Graph(name=name)
         self.name = name
         self.decoys = []
+        self.disconnected_nodes = []
 
     def __iter__(self):
         return iter(self.graph)
@@ -56,8 +57,9 @@ class Network:
     def connect_nodes(self, node1, node2):
         self.graph.add_edge(node1, node2)
 
-    # def disconnect_nodes(self, node1, node2):
-    #     self.graph.remove_edge(node1, node2)
+    def disconnect_nodes(self, node1, node2):
+        self.graph.remove_edge(node1, node2)
+        self.disconnected_nodes.append((node1, node2))
     # def define_routing_rules(self, router, routes):
     #    if router.name in self.graph.nodes:
     #        data_object = self.graph.nodes[router.name]['data']
@@ -654,6 +656,10 @@ class Network:
         for decoy in self.decoys:
             self.remove_host_from_subnet(decoy)
         self.decoys = []
+
+        for edge in self.disconnected_nodes:
+            self.connect_nodes(edge[0], edge[1])
+        self.disconnected_nodes = []
 
     @staticmethod
     def create_host_type_from_json(name: str, config_file: PathLike) -> HostType:

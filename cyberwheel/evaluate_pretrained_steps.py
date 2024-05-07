@@ -90,7 +90,7 @@ def make_env(
     max_decoys=1,
     blue_reward_scaling=10,
     reward_function="default",
-
+    red_agent="killchain_agent",
 ):
     """
     Utility function for multiprocessed env.
@@ -111,6 +111,7 @@ def make_env(
             max_decoys=max_decoys,
             blue_reward_scaling=blue_reward_scaling,
             reward_function=reward_function,
+            red_agent=red_agent
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         return env
@@ -194,6 +195,12 @@ def parse_args():
         type=str,
         default="default",
     )
+    parser.add_argument(
+        "--red-agent",
+        help="Which red agent. Current options: killchain_agent | recurring_impact",
+        type=str,
+        default="killchain_agent",
+    )
 
     args = parser.parse_args()
 
@@ -221,6 +228,7 @@ if __name__ == "__main__":
             max_decoys=args.max_decoys,
             blue_reward_scaling=args.reward_scaling,
             reward_function=args.reward_function,
+            red_agent=args.red_agent
         )
     ]
 
@@ -255,7 +263,7 @@ if __name__ == "__main__":
     if args.graph_name != None:
         now_str = args.graph_name
     else:
-        now_str = f"{experiment_name}_evaluate_{args.network_config.split('.')[0]}_killchainagent_{args.min_decoys}-{args.max_decoys}_scaling{args.reward_scaling}_{args.reward_function}reward"
+        now_str = f"{experiment_name}_evaluate_{args.network_config.split('.')[0]}_killchainagent_{args.min_decoys}-{args.max_decoys}_scaling{args.reward_scaling}_{args.reward_function}reward_{args.red_agent}"
     log_file = f"action_logs/{now_str}.csv"
 
     actions_df = pd.DataFrame()

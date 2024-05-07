@@ -89,14 +89,14 @@ def parse_args():
     parser.add_argument('--eval-episodes', type=int, default=50,
         help='Number of evaluation episodes to run')
     parser.add_argument("--eval-red-strategy", type=str,
-        help="the red agent strategies to train against.", default="KillChainAgent")
+        help="the red agent strategies to evaluate against. Current options: 'killchain_agent' | 'red_recurring'", default="killchain_agent",)
     parser.add_argument("--eval-scenarios", type=str, default="example_config.yaml",
         help="Cyberwheel network to train on.")
 
     # Cage Arguments
     #parser.add_argument('--baseline',action='store_true')
-    parser.add_argument("--red-strategy", type=str, default="KillChainAgent",
-        help="the red agent strategies to train against. ")
+    parser.add_argument("--red-agent", type=str, default="killchain_agent",
+        help="the red agent strategies to train against. Current options: 'killchain_agent' | 'red_recurring'")
     #group = parser.add_mutually_exclusive_group(required=True)
     #group.add_argument("--scenario", type=str,
     #    help="Cage scenario to train on.")
@@ -124,9 +124,6 @@ def parse_args():
 
     print(f"Running on network: {args.network_config}")
 
-    args.red_strategy = eval(args.red_strategy)
-    args.eval_red_strategy = eval(args.eval_red_strategy)
-
     return args
 
 
@@ -141,6 +138,7 @@ def evaluate(
     episodes=20,
     steps=100,
     reward_function="default",
+    red_agent="killchain_agent"
 ):
     """Evaluate 'blue_agent' in the 'scenario' task against the 'red_agent' strategy"""
     # We evaluate on CPU because learning is already happening on GPUs.
@@ -155,6 +153,7 @@ def evaluate(
         max_decoys=max_decoys,
         blue_reward_scaling=blue_reward_scaling,
         reward_function=reward_function,
+        red_agent=red_agent
     )
     episode_rewards = []
     total_reward = 0
@@ -194,6 +193,7 @@ def run_evals(eval_queue, model, args, globalstep):
             max_decoys=args.max_decoys,
             blue_reward_scaling=args.reward_scaling,
             reward_function=args.reward_function,
+            red_agent=args.red_agent
         )
         for i in range(1)
     ]
@@ -222,21 +222,21 @@ def run_evals(eval_queue, model, args, globalstep):
                 args.max_decoys,
                 args.reward_scaling,
                 args.reward_function,
-
+                args.red_agent,
             )
         ]
         # Map the evaluate_helper function to the argument list using the pool
         results = pool.map(evaluate_helper, args_list)
         for result, args in zip(results, args_list):
-            _, network_config, decoy_config, _, _, _, min_decoys, max_decoys, reward_scaling, reward_function = args
+            _, network_config, decoy_config, _, _, _, min_decoys, max_decoys, reward_scaling, reward_function, red_agent = args
             # Place evaluation results in eval_queue to be read by the main training process.
             # We need to pass these to the main process where wandb is running for logging.
-            eval_queue.put((network_config, decoy_config, min_decoys, max_decoys, reward_scaling, reward_function, result, globalstep))
+            eval_queue.put((network_config, decoy_config, min_decoys, max_decoys, reward_scaling, reward_function, red_agent, result, globalstep))
 
 
 def evaluate_helper(args):
     """Unpack arguments for evaluation"""
-    agent, network, decoy, host, episodes, steps, min, max, scaling, function = args
+    agent, network, decoy, host, episodes, steps, min, max, scaling, function, red_agent = args
     return evaluate(
         agent,
         network,
@@ -248,6 +248,7 @@ def evaluate_helper(args):
         max_decoys=max,
         blue_reward_scaling=scaling,
         reward_function=function,
+        red_agent=red_agent
     )
 
 
@@ -260,6 +261,7 @@ def create_cyberwheel_env(
     max_decoys: int,
     blue_reward_scaling: float,
     reward_function: str,
+    red_agent: str
 ):
     """Create a Cyberwheel environment"""
     env = DecoyAgentCyberwheel(
@@ -270,6 +272,7 @@ def create_cyberwheel_env(
         max_decoys=max_decoys,
         blue_reward_scaling=blue_reward_scaling,
         reward_function=reward_function,
+        red_agent=red_agent
     )
     return env
 
@@ -284,6 +287,7 @@ def make_env(
     max_decoys=1,
     blue_reward_scaling=10,
     reward_function="default",
+    red_agent="killchain_agent",
 ):
     """
     Utility function for multiprocessed env.
@@ -303,6 +307,7 @@ def make_env(
             max_decoys=max_decoys,
             blue_reward_scaling=blue_reward_scaling,
             reward_function=reward_function,
+            red_agent=red_agent
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(
@@ -424,6 +429,7 @@ def main():
             max_decoys=args.max_decoys,
             blue_reward_scaling=args.reward_scaling,
             reward_function=args.reward_function,
+            red_agent=args.red_agent,
         )
         for i in range(args.num_envs)
     ]
@@ -646,9 +652,9 @@ def main():
 
             # Log eval results
             while not eval_queue.empty():
-                eval_network_config, eval_decoy_config, eval_min_decoys, eval_max_decoys, eval_reward_scaling, eval_reward_function, eval_return, eval_step = eval_queue.get()
+                eval_network_config, eval_decoy_config, eval_min_decoys, eval_max_decoys, eval_reward_scaling, eval_reward_function, eval_red_agent, eval_return, eval_step = eval_queue.get()
                 writer.add_scalar(
-                    f"evaluation/{eval_network_config.split('.')[0]}_{eval_decoy_config}_{eval_reward_scaling}|{eval_min_decoys}-{eval_max_decoys}_{eval_reward_function}rewardepisodic_return",
+                    f"evaluation/{eval_network_config.split('.')[0]}_{eval_decoy_config}_{eval_reward_scaling}|{eval_min_decoys}-{eval_max_decoys}_{eval_reward_function}reward__{eval_red_agent}_episodic_return",
                     eval_return,
                     eval_step,
                 )

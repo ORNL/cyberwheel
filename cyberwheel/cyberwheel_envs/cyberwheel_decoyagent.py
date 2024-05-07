@@ -12,7 +12,7 @@ from detectors.alert import Alert
 from detectors.detector import DecoyDetector, CoinFlipDetector
 from network.network_base import Network
 from network.host import Host
-from red_agents.killchain_agent import KillChainAgent
+from red_agents import KillChainAgent, RecurringImpactAgent
 from reward.reward import Reward, StepDetectedReward
 from copy import deepcopy
 
@@ -55,6 +55,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         max_decoys=1,
         blue_reward_scaling=10,
         reward_function="default",
+        red_agent="killchain_agent",
         **kwargs,
     ):
         network_conf_file = files("cyberwheel.network").joinpath(network_config)
@@ -91,10 +92,19 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         self.alert_converter = HistoryObservation(
             self.observation_space.shape, host_to_index_mapping(self.network)
         )
+        self.red_agent_choice = red_agent
 
-        self.red_agent = KillChainAgent(
-            self.network.get_random_user_host(), network=self.network
-        )
+        if self.red_agent_choice == "recurring_impact":
+            self.red_agent = RecurringImpactAgent(
+                self.network.get_random_user_host(), network=self.network
+            )
+        else:
+            self.red_agent = KillChainAgent(
+                self.network.get_random_user_host(), network=self.network
+            )
+
+        
+
         self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
         self.detector = DecoyDetector()
         
@@ -157,6 +167,10 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             done = False
         self.current_step += 1
 
+        print(red_action_str)
+        print(blue_action_name)
+        print(reward)
+
         return (
             obs_vec,
             reward,
@@ -190,9 +204,15 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         #NOTE: Have we tested the deepcopy instead of removing decoys?
         #self.network = deepcopy(self.network_copy)    
          
-        self.red_agent = KillChainAgent(
-            self.network.get_random_user_host(), network=self.network
-        )
+        if self.red_agent_choice == "recurring_impact":
+            self.red_agent = RecurringImpactAgent(
+                self.network.get_random_user_host(), network=self.network
+            )
+        else:
+            self.red_agent = KillChainAgent(
+                self.network.get_random_user_host(), network=self.network
+            )
+
         self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
 
         self.alert_converter = HistoryObservation(

@@ -24,13 +24,11 @@ class ProbabilityDetector(Detector):
 
     def obs(self, perfect_alert: Alert) -> Iterable[Alert]:
         alerts = []
-        
+        if perfect_alert.src_host.disconnected:
+            alerts.append(perfect_alert)
+
         for dst in perfect_alert.dst_hosts:
             detection_failed = True
-            if dst.decoy:
-                new_alert = Alert(src_host=perfect_alert.src_host, dst_hosts=[dst], services=perfect_alert.services)
-                alerts.append(new_alert)
-                continue
 
             # If the YAML file is empty, then only accessing decoys can create alerts
             if not self.technique_probabilites:

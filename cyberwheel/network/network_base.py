@@ -32,6 +32,24 @@ class Network:
     def __len__(self):
         return len(self.graph)
 
+    def get_decoys(self):
+        return self.decoys
+    
+    def num_decoys(self):
+        return len(self.decoys)
+    
+    def get_disconnected(self):
+        return self.disconnected_nodes
+    
+    def get_connected(self):
+        return [
+            host for _, host in self.graph.nodes(data="data") if isinstance(host, Host) and not host.disconnected 
+        ] 
+
+    def num_disconnected(self):
+        return len(self.disconnected_nodes)
+
+
     # TODO: remove these in favor of self.add_node()
     def add_subnet(self, subnet):
         self.add_node(subnet)
@@ -681,8 +699,8 @@ class Network:
             self.remove_host_from_subnet(decoy)
         self.decoys = []
 
-        for edge in self.disconnected_nodes:
-            self.connect_nodes(edge[0], edge[1])
+        # for edge in self.disconnected_nodes:
+        #     self.connect_nodes(edge[0], edge[1])
         self.disconnected_nodes = []
 
         for host in self.isolated_hosts:

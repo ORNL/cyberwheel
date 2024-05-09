@@ -225,7 +225,7 @@ hosts:
     routes:
     subnet: subnet2
     type: workstation
-  host5:
+  host45:
     firewall:
     routes:
     subnet: subnet0
@@ -280,27 +280,27 @@ hosts:
     routes:
     subnet: subnet2
     type: workstation
-  host6:
+  host46:
     firewall:
     routes:
     subnet: subnet0
     type: workstation
-  host7:
+  host47:
     firewall:
     routes:
     subnet: subnet0
     type: workstation
-  host8:
+  host48:
     firewall:
     routes:
     subnet: subnet0
     type: workstation
-  host9:
+  host49:
     firewall:
     routes:
     subnet: subnet0
     type: workstation
-  server0:
+  host5:
     firewall:
     routes:
     subnet: server_subnet0
@@ -555,6 +555,7 @@ topology:
     - server2
     - server3
     - server4
+    server_subnet1:
     - server5
     - server6
     - server7

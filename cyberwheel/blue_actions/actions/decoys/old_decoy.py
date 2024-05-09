@@ -28,7 +28,6 @@ class DeployDecoyHost(BlueAction):
             - `recurring_reward`: the recurring effect this decoy has on the overall reward
         """
         super().__init__()
-        print("Hello there")
         self.name: str = name
         self.network: Network = network
         self.subnet: Subnet = subnet
@@ -48,9 +47,8 @@ class DeployDecoyHost(BlueAction):
         return s
 
 
-    def execute(self) ->  int:
+    def execute(self) ->  None:
         self.host = self.network.create_decoy_host(self.name, self.subnet, self.type)
-        return self.reward                                                                                                                                                                                                                                              
 
 
 def deploy_host_from_yaml(decoy_name: str, path: str, network: Network, subnet: Subnet)-> DeployDecoyHost:

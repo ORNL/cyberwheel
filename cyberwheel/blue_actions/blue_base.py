@@ -12,10 +12,8 @@ class BlueAction:
         pass
     
     @abstractmethod
-    def execute(self) -> Tuple[List[int], int, int]:
+    def execute(self) -> None:
         """
-        This method executes a blue action. 
-        It returns how an updated obs_vec that includes how this action affected the network
-        and the reward gained (negative or positive) by performing this action.
+        This method executes a blue action. .
         """
         raise NotImplementedError

@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
+from typing import NewType, Tuple
 
-from cyberwheel.reward.reward import RewardMap
+from cyberwheel.reward import RewardMap
 
-class BlueAgentResult:
-    def __init__(self) -> None:
-        pass
+BlueAgentResult = NewType("BlueAgentResult", Tuple[str, str, bool])
+
 
 class BlueAgent(ABC):
 

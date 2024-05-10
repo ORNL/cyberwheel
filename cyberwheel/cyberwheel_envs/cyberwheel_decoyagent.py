@@ -7,15 +7,14 @@ import yaml
 
 from .cyberwheel import Cyberwheel
 from blue_agents.decoy_blue import DecoyBlueAgent
-from blue_agents.observation import HistoryObservation
+from cyberwheel.observation import HistoryObservation
 from detectors.alert import Alert
 # from detectors.detector import DecoyDetector, CoinFlipDetector
 from detectors.detectors.probability_detector import ProbabilityDetector
 from network.network_base import Network
 from network.host import Host
 from red_agents import KillChainAgent, RecurringImpactAgent
-from reward.reward import Reward, StepDetectedReward
-from copy import deepcopy
+from cyberwheel.reward import DecoyReward, StepDetectedReward
 
 
 
@@ -123,7 +122,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
                 max_steps=self.max_steps,
             )
         else:
-            self.reward_calculator = Reward(
+            self.reward_calculator = DecoyReward(
                 self.red_agent.get_reward_map(),
                 self.blue_agent.get_reward_map(),
                 r=(min_decoys, max_decoys),
@@ -132,7 +131,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
 
     def step(self, action):
-        blue_action_name, rec_id, successful = self.blue_agent.act(action)
+        blue_action_name, rec_id, blue_success = self.blue_agent.act(action)
         self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id)
         red_action_name = (
             self.red_agent.act().get_name()
@@ -156,11 +155,11 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         x = decoy_alerted(alerts)
         if self.reward_function == "step_detected":
             reward = self.reward_calculator.calculate_reward(
-                blue_action_name, successful, x, self.current_step
+                blue_action_name, blue_success, x, self.current_step
             )
         else:
             reward = self.reward_calculator.calculate_reward(
-                red_action_name, blue_action_name, successful, x
+                red_action_name, blue_action_name, red_action_success, blue_success, x
             )
 
         self.total += reward

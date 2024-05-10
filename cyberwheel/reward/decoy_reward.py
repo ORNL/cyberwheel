@@ -1,30 +1,8 @@
-from abc import abstractmethod
-from typing import Dict, List, NewType, Tuple
+from typing import List, Tuple
 
-RewardMap = NewType("RewardMap", Dict[str, Tuple[int | float, int | float]])
+from cyberwheel.reward.reward_base import Reward, RewardMap, RecurringAction, calc_quadratic
 
-
-def calc_quadratic(x: float, a=0.0, b=0.0, c=0.0) -> float:
-    return a * x**2 + b * x + c
-
-
-class RecurringAction:
-    def __init__(self, id: str, action: str) -> None:
-        self.id = id
-        self.action = action
-
-
-class RewardCalculator:
-    @abstractmethod
-    def calculate_reward(self) -> int | float:
-        raise NotImplementedError
-
-    @abstractmethod
-    def reset(self) -> None:
-        raise NotImplementedError
-
-
-class Reward(RewardCalculator):
+class DecoyReward(Reward):
     def __init__(
         self,
         red_rewards: RewardMap,
@@ -45,10 +23,10 @@ class Reward(RewardCalculator):
 
         `scaling_factor` impacts how much being outside `r` affects the reward
         """
-        self.red_rewards = red_rewards
-        self.blue_rewards = blue_rewards
+
+        super().__init__(red_rewards, blue_rewards)
         self.blue_recurring_actions: List[RecurringAction] = []
-        self.red_recurring_impacts: List[str] = []
+        self.red_recurring_actions: List[RecurringAction] = []
         self.range = r
         self.scaling_factor = scaling_factor
 
@@ -56,14 +34,17 @@ class Reward(RewardCalculator):
         self,
         red_action: str,
         blue_action: str,
+        red_success: str,
         blue_success: bool,
         red_action_alerted: bool,
     ) -> int | float:
         if red_action_alerted:
             r = abs(self.red_rewards[red_action][0]) * self.scaling_factor
-        else:
+        elif red_success:
             r = self.red_rewards[red_action][0]
             self.handle_red_action_output(red_action)
+        else:
+            red = 0
 
         if blue_success:
             b = self.blue_rewards[blue_action][0]
@@ -97,10 +78,13 @@ class Reward(RewardCalculator):
                 break
 
     def sum_recurring_red(self) -> int | float:
-        return self.red_rewards["impact"][1] * self.red_recurring_impacts
+        sum = 0
+        for ra in self.red_recurring_actions:
+            sum += self.red_rewards[ra.action][1]
+        return sum
 
-    def add_recurring_red_impact(self) -> None:
-        self.red_recurring_impacts += 1
+    def add_recurring_red_impact(self, red_action) -> None:
+        self.red_recurring_actions.append(RecurringAction("", red_action))
 
     def handle_blue_action_output(self, blue_action: str, rec_id: str):
         if "remove" in blue_action:
@@ -112,64 +96,9 @@ class Reward(RewardCalculator):
     
     def handle_red_action_output(self, red_action: str):
         if "impact" in red_action.lower():
-            self.add_recurring_red_impact()
+            self.add_recurring_red_impact(red_action.lower())
         return
 
     def reset(self) -> None:
         self.blue_recurring_actions = []
-        self.red_recurring_impacts = 0
-
-
-class StepDetectedReward(Reward):
-    def __init__(
-        self,
-        blue_rewards: RewardMap,
-        r: Tuple[int, int] = (2, 5),
-        scaling_factor: float = 10.0,
-        max_steps: int = 50,
-    ) -> None:
-        """
-        Increases the reward the earlier that the red agent is detected. So the best reward it can get is
-        one in which the blue agent immediately detects the red agent's actions. The worst reward it can get
-        is one in which the blue agent detects the red agent at the final step of the episode.
-
-        reward function: 100 - n (n is the step detected)
-
-        trying 1000 / n
-
-        TODO: Change 100, 200 to max_steps and max_steps * 2, respectively.
-        """
-        self.reward_function = 1000
-        self.step_detected = 99999999
-        super().__init__(
-            red_rewards={},
-            blue_rewards=blue_rewards,
-            r=r,
-            scaling_factor=scaling_factor,
-        )
-
-    def calculate_reward(
-        self,
-        blue_action: str,
-        blue_success: bool,
-        red_action_alerted: bool,
-        step_detected: int,
-    ) -> int | float:
-        step_detected_reward = 0
-        if red_action_alerted and step_detected < self.step_detected:
-            self.step_detected = step_detected
-            step_detected_reward = self.reward_function / self.step_detected
-
-        if blue_success:
-            b = self.blue_rewards[blue_action.split(" ")[0]][0]
-        else:
-            b = 0
-        # print(f"Step Detected: {self.step_detected}, Step Detected Reward: {step_detected_reward}, Blue Agent: {b}, Recurring: {self.sum_recurring()}")
-        return step_detected_reward + b + self.sum_recurring()
-
-    def reset(
-        self,
-    ) -> None:  # TODO: Change 100, 200 to max_steps and max_steps * 2, respectively.
-        self.reward_function = 1000
-        self.step_detected = 999999999
-        self.blue_recurring_actions = []
+        self.red_recurring_actions = []

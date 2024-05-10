@@ -1,5 +1,4 @@
-from typing import Type, Any, Dict, Tuple
-from typing import List
+from typing import Type, Any, Dict, Tuple, List
 from cyberwheel.red_actions.actions.killchain_phases import *
 from cyberwheel.red_agents.red_agent_base import (
     KnownSubnetInfo,
@@ -12,7 +11,7 @@ from cyberwheel.network.network_base import Network
 
 from copy import deepcopy
 
-from cyberwheel.reward.reward import RewardMap
+from cyberwheel.reward import RewardMap
 
 class KillChainAgent(RedAgent):
     def __init__(

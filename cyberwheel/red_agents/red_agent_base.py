@@ -9,7 +9,7 @@ from cyberwheel.red_actions.red_base import RedAction
 from cyberwheel.network.network_base import Host, Subnet
 from cyberwheel.network.service import Service
 from cyberwheel.red_actions.red_base import RedActionResults
-from cyberwheel.reward.reward import RewardMap
+from cyberwheel.reward import RewardMap
 
 
 class RedAgent(ABC):

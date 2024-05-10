@@ -12,7 +12,7 @@ from cyberwheel.network.network_base import Network
 
 from copy import deepcopy
 
-from cyberwheel.reward.reward import RewardMap
+from cyberwheel.reward import RewardMap
 
 class RecurringImpactAgent(RedAgent):
     def __init__(

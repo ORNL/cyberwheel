@@ -86,12 +86,13 @@ class KnownSubnetInfo:
 
 class StepInfo:
     def __init__(
-        self, step: int, action: Tuple[Type[RedAction], Host, Host], success: bool
+        self, step: int, action: Tuple[Type[RedAction], Host, Host], techniques: List[str], success: bool
     ):
         self.step = step
         self.action = action
         self.success = success
         self.info = f"{action[0].__name__} from {action[1].name} to {action[2].name} - {'Succeeded' if success else 'Failed'}"
+        self.techniques = techniques
 
 
 class AgentHistory:
@@ -132,9 +133,10 @@ class AgentHistory:
         action: Tuple[Type[RedAction] | Type[ARTAction], Host, Host],
         success: bool,
         red_action_results: RedActionResults,
+        techniques: List[str]
     ):
         self.step += 1
-        self.history.append(StepInfo(self.step, action=action, success=success))
+        self.history.append(StepInfo(self.step, action=action, techniques=techniques, success=success))
         self.red_action_history.append(red_action_results)
 
     def recent_history(self) -> RedActionResults:

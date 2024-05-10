@@ -4,14 +4,23 @@ from typing import Any, List, Dict, Union
 from copy import deepcopy
 from cyberwheel.network.host import Host
 from cyberwheel.network.service import Service
-
+from cyberwheel.red_actions.technique import Technique
 IPAddress = Union[IPv4Address, IPv6Address, None]
 
 # NOTE Consider making an Alert base class with src_host and technique member variables and then inherit to make alerts for network/host
 class Alert():
     FIELD_NAMES = set(['src_host', 'dst_hosts', 'services'])
-    def __init__(self, src_host: Union[None, Host] = None, techniques: List[Technique]=[], dst_hosts: List[Host] = [], services: List[Service]=[],
-                 user: str="", command: str="", files: List[Any]=[], other_resources: Dict[str, Any]={}, os: str="", os_version: str=""):
+    def __init__(self, 
+                 src_host: Union[None, Host] = None, 
+                 techniques: List[Technique]=[], 
+                 dst_hosts: List[Host] = [], 
+                 services: List[Service]=[],
+                 user: str="", 
+                 command: str="", 
+                 files: List[Any]=[], 
+                 other_resources: Dict[str, Any]={}, 
+                 os: str="", 
+                 os_version: str=""):
         """
         A class for holding information on actions made by a non-blue agent. (Maybe we'll do a green agent at some point?)
         ### Generic
@@ -94,15 +103,16 @@ class Alert():
         dst_hosts = len(self.dst_hosts) == len(__value.dst_hosts)
         if dst_hosts:
             for host in self.dst_hosts:
-                if host not in __value.dst_hosts:from .network_object import NetworkObject
-
+                if host not in __value.dst_hosts:
+                    dst_hosts = False
+        services = len(self.services) == len(__value.services)
         if services:
             for service in self.services:
                 if service not in __value.services:
                     services = False
         if src_host and dst_hosts and services:
             return True
-        return False
+        return False 
 
     def __str__(self) -> str:
         return f"Alert: dst_hst: {[str(h) for h in self.dst_hosts]}, services: {[str(s) for s in self.services]}"

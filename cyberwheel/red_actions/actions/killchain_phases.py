@@ -55,7 +55,6 @@ class KillChainPhase(RedAction):
             if killchain_phase not in obj.kill_chain_phases:
                 continue
             elif all_valid or any(x in obj.supported_os for x in valid_os):
-                # self.techniques.append((obj.mitre_id, obj.name))
                 self.techniques.append(obj.mitre_id)
 
     def set_techniques(self, techniques: List[str]):
@@ -213,7 +212,7 @@ class PrivilegeEscalation(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        # self.name = "privilege-escalation"
+        self.name = "privilege-escalation"
         self.valid_os = valid_os
         # if load_techniques:
             # self.load_valid_techniques(self.valid_os)
@@ -269,7 +268,7 @@ class DefenseEvasion(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        # self.name = "defense-evasion"
+        self.name = "defense-evasion"
         self.valid_os = valid_os
         # if load_techniques:
             # self.load_valid_techniques(self.valid_os)
@@ -306,7 +305,7 @@ class CredentialAccess(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        # self.name = "credential-access"
+        self.name = "credential-access"
         self.valid_os = valid_os
         # if load_techniques:
             # self.load_valid_techniques(self.valid_os)
@@ -347,7 +346,7 @@ class Discovery(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        # self.name = "discovery"
+        self.name = "discovery"
         self.valid_os = valid_os
         # if load_techniques:
             # self.load_valid_techniques(self.valid_os)
@@ -428,7 +427,7 @@ class LateralMovement(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        # self.name = "lateral-movement"
+        self.name = "lateral-movement"
         self.valid_os = valid_os
         # if load_techniques:
             # self.load_valid_techniques(self.valid_os)
@@ -487,7 +486,7 @@ class Collection(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        # self.name = "collection"
+        self.name = "collection"
         self.valid_os = valid_os
         # if load_techniques:
             # self.load_valid_techniques(self.valid_os)
@@ -525,7 +524,7 @@ class Exfiltration(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        # self.name = "exfiltration"
+        self.name = "exfiltration"
         self.valid_os = valid_os
         # if load_techniques:
             # self.load_valid_techniques(self.valid_os)
@@ -562,7 +561,7 @@ class CommandAndControl(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        # self.name = "command-and-control"
+        self.name = "command-and-control"
         self.valid_os = valid_os
         # if load_techniques:
             # self.load_valid_techniques(self.valid_os)
@@ -600,10 +599,10 @@ class Impact(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        # self.name = "impact"
+        self.name = "impact"
         self.valid_os = valid_os
-        # if load_techniques:
-            # self.load_valid_techniques(self.valid_os)
+        if load_techniques:
+            self.load_valid_techniques(Impact.name, self.valid_os)
 
     def sim_execute(self):
         # if not check_vulnerability(self.target_service, self.techniques): # TODO: Will need to implement this.
@@ -653,7 +652,7 @@ class Reconnaissance(KillChainPhase):
         - `valid_os`: List of operating systems compatible with attack
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
-        # self.name = "reconnaissance"
+        self.name = "reconnaissance"
         self.valid_os = valid_os
         # if load_techniques:
             # self.load_valid_techniques(self.valid_os)

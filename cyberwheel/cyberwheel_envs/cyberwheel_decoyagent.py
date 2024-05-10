@@ -143,7 +143,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         )  # red_action includes action, and target of action
 
         action_metadata = self.red_agent.history.history[-1]
-
+        print(action_metadata)
         red_action_type, red_action_src, red_action_dst = action_metadata.action
 
         red_action_success = action_metadata.success

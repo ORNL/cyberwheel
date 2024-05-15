@@ -144,14 +144,13 @@ class KillChainAgent(RedAgent):
         target_host = self.history.mapping[target_host_name]
 
         # print([f"{k}: {v.type}" for k, v in self.history.hosts.items()])
-
+        # print(self.history.mapping)
         # List of hosts with 'Unknown' host types
         unknown_host_types = [
             self.history.mapping[h]
             for h, v in self.history.hosts.items()
             if v.type == "Unknown"
         ]
-
         # If the current Host is a 'Server' or 'Unknown', keep advancing its killchain.
         # The agent wants to attack Server Hosts and gain more information on Unknown Hosts.
         if current_host_type == "Server" or current_host_type == "Unknown":
@@ -206,7 +205,7 @@ class KillChainAgent(RedAgent):
 
         # Update the Overall Step History, regardless of action success
         self.history.update_step(
-            (action, self.current_host, target_host), success, action_results
+            (action, self.current_host, target_host), success, action_results, action.get_techniques()
         )
 
         # Handle whether killchain advances depending on network state
@@ -215,7 +214,6 @@ class KillChainAgent(RedAgent):
         # Store any new information of Hosts/Subnets as metadata in its History
         for h_name in action_results.metadata.keys():
             self.add_host_info(h_name, action_results.metadata[h_name])
-
         return action
 
     def select_service(
@@ -397,6 +395,7 @@ class KillChainAgent(RedAgent):
                 (LateralMovement, self.current_host, target_host),
                 success,
                 action_results,
+                LateralMovement.get_techniques()
             )
             if (
                 success

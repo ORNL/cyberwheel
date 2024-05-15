@@ -41,9 +41,9 @@ def host_to_index_mapping(network: Network) -> Dict[Host, int]:
 
 def decoy_alerted(alerts: List[Alert]) -> bool:
     for alert in alerts:
-        for dst_host in alert.dst_hosts:
-            if dst_host.decoy:
-                return True
+        # for dst_host in alert.dst_hosts:
+        #     if dst_host.decoy:
+        #         return True
         if alert.src_host.disconnected:
             return True
     return False
@@ -111,13 +111,12 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
 
         
 
-        self.blue_agent = IsolateBlueAgent(self.network, self.decoy_info, self.host_defs, 0)
+        self.blue_agent = IsolateBlueAgent(self.network, self.decoy_info, self.host_defs, self.max_decoys)
         
         detector_conf_file = files("cyberwheel.resources.configs").joinpath(detector_config)
-        # self.detector = ProbabilityDetector(detector_conf_file)
+        self.detector = ProbabilityDetector(detector_conf_file)
         # self.detector = IsolateDetector()
-        self.detector = DecoyDetector()
-        
+        # self.detector2 = DecoyDetector()
 
         self.reward_function = reward_function
 
@@ -131,7 +130,7 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
         else:
             self.reward_calculator = IsolateReward(
                 self.red_agent.get_reward_map(),
-                scaling_factor=blue_reward_scaling,
+                # scaling_factor=blue_reward_scaling,
             )
 
 
@@ -156,17 +155,16 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
         red_action_result = (
             self.red_agent.history.recent_history()
         )  # red action results
-        # print(red_action_result.detector_alert.techniques)
-        alerts = self.detector.obs(red_action_result.detector_alert)   
+        alerts = self.detector.obs(red_action_result.detector_alert) #+ self.detector2.obs(red_action_result.detector_alert)   
         obs_vec = self._get_obs(alerts)
-        x = decoy_alerted(alerts)
+        alerted = decoy_alerted(alerts)
         if self.reward_function == "step_detected":
             reward = self.reward_calculator.calculate_reward(
-                blue_action_name, successful, x, self.current_step
+                blue_action_name, successful, alerted, self.current_step
             )
         else:
             reward = self.reward_calculator.calculate_reward(
-                red_action_name, successful, x
+                red_action_name, successful, alerted
             )
 
         self.total += reward
@@ -187,9 +185,9 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
             False,
             {
                 "action": {"Blue": blue_action_name, "Red": red_action_str},
-                "network": self.blue_agent.network,
-                "history": self.red_agent.history,
-                "killchain": self.red_agent.killchain,
+                # "network": self.blue_agent.network,
+                # "history": self.red_agent.history,
+                # "killchain": self.red_agent.killchain,
             },
 
         )
@@ -222,7 +220,7 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
                 self.network.get_random_user_host(), network=self.network
             )
 
-        self.blue_agent = IsolateBlueAgent(self.network, self.decoy_info, self.host_defs, 4)
+        self.blue_agent = IsolateBlueAgent(self.network, self.decoy_info, self.host_defs, self.max_decoys)
 
         self.alert_converter = HistoryObservation(
             self.observation_space.shape, host_to_index_mapping(self.network)

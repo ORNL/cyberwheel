@@ -32,7 +32,7 @@ class IsolateReward(RewardCalculator):
             r = abs(self.red_rewards[red_action][0])
         else:
             r = self.red_rewards[red_action][0]
-
+        b = 0
         if not blue_success:
             b = -100
         return r + b

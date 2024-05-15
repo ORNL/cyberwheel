@@ -67,10 +67,10 @@ class IsolateBlueAgent(BlueAction):
         - The uuid as a string of hex digits belonging to the action (to differtiate this action from others)
         - Whether the action succeeded or failed
         """
-        print("isolated: ", end=": ")
-        for host in self.network.get_disconnected():
-            print(host, end=', ')
-        print()
+        # print("isolated: ", end=": ")
+        # for host in self.network.get_disconnected():
+        #     print(host, end=', ')
+        # print()
         # Even if the agent choses to do nothing, the recurring rewards of
         # previous actions still need to be summed.
         # Decide what action to take
@@ -113,7 +113,7 @@ class IsolateBlueAgent(BlueAction):
             if not isolated_host.disconnected:   
                 isolate_action = IsolateHost(self.network)
                 isolate_action.execute(isolated_host)
-                self.network.draw(filename=f"isolate-{isolate_index}.png")
+                # self.network.draw(filename=f"isolate-{isolate_index}.png")
             else:
                 successful = False
         # for i in self.deployed_hosts:

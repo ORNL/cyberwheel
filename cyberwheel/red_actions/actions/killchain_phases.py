@@ -22,7 +22,6 @@ class KillChainPhase(RedAction):
     """
     Base class for defining a KillChainPhase. Any new Killchain Phase (probably not needed) should inherit from this class.
     """
-
     def __init__(
         self,
         src_host: Host,
@@ -41,21 +40,8 @@ class KillChainPhase(RedAction):
         - `techniques`: A list of techniques that can be used to perform this attack.
         """
         super().__init__(src_host, target_service, target_hosts, techniques)
+    
 
-    def load_valid_techniques(
-        self,  valid_os: List[str] = []
-    ) -> None:
-        # print(cls.name)
-        killchain_phase = type(self).get_name()
-        all_valid = valid_os == []
-        for name, obj in inspect.getmembers(art_techniques):
-            if not inspect.isclass(obj) or name == "Technique":
-                continue
-            obj = obj()
-            if killchain_phase not in obj.kill_chain_phases:
-                continue
-            elif all_valid or any(x in obj.supported_os for x in valid_os):
-                self.techniques.append(obj.mitre_id)
 
     def set_techniques(self, techniques: List[str]):
         pass
@@ -78,7 +64,24 @@ class InitialAccess(KillChainPhase):
 
     name: str = "initial-access"
     valid_os: List[str]
-
+    techniques = []
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
+    
     def __init__(
         self,
         src_host: Host,
@@ -115,7 +118,24 @@ class Execution(KillChainPhase):
 
     name: str = "execution"
     valid_os: List[str]
-
+    techniques = []
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
+    
     def __init__(
         self,
         src_host: Host,
@@ -153,7 +173,24 @@ class Persistence(KillChainPhase):
 
     name: str = "persistence"
     valid_os: List[str]
-
+    techniques = []
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
+    
     def __init__(
         self,
         src_host: Host,
@@ -197,7 +234,24 @@ class PrivilegeEscalation(KillChainPhase):
 
     name: str = "privilege-escalation"
     valid_os: List[str]
-
+    techniques = []
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
+    
     def __init__(
         self,
         src_host: Host,
@@ -231,7 +285,7 @@ class PrivilegeEscalation(KillChainPhase):
                 if p.name == "malware.exe":
                     p.escalate_privilege()
             self.action_results.modify_alert(dst=host)
-            self.action_results.detector_alert.add_techniques(self.techniques)
+            self.action_results.detector_alert.add_techniques(type(self).techniques)
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)
             self.action_results.add_successful_action(host)
@@ -253,7 +307,24 @@ class DefenseEvasion(KillChainPhase):
 
     name: str = "defense-evasion"
     valid_os: List[str]
-
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    techniques = []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
+    
     def __init__(
         self,
         src_host: Host,
@@ -290,7 +361,24 @@ class CredentialAccess(KillChainPhase):
 
     name: str = "credential-access"
     valid_os: List[str]
-
+    techniques = []
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
+    
     def __init__(
         self,
         src_host: Host,
@@ -329,7 +417,24 @@ class Discovery(KillChainPhase):
 
     name: str = "discovery"
     valid_os: List[str]
-
+    techniques = []
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
+    
     def __init__(
         self,
         src_host: Host,
@@ -392,7 +497,7 @@ class Discovery(KillChainPhase):
                 self.src_host, self.target_service, self.target_hosts, self.techniques
             ).sim_execute()
         self.action_results = RedActionResults()
-        self.action_results.detector_alert.add_techniques(self.techniques)
+        self.action_results.detector_alert.add_techniques(type(self).techniques)
 
         return self.action_results
 
@@ -412,7 +517,24 @@ class LateralMovement(KillChainPhase):
 
     name: str = "lateral-movement"
     valid_os: List[str]
-
+    techniques = []
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
+    
     def __init__(
         self,
         src_host: Host,
@@ -442,7 +564,7 @@ class LateralMovement(KillChainPhase):
             if not validate_attack(host, self.target_service):
                 continue
             self.action_results.modify_alert(dst=host)
-            self.action_results.detector_alert.add_techniques(self.techniques)
+            self.action_results.detector_alert.add_techniques(type(self).techniques)
             self.src_host.remove_process(
                 process_name="malware.exe"
             )  # Remove malware from source host
@@ -471,7 +593,24 @@ class Collection(KillChainPhase):
 
     name: str = "collection"
     valid_os: List[str]
-
+    techniques = []
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
+    
     def __init__(
         self,
         src_host: Host,
@@ -509,7 +648,24 @@ class Exfiltration(KillChainPhase):
 
     name: str = "exfiltration"
     valid_os: List[str]
-
+    techniques = []
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
+    
     def __init__(
         self,
         src_host: Host,
@@ -546,7 +702,24 @@ class CommandAndControl(KillChainPhase):
 
     name: str = "command-and-control"
     valid_os: List[str]
-
+    techniques = []
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
+    
     def __init__(
         self,
         src_host: Host,
@@ -581,9 +754,26 @@ class Impact(KillChainPhase):
     can look fine, but may have been altered to benefit the adversaries' goals. These techniques might be used by adversaries to follow
     through on their end goal or to provide cover for a confidentiality breach.
     """
-
+    techniques = []
     name: str = "impact"
     valid_os: List[str]
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
+    
 
     def __init__(
         self,
@@ -601,8 +791,8 @@ class Impact(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         self.name = "impact"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(Impact.name, self.valid_os)
+        # if load_techniques:
+           # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         # if not check_vulnerability(self.target_service, self.techniques): # TODO: Will need to implement this.
@@ -615,7 +805,7 @@ class Impact(KillChainPhase):
                 continue
             host.is_compromised = True
             self.action_results.modify_alert(dst=host)
-            self.action_results.detector_alert.add_techniques(self.techniques)
+            self.action_results.detector_alert.add_techniques(type(self).techniques)
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)
             self.action_results.add_successful_action(host)
@@ -637,6 +827,24 @@ class Reconnaissance(KillChainPhase):
 
     name: str = "reconnaissance"
     valid_os: List[str]
+    techniques = []
+
+    killchain_phase = name # type(self).get_name()
+    all_valid =  True # valid_os == []
+    for n, obj in inspect.getmembers(art_techniques):
+        if not inspect.isclass(obj) or n == "Technique":
+            continue
+        obj = obj()
+        if killchain_phase not in obj.kill_chain_phases:
+            continue
+        elif all_valid: #or any(x in obj.supported_os for x in valid_os):
+            techniques.append(obj.mitre_id)
+    
+    @classmethod
+    def get_techniques(
+        cls#,  valid_os: List[str] = []
+    ) -> List[str]:
+        return cls.techniques
 
     def __init__(
         self,
@@ -669,7 +877,7 @@ class Reconnaissance(KillChainPhase):
             if not validate_attack(host, self.target_service):
                 continue
             self.action_results.modify_alert(dst=host)
-            self.action_results.detector_alert.add_techniques(self.techniques)
+            self.action_results.detector_alert.add_techniques(type(self).techniques)
             self.action_results.add_metadata(
                 host.name,
                 {

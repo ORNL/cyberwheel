@@ -96,8 +96,8 @@ class InitialAccess(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         self.name = "initial-access"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         return NotImplementedError
@@ -133,8 +133,8 @@ class Execution(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         self.name = "execution"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         return NotImplementedError
@@ -171,8 +171,8 @@ class Persistence(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         self.name = "persistence"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         return NotImplementedError
@@ -215,8 +215,8 @@ class PrivilegeEscalation(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         # self.name = "privilege-escalation"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         # if not check_vulnerability(self.target_service, self.techniques): #TODO: Will need to implement this
@@ -271,8 +271,8 @@ class DefenseEvasion(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         # self.name = "defense-evasion"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         return NotImplementedError
@@ -308,8 +308,8 @@ class CredentialAccess(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         # self.name = "credential-access"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         return NotImplementedError
@@ -349,8 +349,8 @@ class Discovery(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         # self.name = "discovery"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
         self.scanned_subnets = scanned_subnets
         self.scanned_hosts = scanned_hosts
 
@@ -430,8 +430,8 @@ class LateralMovement(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         # self.name = "lateral-movement"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         # if not check_vulnerability(self.target_service, self.techniques): #TODO: This will need to be implemented for LateralMovement
@@ -489,8 +489,8 @@ class Collection(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         # self.name = "collection"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         return NotImplementedError
@@ -527,8 +527,8 @@ class Exfiltration(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         # self.name = "exfiltration"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         return NotImplementedError
@@ -564,8 +564,8 @@ class CommandAndControl(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         # self.name = "command-and-control"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         return NotImplementedError
@@ -602,8 +602,8 @@ class Impact(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         # self.name = "impact"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         # if not check_vulnerability(self.target_service, self.techniques): # TODO: Will need to implement this.
@@ -655,8 +655,8 @@ class Reconnaissance(KillChainPhase):
         super().__init__(src_host, target_service, target_hosts, techniques)
         # self.name = "reconnaissance"
         self.valid_os = valid_os
-        if load_techniques:
-            self.load_valid_techniques(self.valid_os)
+        # if load_techniques:
+            # self.load_valid_techniques(self.valid_os)
 
     def sim_execute(self):
         """

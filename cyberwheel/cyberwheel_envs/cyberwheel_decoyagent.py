@@ -170,10 +170,6 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             done = False
         self.current_step += 1
 
-        print(red_action_str)
-        print(blue_action_name)
-        print(reward)
-
         return (
             obs_vec,
             reward,
@@ -181,9 +177,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             False,
             {
                 "action": {"Blue": blue_action_name, "Red": red_action_str},
-                "network": self.blue_agent.network,
-                "history": self.red_agent.history,
-                "killchain": self.red_agent.killchain,
+                # "network": self.blue_agent.network,
+                # "history": self.red_agent.history,
+                # "killchain": self.red_agent.killchain,
             },
 
         )

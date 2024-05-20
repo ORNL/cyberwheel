@@ -5,6 +5,7 @@ import os
 import pandas as pd
 from PIL import Image
 import pickle
+import sys
 
 app = Dash(__name__, suppress_callback_exceptions=True)
 
@@ -163,4 +164,5 @@ def update_graph(episode, step, graph_name):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = sys.argv[1]
+    app.run(debug=True, port=port)

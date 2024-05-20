@@ -22,6 +22,8 @@ from cyberwheel.blue_agents.decoy_blue import DecoyBlueAgent
 from cyberwheel.red_agents.killchain_agent import KillChainAgent
 from cyberwheel.cyberwheel_envs.cyberwheel_decoyagent import *
 
+from visualize import visualize
+
 
 def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
     """Initialise neural network weights using orthogonal initialization. Works well in practice."""
@@ -79,18 +81,20 @@ class Agent(nn.Module):
             action = probs.sample()
         return action, probs.log_prob(action), probs.entropy(), self.critic(x)
 
+
 def make_env(
     env_id: str,
     rank: int,
     network_config: str,
     decoy_host_file: str,
     host_def_file: str,
+    detector_config : str,
     seed: int = 0,
     min_decoys=1,
     max_decoys=1,
     blue_reward_scaling=10,
     reward_function="default",
-    red_agent="killchain_agent",
+    red_agent="killchain_agent"
 ):
     """
     Utility function for multiprocessed env.
@@ -102,19 +106,21 @@ def make_env(
     """
 
     def _init():
-        # env = SingleAgentCyberwheel(50,1,1)  # Create an instance of the Cyberwheel environment
         env = DecoyAgentCyberwheel(
             network_config=network_config,
             decoy_host_file=decoy_host_file,
             host_def_file=host_def_file,
+            detector_config=detector_config,
             min_decoys=min_decoys,
             max_decoys=max_decoys,
             blue_reward_scaling=blue_reward_scaling,
             reward_function=reward_function,
-            red_agent=red_agent
+            red_agent=red_agent,
+            evaluation=True
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         return env
+
     return _init
 
 
@@ -170,6 +176,13 @@ def parse_args():
         default="host_definitions.yaml",
     )
 
+    parser.add_argument(
+        "--detector-config",
+        help="Path to detector config file",
+        type=str,
+        default="decoys_only.yaml",
+    )
+
     # reward calculator args
     parser.add_argument(
         "--min-decoys",
@@ -195,14 +208,10 @@ def parse_args():
         type=str,
         default="default",
     )
-    parser.add_argument(
-        "--red-agent",
-        help="Which red agent. Current options: killchain_agent | recurring_impact",
-        type=str,
-        default="killchain_agent",
-    )
 
     args = parser.parse_args()
+
+    # print(args)
 
     bool_run = args.run != None  # true if run given, false if run not given
 
@@ -224,14 +233,14 @@ if __name__ == "__main__":
             network_config=args.network_config,
             decoy_host_file=args.decoy_config,
             host_def_file=args.host_config,
+            detector_config=args.detector_config,
             min_decoys=args.min_decoys,
             max_decoys=args.max_decoys,
             blue_reward_scaling=args.reward_scaling,
             reward_function=args.reward_function,
-            red_agent=args.red_agent
+            red_agent=args.agent
         )
     ]
-
     envs = gym.vector.SyncVectorEnv(env_funcs)
 
     agent = Agent(envs).to(device)
@@ -263,7 +272,7 @@ if __name__ == "__main__":
     if args.graph_name != None:
         now_str = args.graph_name
     else:
-        now_str = f"{experiment_name}_evaluate_{args.network_config.split('.')[0]}_killchainagent_{args.min_decoys}-{args.max_decoys}_scaling{args.reward_scaling}_{args.reward_function}reward_{args.red_agent}"
+        now_str = f"{experiment_name}_evaluate_{args.network_config.split('.')[0]}_killchainagent_{args.min_decoys}-{args.max_decoys}_scaling{args.reward_scaling}_{args.reward_function}reward"
     log_file = f"action_logs/{now_str}.csv"
 
     actions_df = pd.DataFrame()
@@ -273,7 +282,6 @@ if __name__ == "__main__":
     full_red_action_src = []
     full_red_action_dest = []
     full_red_action_success = []
-
     full_blue_actions = []
     full_rewards = []
 
@@ -285,12 +293,11 @@ if __name__ == "__main__":
                 obs = obs[0]
             obs = torch.Tensor(obs).to(device)
             action, logprob, _, value = agent.get_action_and_value(obs)
-            # action = envs.action_space.sample()
+
             all_action = None
             blue_action = None
             red_action = None
 
-            # print(f"\n\n{action}\n\n")
             obs, rew, done, _, info = envs.step(action.cpu().numpy())
             rew = rew[0]
             done = done[0]
@@ -305,7 +312,8 @@ if __name__ == "__main__":
                 net = info["network"][0]
                 history = info["history"][0]
                 killchain = info["killchain"][0]
-
+            # print(all_action)
+            # print(rew)
             blue_action = all_action["Blue"]
             red_action = all_action["Red"]
             red_action_parts = red_action.split(" ")
@@ -322,6 +330,9 @@ if __name__ == "__main__":
             full_red_action_success.append(red_action_success)
             full_blue_actions.append(blue_action)
             full_rewards.append(rew)
+
+            if args.visualize:
+                visualize(net, episode, step, now_str, history, killchain)
 
             total_reward += rew
             steps += 1
@@ -341,7 +352,6 @@ if __name__ == "__main__":
             "blue_action": full_blue_actions,
             "reward": full_rewards,
         }
-
     )
 
     actions_df.to_csv(log_file)

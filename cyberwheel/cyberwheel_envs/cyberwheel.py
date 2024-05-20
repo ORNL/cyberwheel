@@ -13,6 +13,7 @@ class Cyberwheel:
         # print("begin reading")
         self.network = Network.create_network_from_yaml(self.config_file_path)
         self.network_copy = deepcopy(self.network)
+        self.evaluation = False
         # print("end reading")
     # private method that converts state into observation
     # convert the dictionary of Host objects into the observation vector

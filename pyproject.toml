@@ -12,7 +12,6 @@ python = "~3.10"
 networkx = "^3.2.1"
 ipaddress = "^1.0.23"
 stable-baselines3 = "^2.2.1"
-pyattck = "^7.1.2"
 pettingzoo = "^1.24.3"
 ray = {extras = ["rllib"], version = "^2.9.2"}
 pydantic = "^1"
@@ -22,6 +21,8 @@ gym = "^0.26.2"
 tensorboard = "^2.16.2"
 tqdm = "^4.66.2"
 ipykernel = "^6.29.4"
+pygraphviz = "^1.13"
+dash = "^2.17.0"
 
 
 [tool.poetry.group.dev.dependencies]

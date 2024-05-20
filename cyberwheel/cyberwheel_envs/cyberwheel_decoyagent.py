@@ -17,7 +17,6 @@ from red_agents import KillChainAgent, RecurringImpactAgent
 from cyberwheel.reward import DecoyReward, StepDetectedReward
 
 
-
 def host_to_index_mapping(network: Network) -> Dict[Host, int]:
     """
     This will help with constructing the obs_vec.
@@ -57,6 +56,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         blue_reward_scaling=10,
         reward_function="default",
         red_agent="killchain_agent",
+        evaluation=False,
         **kwargs,
     ):
         network_conf_file = files("cyberwheel.network").joinpath(network_config)
@@ -128,6 +128,8 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
                 r=(min_decoys, max_decoys),
                 scaling_factor=blue_reward_scaling,
             )
+        
+        self.evaluation = evaluation
 
 
     def step(self, action):
@@ -143,13 +145,10 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
         red_action_success = action_metadata.success
 
-        red_action_str = "Success - " if red_action_success else "Failed - "
-
-        red_action_str += f"{red_action_type.__name__} from {red_action_src.name} to {red_action_dst.name}"
         red_action_result = (
             self.red_agent.history.recent_history()
         )  # red action results
-        # print(red_action_result.detector_alert.techniques)
+
         alerts = self.detector.obs(red_action_result.detector_alert)   
         obs_vec = self._get_obs(alerts)
         x = decoy_alerted(alerts)
@@ -170,18 +169,23 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
             done = False
         self.current_step += 1
 
+        info = {}
+        if self.evaluation:
+            red_action_str = "Success - " if red_action_success else "Failed - "
+            red_action_str += f"{red_action_type.__name__} from {red_action_src.name} to {red_action_dst.name}"
+            info = {
+                "action": {"Blue": blue_action_name, "Red": red_action_str},
+                "network": self.blue_agent.network,
+                "history": self.red_agent.history,
+                "killchain": self.red_agent.killchain,
+            }
+
         return (
             obs_vec,
             reward,
             done,
             False,
-            {
-                "action": {"Blue": blue_action_name, "Red": red_action_str},
-                # "network": self.blue_agent.network,
-                # "history": self.red_agent.history,
-                # "killchain": self.red_agent.killchain,
-            },
-
+            info,
         )
 
     def _get_obs(self, alerts: List[Alert]) -> Iterable:

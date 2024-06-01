@@ -123,7 +123,6 @@ class RedAction:
     """
     Base class for defining red actions. New actions should inherit from this class and define sim_execute().
     """
-
     def __init__(
         self, src_host: Host, target_service, target_hosts, techniques
     ) -> None:

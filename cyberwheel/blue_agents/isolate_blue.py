@@ -7,7 +7,7 @@ from cyberwheel.blue_actions.actions.decoys.deploy_decoy_host import (
 )
 from cyberwheel.blue_actions.actions.decoys.remove_decoy import RemoveDecoyHost
 from cyberwheel.blue_actions.blue_base import BlueAction
-from cyberwheel.blue_actions.actions.isolate_host import IsolateHost
+from cyberwheel.blue_actions.actions.isolate.isolate_host import IsolateHost
 from cyberwheel.network.host import Host, HostType
 from cyberwheel.network.network_base import Network
 from cyberwheel.network.service import Service

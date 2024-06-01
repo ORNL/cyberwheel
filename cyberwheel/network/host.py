@@ -52,6 +52,7 @@ class Host(NetworkObject):
         self.isolated = False # For isolate action
         self.interfaces = []
         self.cves = []
+        self.restored = False
         # apply any HostType details
         if self.host_type:
             self._apply_host_type(self.host_type)

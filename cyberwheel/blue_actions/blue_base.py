@@ -12,8 +12,9 @@ class BlueAction:
         pass
     
     @abstractmethod
-    def execute(self) -> None:
+    def execute(self) -> bool:
         """
-        This method executes a blue action. .
+        This method executes a blue action.
+        Returns whether the execution succeeded or not
         """
         raise NotImplementedError

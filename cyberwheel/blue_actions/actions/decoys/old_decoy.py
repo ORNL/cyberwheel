@@ -47,8 +47,9 @@ class DeployDecoyHost(BlueAction):
         return s
 
 
-    def execute(self) ->  None:
+    def execute(self) ->  bool:
         self.host = self.network.create_decoy_host(self.name, self.subnet, self.type)
+        return True
 
 
 def deploy_host_from_yaml(decoy_name: str, path: str, network: Network, subnet: Subnet)-> DeployDecoyHost:

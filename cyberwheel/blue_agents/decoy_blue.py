@@ -44,10 +44,11 @@ class DecoyBlueAgent(BlueAgent):
         self, network: Network, decoy_info: Dict[str, Any], host_defs: Dict[str, Any]
         ) -> None:
         self.network = network
+        self.num_hosts = len(network.get_hosts())
         self.subnets = self.network.get_all_subnets()
         self.decoy_info = decoy_info
         self.num_decoy_types = len(self.decoy_info)
-        self.action_space_length = 2 * self.num_decoy_types * len(self.subnets) + 1
+        self.action_space_length = 2 * self.num_decoy_types * len(self.subnets) + self.num_hosts
         self.host_defs = host_defs
         self._load_host_types()
         self._load_rewards()
@@ -66,9 +67,9 @@ class DecoyBlueAgent(BlueAgent):
         # Even if the agent choses to do nothing, the recurring rewards of
         # previous actions still need to be summed.
         # Decide what action to take
-        decoy_index = self._get_decoy_type_index(action)
+        decoy_index = self._get_decoy_type_index(action, i=1+self.num_hosts)
         action_type = self._get_action_type(action)
-        subnet_index = self._get_subnet_index(action)
+        subnet_index = self._get_subnet_index(action, i=1+self.num_hosts)
 
         # Perform the action
         selected_subnet = self.subnets[subnet_index]
@@ -126,6 +127,7 @@ class DecoyBlueAgent(BlueAgent):
         # Add remove and nothing manually for right now
         self.reward_map['remove'] = (-50, 0)
         self.reward_map['nothing'] = (0, 0)
+        self.reward_map['restore'] = (-100, )
 
     def _load_host_types(self)-> None:
         self.host_types = []
@@ -170,7 +172,9 @@ class DecoyBlueAgent(BlueAgent):
         # return (action - 1) // self.num_decoy_types + 1 if action else action
         if action == 0:
             return 0
-        elif action < (self.num_decoy_types * len(self.subnets) + 1):
+        elif action < self.num_hosts + 1:
             return 1
-        else:
+        elif action < (self.num_decoy_types * len(self.subnets) + 1 + self.num_hosts):
             return 2
+        else:
+            return 3

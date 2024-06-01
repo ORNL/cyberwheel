@@ -30,9 +30,9 @@ class DeployDecoyService(BlueAction):
         self.service = service
         self.host = host
 
-    def execute(self) -> int:
+    def execute(self) -> bool:
         self.host.add_service(self.service.name, self.service.port, protocol=self.service.protocol, version=self.service.version, deploy=True)
-        return self.reward
+        return True
     
 
 def deploy_service_from_yaml(decoy_name: str, host: Host, fname: str)-> DeployDecoyService:

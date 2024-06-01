@@ -6,17 +6,17 @@ from typing import Dict, Iterable, List
 import yaml
 
 from .cyberwheel import Cyberwheel
-from blue_agents.decoy_blue import DecoyBlueAgent
+from cyberwheel.blue_agents.restore_agent import RestoreBlueAgent
 from cyberwheel.observation import HistoryObservation
 from detectors.alert import Alert
-
 # from detectors.detector import DecoyDetector, CoinFlipDetector
 from detectors.detectors.probability_detector import ProbabilityDetector
+from detectors.detectors.example_detectors import PerfectDetector, CoinFlipDetector
 from network.network_base import Network
 from network.host import Host
-from red_agents import KillChainAgent, RecurringImpactAgent, ARTAgent
-from cyberwheel.reward import DecoyReward, StepDetectedReward
-
+from red_agents.restore_agent import RestoreAgent
+from cyberwheel.reward.restore_reward import RestoreReward
+from red_agents.killchain_agent import KillChainAgent
 
 def host_to_index_mapping(network: Network) -> Dict[Host, int]:
     """
@@ -35,15 +35,7 @@ def host_to_index_mapping(network: Network) -> Dict[Host, int]:
     return mapping
 
 
-def decoy_alerted(alerts: List[Alert]) -> bool:
-    for alert in alerts:
-        for dst_host in alert.dst_hosts:
-            if dst_host.decoy:
-                return True
-    return False
-
-
-class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
+class RestoreCyberwheel(gym.Env, Cyberwheel):
     metadata = {"render.modes": ["human"]}
 
     def __init__(
@@ -61,9 +53,6 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         **kwargs,
     ):
         network_conf_file = files("cyberwheel.network").joinpath(network_config)
-        decoy_conf_file = files("cyberwheel.resources.metadata").joinpath(
-            decoy_host_file
-        )
         host_conf_file = files("cyberwheel.resources.metadata").joinpath(host_def_file)
         super().__init__(config_file_path=network_conf_file)
         self.total = 0
@@ -72,16 +61,8 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
         # Create action space. Decoy action for each decoy type for each subnet.
         # Length = num_decoy_host_types * num_subnets
-        with open(decoy_conf_file, "r") as f:
-            self.decoy_info = yaml.safe_load(f)
-
         with open(host_conf_file, "r") as f:
             self.host_defs = yaml.safe_load(f)["host_types"]
-
-        self.decoy_types = list(self.decoy_info.keys())
-
-        num_decoys = len(self.decoy_types)
-        num_subnets = len(self.network.get_all_subnets())
         num_hosts = len(self.network.get_hosts())
         """
         There needs to be an action for deploying each host on each subnet.
@@ -89,59 +70,36 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         action_space[1] == which subnet to deploy it on
         """
 
-        self.action_space = spaces.Discrete(2 * num_decoys * num_subnets + 1 + num_hosts)
+        self.action_space = spaces.Discrete(num_hosts + 1)
         self.observation_space = spaces.Box(0, 1, shape=(2 * num_hosts,))
         self.alert_converter = HistoryObservation(
             self.observation_space.shape, host_to_index_mapping(self.network)
         )
+
         self.red_agent_choice = red_agent
-
-        if self.red_agent_choice == "recurring_impact":
-            self.red_agent = RecurringImpactAgent(
-                self.network.get_random_user_host(), network=self.network
-            )
-        elif self.red_agent_choice == "art_agent":
-            self.red_agent = ARTAgent(
-                self.network.get_random_user_host(), network=self.network
-            )
-        else:
-            self.red_agent = KillChainAgent(
-                self.network.get_random_user_host(), network=self.network
-            )
-
-        self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
-
-        detector_conf_file = files("cyberwheel.resources.configs").joinpath(
-            detector_config
+        self.red_agent = RestoreAgent(
+            self.network.get_random_user_host(), network=self.network
         )
-        self.detector = ProbabilityDetector(config=detector_conf_file)
-
+        self.blue_agent = RestoreBlueAgent(self.network, self.host_defs)
+        
+        self.detector = ProbabilityDetector("/home/70d/cyberwheel/cyberwheel/resources/configs/hids.yaml") #PerfectDetector()
+        self.detector2 = ProbabilityDetector("/home/70d/cyberwheel/cyberwheel/resources/configs/nids.yaml")
         self.reward_function = reward_function
 
-        if reward_function == "step_detected":
-            self.reward_calculator = StepDetectedReward(
-                blue_rewards=self.blue_agent.get_reward_map(),
-                r=(min_decoys, max_decoys),
-                scaling_factor=blue_reward_scaling,
-                max_steps=self.max_steps,
-            )
-        else:
-            self.reward_calculator = DecoyReward(
+        #TODO define new reward function for restore
+        self.reward_calculator = RestoreReward(
                 self.red_agent.get_reward_map(),
-                self.blue_agent.get_reward_map(),
-                r=(min_decoys, max_decoys),
-                scaling_factor=blue_reward_scaling,
-            )
-
+                self.blue_agent.get_reward_map()
+        )
+        
         self.evaluation = evaluation
+
 
     def step(self, action):
         blue_action_name, rec_id, blue_success = self.blue_agent.act(action)
-        self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id)
         red_action_name = (
             self.red_agent.act().get_name()
         )  # red_action includes action, and target of action
-
         action_metadata = self.red_agent.history.history[-1]
         red_action_type, red_action_src, red_action_dst = action_metadata.action
 
@@ -150,18 +108,13 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         red_action_result = (
             self.red_agent.history.recent_history()
         )  # red action results
-
-        alerts = self.detector.obs(red_action_result.detector_alert)
+        alerts = self.detector.obs(red_action_result.detector_alert) + self.detector2.obs(red_action_result.detector_alert)
         obs_vec = self._get_obs(alerts)
-        x = decoy_alerted(alerts)
-        if self.reward_function == "step_detected":
-            reward = self.reward_calculator.calculate_reward(
-                blue_action_name, blue_success, x, self.current_step
-            )
-        else:
-            reward = self.reward_calculator.calculate_reward(
-                red_action_name, blue_action_name, red_action_success, blue_success, x
-            )
+
+        reward = self.reward_calculator.calculate_reward(red_action_name, 
+                                                         blue_action_name, 
+                                                         red_action_success, 
+                                                         blue_success)
 
         self.total += reward
 
@@ -181,7 +134,6 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
                 "history": self.red_agent.history,
                 "killchain": self.red_agent.killchain,
             }
-
         return (
             obs_vec,
             reward,
@@ -201,28 +153,19 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
     def reset(self, seed=None, options=None):
         self.total = 0
+        # print()
         self.current_step = 0
 
-        # There's a performance issue here
         self.network.reset()
 
-        # NOTE: Have we tested the deepcopy instead of removing decoys?
-        # self.network = deepcopy(self.network_copy)
-
-        if self.red_agent_choice == "recurring_impact":
-            self.red_agent = RecurringImpactAgent(
-                self.network.get_random_user_host(), network=self.network
-            )
-        elif self.red_agent_choice == "art_agent":
-            self.red_agent = ARTAgent(
-                self.network.get_random_user_host(), network=self.network
-            )
-        else:
-            self.red_agent = KillChainAgent(
+        #NOTE: Have we tested the deepcopy instead of removing decoys?
+        #self.network = deepcopy(self.network_copy)    
+         
+        self.red_agent = RestoreAgent(
                 self.network.get_random_user_host(), network=self.network
             )
 
-        self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
+        self.blue_agent = RestoreBlueAgent(self.network, self.host_defs)
 
         self.alert_converter = HistoryObservation(
             self.observation_space.shape, host_to_index_mapping(self.network)

@@ -10,16 +10,14 @@ from cyberwheel.red_actions.actions.killchain_phases import KillChainPhase
 from cyberwheel.network.network_base import Network
 
 from copy import deepcopy
-import networkx as nx
 
 from cyberwheel.reward import RewardMap
 
-
-class KillChainAgent(RedAgent):
+class RestoreAgent(RedAgent):
     def __init__(
         self,
         entry_host: Host,
-        name: str = "KillChainAgent",
+        name: str = "RestoreAgent",
         killchain: List[
             Type[KillChainPhase]
         ] = [  # Need to fill this out more accurately, currently defined as an example
@@ -28,38 +26,10 @@ class KillChainAgent(RedAgent):
             PrivilegeEscalation,  # Use previous exploit to elevate privilege level
             Impact,  # Perform big attack
         ],
-        network: Network = Network(),
+        network: Network = None,
     ):
         """
-        A basic Red Agent that uses a defined Killchain to attack hosts in a particular order.
-
-        The KillChain in this case:
-        1. Discovery - PortScan and PingSweep a Host (two separate actions)
-        2. Reconnaissance - Get List of CVEs associated with a host, and a host's type (user/server)
-        3. PrivilegeEscalation - When an agent is physically on a Host, it can escalate it's privileges to 'root'
-        4. Impact - When its privileges are escalated, it can compromise the Host
-
-        Logic:
-        - The agent will start on a given Host, with its CVEs, ports, subnet, and vulnerabilities already scanned.
-        - After it has retrieved a list of vulnerabilties associated with a Host with Reconnaissance, it can use LateralMovement to get onto a Host.
-        - From there, it will search for Hosts that haven't been portscanned and hosts with the type 'Server'
-        - Its goal is to explore the netowrk to find, move to, and Impact Servers if reachable. If no servers are found, it will Impact any given Host.
-
-        Important member variables:
-
-        * `entry_host`: required
-            - The host for the red agent to start on. The agent will have info on the Host's ports, subnet (list of other hosts in subnet), and CVEs.
-            - The agent will also have a physical malware on the Host called 'malware.exe'. When using LateralMovement, this will jump from Host to Host.
-            - NOTE: This will be used as the initial value of the class variable `current_host`. This will track which Host the red agent is currently on.
-
-        * `name`: optional
-            - Name of the Agent.
-            - Default: 'KillChainAgent'
-
-        * `killchain`: optional
-            - The sequence of Actions the Red Agent will take on a given Host.
-            - Default: [Discovery, Reconnaissance, PrivilegeEscalation, Impact]
-            - NOTE: This is currently only functional with the default Killchain.
+        Killchain agent but with extra logic for restoring hosts
         """
         # print("----------------------------------------------------------")
         self.name: str = name
@@ -74,53 +44,42 @@ class KillChainAgent(RedAgent):
         self.network = network
         self.initial_host_names = set(self.network.get_host_names())
 
-    def handle_network_change(self):
-        """
-        TODO: Add network handling info
-        """
+    def update_network(
+        self, network
+    ):  # TODO: Should be called by environment when new decoy is added?
+        self.network = network
+
+    def check_network(self) -> Tuple[bool, Host]:
+        # initial_host_names = [h.name for h in self.initial_network.get_hosts()]
         current_hosts = set(self.network.get_host_names())
-        new_hosts = current_hosts - (
-            self.initial_host_names | set(self.history.hosts.keys())
-        )
-        new_host = None
-        network_change = False
+        new_hosts = current_hosts - (self.initial_host_names | set(self.history.hosts.keys()))
+        # print(len(new_hosts), len(current_hosts), len(self.initial_host_names), len(self.history.hosts.keys()))
         for host_name in new_hosts:
-            h: Host = self.network.get_node_from_name(host_name)
+            h = self.network.get_node_from_name(host_name)
             scanned_subnets = [
                 self.history.mapping[s]
                 for s, v in self.history.subnets.items()
                 if v.is_scanned()
             ]
             if h.subnet in scanned_subnets:
-                network_change = True
-                new_host = h
+                return True, h
+        return False, None
+
+    def act(self):
+        # If network change, add new decoy host to self.history if subnet with host had already been pingsweeped.
+        network_change, new_host = self.check_network()
         if (
-            network_change and new_host != None
-        ):  # Add the new host to self.history if the subnet is scanned. Else do nothing.
-            self.history.mapping[new_host.name] = new_host
+            network_change
+        ):  # TODO: Add the new host to self.history if the subnet is scanned. Else do nothing.
             self.history.hosts[new_host.name] = KnownHostInfo()
+            self.history.mapping[new_host.name] = new_host
+            # TODO: In future, maybe make red agent do Discovery again, or have it recheck network intermittently.
 
-    def handle_killchain(self, action, success, target_host) -> None:
-        # If the agent has scanned the Host AND the Subnet it's a part of, advance from the Discover Step
-        if all(
-            [
-                action == Discovery,
-                success,
-                target_host.subnet.name in self.history.subnets.keys(),
-                self.history.subnets[target_host.subnet.name].is_scanned(),
-                target_host.name in self.history.hosts.keys(),
-                self.history.hosts[target_host.name].is_scanned(),
-            ]
-        ):
-            # interfaced_non_subnet = [unsweeped_host for unsweeped_host in h.interfaces if unsweeped_host not in h.subnet.connected_hosts]
-            # return PingSweep(self.src_host, self.target_service, )
-            self.history.hosts[target_host.name].update_killchain_step()
+        # Decide whether to use LateralMovement to jump to another Host. This should only happen if there is a Server available to attack.
+        do_lateral_movement = self.change_target()
+        if do_lateral_movement:
+            return LateralMovement
 
-        # If the attack was successful, update the killchain of the target Host
-        elif success and action != Discovery:
-            self.history.hosts[target_host.name].update_killchain_step()
-
-    def select_next_target(self) -> tuple[Host, bool]:
         # If staying on current host, decide whether to
         # A. Further execute current host's killchain
         # OR
@@ -142,9 +101,8 @@ class KillChainAgent(RedAgent):
         target_host_name = known_hosts[max_host][0]
 
         target_host = self.history.mapping[target_host_name]
-
-        # print([f"{k}: {v.type}" for k, v in self.history.hosts.items()])
-        # print(self.history.mapping)
+        if target_host.restored:
+            known_hosts[max_host][1].last_step = 1
         # List of hosts with 'Unknown' host types
         unknown_host_types = [
             self.history.mapping[h]
@@ -156,9 +114,8 @@ class KillChainAgent(RedAgent):
         if current_host_type == "Server" or current_host_type == "Unknown":
             target_host = self.current_host
             target_host_name = target_host.name
-        elif (
-            len(unknown_host_types) > 0
-        ):  # Else If the current Host is a 'Printer' or 'Workstation', and there are 'Unknown' Hosts available to scan, target those.
+        elif len(unknown_host_types) > 0:  
+            # Else If the current Host is a 'Printer' or 'Workstation', and there are 'Unknown' Hosts available to scan, target those.
             target_host = random.choice(unknown_host_types)
             target_host_name = target_host.name
         elif target_host != self.current_host:  # If not on best KC, move to it
@@ -172,27 +129,8 @@ class KillChainAgent(RedAgent):
             self.current_host = target_host
             success = target_host in action_results.attack_success
             self.history.update_step(
-                (LateralMovement, self.current_host, target_host),
-                success=success,
-                red_action_results=action_results,
+                (LateralMovement, self.current_host, target_host), success=success, techniques=LateralMovement.get_techniques()
             )
-            return target_host, True
-        return target_host, False
-
-    def act(self) -> type[KillChainPhase]:
-        """
-        TODO: Specify logic
-        """
-        # If network change, add new decoy host to self.history if subnet with host had already been pingsweeped.
-        self.handle_network_change()
-
-        # Decide whether to use LateralMovement to jump to another Host.
-        do_lateral_movement = self.move_to_host()
-        if do_lateral_movement:
-            return LateralMovement
-
-        target_host, do_lateral_movement = self.select_next_target()
-        if do_lateral_movement:
             return LateralMovement
 
         # Run the appropriate action, given the target Host. Stores Results of action, and action type.
@@ -202,14 +140,33 @@ class KillChainAgent(RedAgent):
         success = (
             target_host in action_results.attack_success
         )  # Successful if target Host was found in ActionResult.attack_success List.
-
+        # print(success)
         # Update the Overall Step History, regardless of action success
         self.history.update_step(
             (action, self.current_host, target_host), success, action_results, action.get_techniques()
         )
 
-        # Handle whether killchain advances depending on network state
-        self.handle_killchain(action, success, target_host)
+        # If the agent has scanned the Host AND the Subnet it's a part of, advance from the Discover Step
+        if all(
+            [
+                action == Discovery,
+                success,
+                target_host.subnet.name in self.history.subnets.keys(),
+                self.history.subnets[target_host.subnet.name].is_scanned(),
+                target_host_name in self.history.hosts.keys(),
+                self.history.hosts[target_host_name].is_scanned(),
+            ]
+        ):
+            # interfaced_non_subnet = [unsweeped_host for unsweeped_host in h.interfaces if unsweeped_host not in h.subnet.connected_hosts]
+            # return PingSweep(self.src_host, self.target_service, )
+            self.history.hosts[target_host_name].update_killchain_step()
+
+        # If the attack was successful, update the killchain of the target Host
+        elif success and action != Discovery:
+            self.history.hosts[target_host_name].update_killchain_step()
+
+        if success and action == PrivilegeEscalation:    
+            target_host.restored = False
 
         # Store any new information of Hosts/Subnets as metadata in its History
         for h_name in action_results.metadata.keys():
@@ -348,7 +305,7 @@ class KillChainAgent(RedAgent):
                     self.history.hosts[interfaced_host.name] = KnownHostInfo()
                     self.history.mapping[interfaced_host.name] = interfaced_host
 
-    def move_to_host(self) -> bool:
+    def change_target(self) -> bool:
         """
         Helper function to handle logic of whether the Red Agent should move to another Host.
 
@@ -357,23 +314,24 @@ class KillChainAgent(RedAgent):
 
         """
         current_host_type = self.history.hosts[self.current_host.name].type
-        print(current_host_type)
         # print(
         #    f"Current Host: {self.current_host.name}\nCurrent Host Type: {current_host_type}"
         # )
-
+        # print(current_host_type)
         # If the current host is a Server or Unknown (NOTE: This shouldn't happen), stay on it and continue attacking.
         if current_host_type == "Unknown" or current_host_type == "Server":
             return False
 
         # If the current host is a Printer or Workstation, use LateralMovement to move to a random known Server
         elif current_host_type == "User":
+            # print("user")
             servers = [
                 self.history.mapping[k]
                 for k, h in self.history.hosts.items()
                 if h.type == "Server"
             ]
             server_names = [s.name for s in servers]
+            # print(server_names)
             # If there are no known Server hosts reachable, just keep attacking current Host
             if len(servers) == 0:
                 return False
@@ -408,9 +366,9 @@ class KillChainAgent(RedAgent):
 
     def get_reward_map(self) -> RewardMap:
         return {
-            "discovery": (-1, 0),
-            "reconnaissance": (-2, 0),
-            "lateral-movement": (-4, 0),
-            "privilege-escalation": (-6, 0),
-            "impact": (-8, 0),
-        }
+                "discovery": (-1, 0),
+                "reconnaissance": (-2, 0),
+                "lateral-movement": (-4, 0),
+                "privilege-escalation": (-6, 0),
+                "impact": (-8,0),
+                }

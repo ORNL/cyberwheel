@@ -1,6 +1,4 @@
 import time
-import inspect
-import sys
 from tqdm import tqdm
 import argparse
 
@@ -8,19 +6,14 @@ from typing import List
 
 import gym
 import wandb
-import datetime
 import torch
 import torch.nn as nn
 import numpy as np
 import pandas as pd
 
 from torch.distributions.categorical import Categorical
-from pprint import pprint
-import yaml
 
-from cyberwheel.blue_agents.decoy_blue import DecoyBlueAgent
-from cyberwheel.red_agents.killchain_agent import KillChainAgent
-from cyberwheel.cyberwheel_envs.cyberwheel_decoyagent import *
+from cyberwheel.cyberwheel_envs.cyberwheel_restore import RestoreCyberwheel
 
 from visualize import visualize
 
@@ -106,7 +99,7 @@ def make_env(
     """
 
     def _init():
-        env = DecoyAgentCyberwheel(
+        env = RestoreCyberwheel(
             network_config=network_config,
             decoy_host_file=decoy_host_file,
             host_def_file=host_def_file,

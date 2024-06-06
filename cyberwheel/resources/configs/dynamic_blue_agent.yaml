@@ -1,0 +1,48 @@
+actions:
+  # Name of the module
+  Nothing:
+    # Unique name for this action
+    name: nothing
+    # The class's name
+    class: Nothing
+    # Configs that this action needs
+    # Key is what the class expects the config to be named.
+    # Value is the name of the file found in cyberwheel/resources/configs
+    configs:
+    # Rewards for this action
+    reward:
+      immediate: 0
+      recurring: 0
+    # Type of action. Can be host, subnet, or standalone
+    # host means this actions is repeated for each host. I.e. it's dependent on hosts
+    # subnet means this action is repeated for each subnet. I.e it's dependent on subnets
+    # standalone means this action is not repeated. I.e. it's independent of the network
+    type: standalone
+
+  DeployDecoyHost:
+    name: decoy0
+    class: DeployDecoyHost
+    configs: 
+      decoy_hosts: decoy_server_hosts.yaml
+      host_definitions: host_definitions.yaml
+    reward: 
+      immediate: -10
+      recurring: -1
+    type: subnet
+    additional_data:
+      - decoy_list
+
+  RemoveDecoyHost:
+    name: remove_decoy
+    class: RemoveDecoyHost
+    configs:
+    reward:
+        immediate: 0
+        recurring: 0
+    type: subnet
+
+# Additional data that the blue agent should keep track off
+# This could be useful for passing information between actions
+additional_data:
+  decoy_list: list # The value at key 'decoy_list' is of type 'list'
+

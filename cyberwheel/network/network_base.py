@@ -657,7 +657,19 @@ class Network:
         host = self.add_host_to_subnet(*args, decoy=True, **kwargs)
         self.decoys.append(host)
         return host
-
+    
+    def remove_decoy_host(self, host: Host) -> None:
+        for _, h in self.graph.nodes(data="data"):
+            if not isinstance(h, Host):
+                continue
+            if h.name == host.name:
+                self.remove_host_from_subnet(host)
+                break
+        for i in range(len(self.decoys)):
+            if self.decoys[i].name == host.name:
+                break
+        self.decoys.remove(i)
+        
     def reset(self):
         for decoy in self.decoys:
             self.remove_host_from_subnet(decoy)

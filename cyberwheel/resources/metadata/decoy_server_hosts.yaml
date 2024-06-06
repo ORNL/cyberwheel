@@ -1,5 +1,3 @@
 # Server decoy hosts
 server_decoy:
   type: web_server
-  reward: -4
-  recurring_reward: -0.2

@@ -8,16 +8,8 @@ from cyberwheel.network.service import Service
 
 
 class BlueAction:
-    def __init__(self, obs_vec: List, reward=0, recurring_reward=0)-> None:
-        """
-        
-        """
-        self.obs_vec = obs_vec
-        self.reward = reward
-        self.recurring_reward = recurring_reward
-
-    def calc_recurring_reward(self, n: int)-> int:
-        return n + self.recurring_reward
+    def __init__(self)-> None:
+        pass
     
     @abstractmethod
     def execute(self) -> Tuple[List[int], int, int]:

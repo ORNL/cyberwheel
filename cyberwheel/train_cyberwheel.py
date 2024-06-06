@@ -20,7 +20,7 @@ from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from cyberwheel.cyberwheel_envs.cyberwheel_decoyagent import *
+from cyberwheel.cyberwheel_envs.cyberwheel_dynamic import DynamicCyberwheel
 
 
 def parse_args():
@@ -107,7 +107,10 @@ def parse_args():
     parser.add_argument("--network-config", help="Input the network config filename", type=str, default='example_config.yaml')
     parser.add_argument("--decoy-config", help="Input the decoy config filename", type=str, default='decoy_hosts.yaml')
     parser.add_argument("--host-config", help="Input the host config filename", type=str, default='host_definitions.yaml')
-
+    
+    # blue agent args
+    parser.add_argument("--blue-config", help="Input the blue agent config filename", type=str, default='dynamic_blue_agent.yaml')
+    
     # reward calculator args
     parser.add_argument("--min-decoys", help="Minimum number of decoys that should be used", type=int, default=2)
     parser.add_argument("--max-decoys", help="Maximum number of decoys that should be used", type=int, default=3)
@@ -143,6 +146,7 @@ def evaluate(
     steps=100,
     reward_function="default",
     red_agent="killchain_agent",
+    blue_config="dynamic_blue_agent.yaml"
 ):
     """Evaluate 'blue_agent' in the 'scenario' task against the 'red_agent' strategy"""
     # We evaluate on CPU because learning is already happening on GPUs.
@@ -159,6 +163,7 @@ def evaluate(
         blue_reward_scaling=blue_reward_scaling,
         reward_function=reward_function,
         red_agent=red_agent,
+        blue_config=blue_config
     )
     episode_rewards = []
     total_reward = 0
@@ -189,16 +194,17 @@ def run_evals(eval_queue, model, args, globalstep):
     torch.backends.cudnn.deterministic = args.torch_deterministic
     env_funcs = [
         make_env(
-            args.seed,
-            i,
-            args.network_config,
-            args.decoy_config,
-            args.host_config,
-            args.detector_config,
-            min_decoys=args.min_decoys,
-            max_decoys=args.max_decoys,
+            args.seed, 
+            i, 
+            args.network_config, 
+            args.decoy_config, 
+            args.host_config, 
+            args.detector_config, 
+            min_decoys=args.min_decoys, 
+            max_decoys=args.max_decoys, 
             blue_reward_scaling=args.reward_scaling,
-        )
+            blue_config=args.blue_config
+        ) 
         for i in range(1)
     ]
 
@@ -227,25 +233,13 @@ def run_evals(eval_queue, model, args, globalstep):
                 args.reward_scaling,
                 args.reward_function,
                 args.red_agent,
+                args.blue_config
             )
         ]
         # Map the evaluate_helper function to the argument list using the pool
         results = pool.map(evaluate_helper, args_list)
         for result, args in zip(results, args_list):
-            (
-                _,
-                network_config,
-                decoy_config,
-                _,
-                _,
-                _,
-                _,
-                min_decoys,
-                max_decoys,
-                reward_scaling,
-                reward_function,
-                red_agent,
-            ) = args
+            _, network_config, decoy_config, _, _, _, _, min_decoys, max_decoys, reward_scaling, reward_function, red_agent, blue_config = args
             # Place evaluation results in eval_queue to be read by the main training process.
             # We need to pass these to the main process where wandb is running for logging.
             eval_queue.put(
@@ -265,20 +259,7 @@ def run_evals(eval_queue, model, args, globalstep):
 
 def evaluate_helper(args):
     """Unpack arguments for evaluation"""
-    (
-        agent,
-        network,
-        decoy,
-        host,
-        detector,
-        episodes,
-        steps,
-        min,
-        max,
-        scaling,
-        function,
-        red_agent,
-    ) = args
+    agent, network, decoy, host, detector, episodes, steps, min, max, scaling, function, red_agent, blue_config = args
     return evaluate(
         agent,
         network,
@@ -292,6 +273,7 @@ def evaluate_helper(args):
         blue_reward_scaling=scaling,
         reward_function=function,
         red_agent=red_agent,
+        blue_config=blue_config
     )
 
 
@@ -305,9 +287,10 @@ def create_cyberwheel_env(
     blue_reward_scaling: float,
     reward_function: str,
     red_agent: str,
+    blue_config: str
 ):
     """Create a Cyberwheel environment"""
-    env = DecoyAgentCyberwheel(
+    env = DynamicCyberwheel(
         network_config=network_config,
         decoy_host_file=decoy_host_file,
         host_def_file=host_def_file,
@@ -317,6 +300,7 @@ def create_cyberwheel_env(
         blue_reward_scaling=blue_reward_scaling,
         reward_function=reward_function,
         red_agent=red_agent,
+        blue_config=blue_config
     )
     return env
 
@@ -334,6 +318,7 @@ def make_env(
     blue_reward_scaling=10,
     reward_function="default",
     red_agent="killchain_agent",
+    blue_config="dynamic_blue_agent.yaml"
 ):
     """
     Utility function for multiprocessed env.
@@ -345,7 +330,7 @@ def make_env(
     """
 
     def _init():
-        env = DecoyAgentCyberwheel(
+        env = DynamicCyberwheel(
             network_config=network_config,
             decoy_host_file=decoy_host_file,
             host_def_file=host_def_file,
@@ -355,6 +340,7 @@ def make_env(
             blue_reward_scaling=blue_reward_scaling,
             reward_function=reward_function,
             red_agent=red_agent,
+            blue_config = blue_config
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(

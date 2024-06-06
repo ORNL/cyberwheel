@@ -86,13 +86,16 @@ class DecoyReward(Reward):
     def add_recurring_red_impact(self, red_action) -> None:
         self.red_recurring_actions.append(RecurringAction("", red_action))
 
-    def handle_blue_action_output(self, blue_action: str, rec_id: str):
-        if "remove" in blue_action:
-            self.remove_recurring_blue_action(rec_id)
-        elif blue_action == "failed":
+    def handle_blue_action_output(self, blue_action: str, rec_id: str, success: bool, recurring: int):
+        if not success:
             return
-        elif blue_action != "nothing":
+        
+        if recurring == -1:
+            self.remove_recurring_blue_action(rec_id)
+        elif recurring == 1:
             self.add_recurring_blue_action(rec_id, blue_action)
+        elif recurring:
+            raise ValueError("recurring must be either -1, 0, or 1")
     
     def handle_red_action_output(self, red_action: str):
         if "impact" in red_action.lower():

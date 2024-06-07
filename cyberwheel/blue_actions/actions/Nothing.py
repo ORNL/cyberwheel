@@ -3,7 +3,7 @@ from cyberwheel.blue_actions.dynamic_blue_base import StandaloneAction, generate
 from cyberwheel.network.network_base import Network
 
 class Nothing(StandaloneAction):
-    def __init__(self, network: Network, configs: Dict[str, any]) -> None:
+    def __init__(self, network: Network, configs: Dict[str, any], **kwargs) -> None:
         super().__init__(network, configs)
 
     def execute(self) ->  DynamicBlueActionReturn:

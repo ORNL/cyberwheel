@@ -25,7 +25,7 @@ class DynamicBlueActionReturn():
         self.recurring = recurring
 
 class DynamicBlueAction:
-    def __init__(self, network: Network, configs: Dict[str, any])-> None:
+    def __init__(self, network: Network, configs: Dict[str, any], **kwargs)-> None:
         self.network = network
         self.configs = configs
 
@@ -39,7 +39,7 @@ class DynamicBlueAction:
     
 
 class StandaloneAction(DynamicBlueAction):
-    def __init__(self, network: Network, configs: Dict[str, any]) -> None:
+    def __init__(self, network: Network, configs: Dict[str, any], **kwargs) -> None:
         super().__init__(network, configs)
     
     @abstractmethod
@@ -47,7 +47,7 @@ class StandaloneAction(DynamicBlueAction):
         raise NotImplementedError
 
 class HostAction(DynamicBlueAction):
-    def __init__(self, network: Network, configs: Dict[str, any]) -> None:
+    def __init__(self, network: Network, configs: Dict[str, any], **kwargs) -> None:
         super().__init__(network, configs)
     
     @abstractmethod
@@ -55,7 +55,7 @@ class HostAction(DynamicBlueAction):
         raise NotImplementedError
     
 class SubnetAction(DynamicBlueAction):
-    def __init__(self, network: Network, configs: Dict[str, any]) -> None:
+    def __init__(self, network: Network, configs: Dict[str, any], **kwargs) -> None:
         super().__init__(network, configs)
     
     @abstractmethod

@@ -18,6 +18,8 @@ actions:
     # subnet means this action is repeated for each subnet. I.e it's dependent on subnets
     # standalone means this action is not repeated. I.e. it's independent of the network
     type: standalone
+    # List of shared data this action needs from the blue agent.
+    shared_data:
 
   DeployDecoyHost:
     name: decoy0
@@ -29,7 +31,7 @@ actions:
       immediate: -10
       recurring: -1
     type: subnet
-    additional_data:
+    shared_data:
       - decoy_list
 
   RemoveDecoyHost:
@@ -40,9 +42,12 @@ actions:
         immediate: 0
         recurring: 0
     type: subnet
+    shared_data:
 
-# Additional data that the blue agent should keep track off
-# This could be useful for passing information between actions
-additional_data:
-  decoy_list: list # The value at key 'decoy_list' is of type 'list'
+# Shared data is additional data that is shared by blue actions
+# The actions define what data they want to use
+# The type of the data is defined here.
+# Can be a list, set, or dict
+shared_data:
+  decoy_list: list 
 

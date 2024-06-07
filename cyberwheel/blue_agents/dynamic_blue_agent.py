@@ -17,12 +17,13 @@ range = NewType("range", Tuple[int, int])
 
 
 class _ActionConfigInfo():
-    def __init__(self, name="", configs=[], immediate_reward=0.0, recurring_reward=0.0, action_type: str="") -> None:
+    def __init__(self, name="", configs=[], immediate_reward=0.0, recurring_reward=0.0, action_type: str="", shared_data=[]) -> None:
         self.name = name
         self.configs = configs
         self.immediate_reward = immediate_reward
         self.recurring_reward = recurring_reward
         self.action_type = action_type
+        self.shared_data = shared_data
 
     def __str__(self) -> str:
         return f'config: {self.configs}, immediate_reward: {self.immediate_reward}, reccuring_reward: {self.recurring_reward}, action_type: {self.action_type}'
@@ -54,7 +55,8 @@ class DynamicBlueAgent(BlueAgent):
     """
     def __init__(self, config: str, network: Network) -> None:
         super().__init__()
-        self.actions = load_actions(config)
+        self.config = config
+        self.from_yaml()
         self.configs: Dict[str, any] = {}
         self.action_space_size = 0
 
@@ -66,7 +68,44 @@ class DynamicBlueAgent(BlueAgent):
 
         self._init_action_runtime_info()
         self._init_reward_map()
+    
+    def from_yaml(self):
+        module_path = "blue_actions.actions."
+        actions = []
+        with open(self.config, "r") as r:
+            contents = yaml.safe_load(r)
+        # Load class types and get action info
+        for k, v in contents['actions'].items():
+            module_name = k
+            class_name = v['class']
+            configs = {}
+            if isinstance(v['configs'], Dict):
+                configs = v['configs']
+            shared_data = []
+            if isinstance(v['shared_data'], List):
+                shared_data = v['shared_data']
+            import_path = module_path + module_name
+            a = importlib.import_module(import_path)
+            class_ = getattr(a, class_name)
+            action_info = _ActionConfigInfo(v['name'], 
+                                            configs, 
+                                            v['reward']['immediate'], 
+                                            v['reward']['recurring'], 
+                                            v['type'], 
+                                            shared_data)
 
+            actions.append((class_, action_info))
+        self.actions = actions
+
+        # Set up additional data that actions have requested.
+        self.shared_data = {}
+        self.reset_map = {}
+        if contents['shared_data'] is None:
+            return
+        for k, v in contents['shared_data'].items():
+            data_type = getattr(__builtins__, v)
+            self.shared_data[k] = data_type()
+            
     def _init_action_runtime_info(self)-> None:
         self.runtime_info: List[_ActionRuntime] = []
         for action_class, action_info in self.actions:
@@ -99,9 +138,12 @@ class DynamicBlueAgent(BlueAgent):
                 raise ValueError(f"action_type for {action_info.name} must be 'host', 'subnet', or 'standalone'")
             r = (start, end)
 
+            kwargs = {}
+            for ad in action_info.shared_data:
+                kwargs[ad] = self.shared_data[ad]
             runtime = _ActionRuntime(action_info.name, 
                                      action_info.action_type, 
-                                     action_class(self.network, action_configs), 
+                                     action_class(self.network, action_configs, **kwargs), 
                                      r, 
                                      bool(action_info.recurring_reward))
             self.runtime_info.append(runtime)
@@ -143,36 +185,25 @@ class DynamicBlueAgent(BlueAgent):
     def get_action_space_size(self) -> int:
         return self.action_space_size
   
-
-def load_actions(config)-> List[Tuple[type, _ActionConfigInfo]]:
-    module_path = "blue_actions.actions."
-    actions = []
-    with open(config, "r") as r:
-        contents = yaml.safe_load(r)
     
-    for k, v in contents['actions'].items():
-        module_name = k
-        class_name = v['class']
-        configs = {}
-        if isinstance(v['configs'], Dict):
-            configs = v['configs']
-        import_path = module_path + module_name
-        a = importlib.import_module(import_path)
-        class_ = getattr(a, class_name)
-        action_info = _ActionConfigInfo(v['name'], configs, v['reward']['immediate'], v['reward']['recurring'], v['type'])
-
-        actions.append((class_, action_info))
-    return actions
-
+    def reset(self):
+        # I think all this needs to do is set all shared_data values to their default values
+        for v in self.shared_data.values():
+            v.clear()
 
 if __name__ == "__main__":
     network = Network.create_network_from_yaml("/home/70d/cyberwheel/cyberwheel/resources/metadata/10-host-network.yaml")
     agent = DynamicBlueAgent("/home/70d/cyberwheel/cyberwheel/resources/configs/dynamic_blue_agent.yaml", network)
-    agent.act(0)
     agent.act(1)
     agent.act(2)
+    agent.act(0)
+    print(agent.shared_data)
+    agent.reset()
     agent.act(3)
-    r = agent.get_reward_map()
-    network.draw(filename="test.png")
+    print(agent.shared_data)
+    # agent.act(2)
+    # agent.act(3)
+    # r = agent.get_reward_map()
+    # network.draw(filename="test.png")
 
-    print(network.get_host_names())
+    # print(network.get_host_names())

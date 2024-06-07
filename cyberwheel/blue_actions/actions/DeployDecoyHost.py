@@ -18,7 +18,7 @@ def get_host_types() -> List[Dict[str, any]]:
     return host_defs['host_types']
 
 class DeployDecoyHost(SubnetAction):
-    def __init__(self, network: Network, configs: Dict[str, any]) -> None:
+    def __init__(self, network: Network, configs: Dict[str, any], **kwargs) -> None:
         super().__init__(network, configs)
         self.decoy_info = configs["decoy_hosts"]
         self.host_info = configs["host_definitions"]
@@ -28,9 +28,12 @@ class DeployDecoyHost(SubnetAction):
         self.services = []
         for s in type_info['services']:
             self.services.append(Service(name=s['name'], port=s['port'], protocol=s['protocol']))
+        
+        self.decoy_list = kwargs.get('decoy_list', [])
     
     def execute(self, subnet: Subnet) ->  DynamicBlueActionReturn:
         name = generate_id()
         host_type = HostType(name=name, services=self.services, decoy=True)
         self.host = self.network.create_decoy_host(name, subnet, host_type)
+        self.decoy_list.append(name)
         return DynamicBlueActionReturn(name, True, 1)

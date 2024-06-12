@@ -120,6 +120,7 @@ def parse_args():
     # detector args
     parser.add_argument("--detector-config", help="Location of detector config file.", type=str, default="decoys_only.yaml")
 
+    parser.add_argument("--num-hosts", help="num hosts", type=int, default=10)
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)   # Number of environment steps to performa backprop with
     args.minibatch_size = int(args.batch_size // args.num_minibatches)  # Number of environments steps to perform backprop with in each epoch

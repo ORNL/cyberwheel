@@ -6,5 +6,5 @@ class Nothing(StandaloneAction):
     def __init__(self, network: Network, configs: Dict[str, any], **kwargs) -> None:
         super().__init__(network, configs)
 
-    def execute(self) ->  DynamicBlueActionReturn:
+    def execute(self, **kwargs) ->  DynamicBlueActionReturn:
         return DynamicBlueActionReturn(generate_id(), True)                                                                                                                                                                                                                   

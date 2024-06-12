@@ -17,6 +17,10 @@ from cyberwheel.network.subnet import Subnet
 def generate_id() -> str:
     return uuid.uuid4().hex
 
+class CustomSharedData():
+    @abstractmethod
+    def clear(self):
+        raise NotImplementedError
 
 class DynamicBlueActionReturn():
     def __init__(self, id: str, success: bool, recurring=0) -> None:
@@ -43,7 +47,7 @@ class StandaloneAction(DynamicBlueAction):
         super().__init__(network, configs)
     
     @abstractmethod
-    def execute(self) -> DynamicBlueActionReturn:
+    def execute(self, **kwargs) -> DynamicBlueActionReturn:
         raise NotImplementedError
 
 class HostAction(DynamicBlueAction):
@@ -51,7 +55,7 @@ class HostAction(DynamicBlueAction):
         super().__init__(network, configs)
     
     @abstractmethod
-    def execute(self, host: Host) -> DynamicBlueActionReturn:
+    def execute(self, host: Host, **kwargs) -> DynamicBlueActionReturn:
         raise NotImplementedError
     
 class SubnetAction(DynamicBlueAction):
@@ -59,5 +63,13 @@ class SubnetAction(DynamicBlueAction):
         super().__init__(network, configs)
     
     @abstractmethod
-    def execute(self, subnet: Subnet) -> DynamicBlueActionReturn:
+    def execute(self, subnet: Subnet, **kwargs) -> DynamicBlueActionReturn:
+        raise NotImplementedError
+
+class RangeAction(DynamicBlueAction):
+    def __init__(self, network: Network, configs: Dict[str, any], **kwargs) -> None:
+        super().__init__(network, configs)
+    
+    @abstractmethod
+    def execute(self, i: int,  **kwargs) -> DynamicBlueActionReturn:
         raise NotImplementedError

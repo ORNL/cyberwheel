@@ -11,7 +11,8 @@ from blue_agents.dynamic_blue_agent import DynamicBlueAgent
 from cyberwheel.observation import HistoryObservation
 from detectors.alert import Alert
 # from detectors.detector import DecoyDetector, CoinFlipDetector
-from detectors.detectors.probability_detector import ProbabilityDetector
+from cyberwheel.detectors.detectors.probability_detector import ProbabilityDetector
+from cyberwheel.detectors.detectors.example_detectors import IsolateDetector, DecoyDetector
 from network.network_base import Network
 from network.host import Host
 from red_agents import KillChainAgent, RecurringImpactAgent
@@ -108,11 +109,12 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         self.blue_conf_file = files("cyberwheel.resources.configs").joinpath(blue_config)
         self.blue_agent = DynamicBlueAgent(self.blue_conf_file, self.network)
         self.action_space = spaces.Discrete(self.blue_agent.get_action_space_size())
-        
+        # print(self.action_space.shape)
+        # print(self.blue_agent.get_action_space_size())
         # self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
         
         detector_conf_file = files("cyberwheel.resources.configs").joinpath(detector_config)
-        self.detector = ProbabilityDetector(config=detector_conf_file)
+        self.detectors = [DecoyDetector()] #, ProbabilityDetector(config=detector_conf_file)
         
 
         self.reward_function = reward_function
@@ -141,7 +143,6 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         red_action_name = (
             self.red_agent.act().get_name()
         )  # red_action includes action, and target of action
-        
         action_metadata = self.red_agent.history.history[-1]
 
         red_action_type, red_action_src, red_action_dst = action_metadata.action
@@ -152,7 +153,9 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
             self.red_agent.history.recent_history()
         )  # red action results
 
-        alerts = self.detector.obs(red_action_result.detector_alert)   
+        alerts = []
+        for detector in self.detectors:
+            alerts.extend(detector.obs(red_action_result.detector_alert))
         obs_vec = self._get_obs(alerts)
         x = decoy_alerted(alerts)
         if self.reward_function == "step_detected":

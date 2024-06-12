@@ -24,6 +24,7 @@ class Network:
         self.name = name
         self.decoys = []
         self.disconnected_nodes = []
+        self.isolated_hosts: List[Host] = []
 
     def __iter__(self):
         return iter(self.graph)
@@ -56,6 +57,11 @@ class Network:
 
     def connect_nodes(self, node1, node2):
         self.graph.add_edge(node1, node2)
+
+    def isolate_host(self, host: Host, subnet: Subnet):
+        host.isolated = True
+        self.isolated_hosts.append(host)
+        self.disconnect_nodes(host.name, subnet.name)
 
     def disconnect_nodes(self, node1, node2):
         self.graph.remove_edge(node1, node2)
@@ -678,6 +684,10 @@ class Network:
         for edge in self.disconnected_nodes:
             self.connect_nodes(edge[0], edge[1])
         self.disconnected_nodes = []
+
+        for host in self.isolated_hosts:
+            host.isolated = False
+        self.isolated_hosts = []
 
     @staticmethod
     def create_host_type_from_json(name: str, config_file: PathLike) -> HostType:

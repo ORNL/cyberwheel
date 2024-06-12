@@ -1,8 +1,8 @@
 actions:
-  # Name of the module
-  Nothing:
-    # Unique name for this action
-    name: nothing
+  # Unique name for this action
+  nothing:
+    # Name of the module. Should be importable from cyberwheel.blue_actions.actions
+    module: Nothing
     # The class's name
     class: Nothing
     # Configs that this action needs
@@ -13,29 +13,44 @@ actions:
     reward:
       immediate: 0
       recurring: 0
-    # Type of action. Can be host, subnet, or standalone
+    # Type of action. Can be host, subnet, standalone, custom
     # host means this actions is repeated for each host. I.e. it's dependent on hosts
     # subnet means this action is repeated for each subnet. I.e it's dependent on subnets
     # standalone means this action is not repeated. I.e. it's independent of the network
+    # custom allows for the action to be repeated for a specifc number of times.
     type: standalone
     # List of shared data this action needs from the blue agent.
     shared_data:
 
-  DeployDecoyHost:
-    name: decoy0
+  decoy0:
+    module: DeployDecoyHost
     class: DeployDecoyHost
     configs: 
       decoy_hosts: decoy_server_hosts.yaml
       host_definitions: host_definitions.yaml
     reward: 
-      immediate: -10
-      recurring: -1
+      immediate: -20
+      recurring: -0.2
     type: subnet
     shared_data:
-      - decoy_list
+      # - isolate_data
 
-  RemoveDecoyHost:
-    name: remove_decoy
+  # Second deploy action
+  # decoy1:
+  #   module: DeployDecoyHost
+  #   class: DeployDecoyHost
+  #   configs: 
+  #     decoy_hosts: decoy_user_hosts.yaml
+  #     host_definitions: host_definitions.yaml
+  #   reward: 
+  #     immediate: -10
+  #     recurring: -0.1
+  #   type: subnet
+  #   shared_data:
+      # - isolate_data
+
+  remove_decoy:
+    module: RemoveDecoyHost
     class: RemoveDecoyHost
     configs:
     reward:
@@ -44,10 +59,28 @@ actions:
     type: subnet
     shared_data:
 
+
+  # isolate_decoy:  
+  #   module: IsolateDecoy
+  #   class: IsolateDecoy
+  #   configs:
+  #   reward:
+  #     immediate: 0
+  #     recurring: 0
+  #   type: range
+  #   range: 4
+  #   shared_data:
+  #     - isolate_data
+
 # Shared data is additional data that is shared by blue actions
 # The actions define what data they want to use
 # The type of the data is defined here.
-# Can be a list, set, or dict
+# Can be a list, set, dict or another object that implements a `clear()` method.
 shared_data:
-  decoy_list: list 
-
+  decoy_list: list
+  isolate_data:
+    module: blue_actions.shared_data.IsolateData
+    class: IsolateData
+    # OPTIONAL. Parameters for initializing the class.
+    args:
+      size: 4

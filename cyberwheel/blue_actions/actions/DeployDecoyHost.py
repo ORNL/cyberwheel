@@ -31,9 +31,31 @@ class DeployDecoyHost(SubnetAction):
         
         self.decoy_list = kwargs.get('decoy_list', [])
     
-    def execute(self, subnet: Subnet) ->  DynamicBlueActionReturn:
+    def execute(self, subnet: Subnet, **kwargs) ->  DynamicBlueActionReturn:
         name = generate_id()
         host_type = HostType(name=name, services=self.services, decoy=True)
         self.host = self.network.create_decoy_host(name, subnet, host_type)
         self.decoy_list.append(name)
         return DynamicBlueActionReturn(name, True, 1)
+    
+
+class IsolateDecoyHost(SubnetAction):
+    def __init__(self, network: Network, configs: Dict[str, any], **kwargs) -> None:
+        super().__init__(network, configs)
+        self.decoy_info = configs["decoy_hosts"]
+        self.host_info = configs["host_definitions"]
+        self.type = list(self.decoy_info.values())[0]['type']
+        type_info = self.host_info['host_types'][self.type]
+        
+        self.services = []
+        for s in type_info['services']:
+            self.services.append(Service(name=s['name'], port=s['port'], protocol=s['protocol']))
+        
+        self.isolate_data = kwargs.get('isolate_data', [])
+        
+    
+    def execute(self, subnet: Subnet, **kwargs) ->  DynamicBlueActionReturn:
+        name = generate_id()
+        host_type = HostType(name=name, services=self.services, decoy=True)
+        self.host = self.network.create_decoy_host(name, subnet, host_type)
+        return DynamicBlueActionReturn(name, self.isolate_data.append_decoy(self.host, subnet), 1)

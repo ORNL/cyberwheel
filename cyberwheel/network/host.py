@@ -49,6 +49,7 @@ class Host(NetworkObject):
         self.routes = set()
         self.decoy = False
         self.os = "windows"  # 'windows', 'macos', or 'linux'
+        self.isolated = False # For isolate action
         self.interfaces = []
         self.cves = []
         # apply any HostType details

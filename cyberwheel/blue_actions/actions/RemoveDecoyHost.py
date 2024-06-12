@@ -11,7 +11,7 @@ class RemoveDecoyHost(SubnetAction):
         super().__init__(network, configs)
 
 
-    def execute(self, subnet: Subnet) -> int:
+    def execute(self, subnet: Subnet, **kwargs) -> int:
         success = False
         id = ""
         for host in subnet.get_connected_hosts():

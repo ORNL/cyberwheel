@@ -23,6 +23,7 @@ tqdm = "^4.66.2"
 ipykernel = "^6.29.4"
 pygraphviz = "^1.13"
 dash = "^2.17.0"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

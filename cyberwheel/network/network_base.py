@@ -7,7 +7,7 @@ import numpy as np
 from os import PathLike
 from pathlib import PosixPath
 import random
-from typing import Union, List
+from typing import Union, List, Type
 import yaml
 
 from .host import Host, HostType
@@ -60,6 +60,7 @@ class Network:
     def disconnect_nodes(self, node1, node2):
         self.graph.remove_edge(node1, node2)
         self.disconnected_nodes.append((node1, node2))
+
     # def define_routing_rules(self, router, routes):
     #    if router.name in self.graph.nodes:
     #        data_object = self.graph.nodes[router.name]['data']
@@ -98,9 +99,14 @@ class Network:
         return [
             host for _, host in self.graph.nodes(data="data") if isinstance(host, Host)
         ]  # type:ignore
-    def get_host_names(self)-> list[str]:
-        return [host.name for _, host in self.graph.nodes(data="data") if isinstance(host, Host)]
-    
+
+    def get_host_names(self) -> list[str]:
+        return [
+            host.name
+            for _, host in self.graph.nodes(data="data")
+            if isinstance(host, Host)
+        ]
+
     def get_nondecoy_hosts(self) -> List[Host]:
         return [
             host
@@ -263,7 +269,7 @@ class Network:
 
         # Create an instance of the Network class
         network = cls(name=config["network"].get("name"))
-        
+
         conf_dir = files("cyberwheel.resources.metadata")
         # TODO: use create_host_type_from_yaml() instead?
         # conf_file = conf_dir.joinpath('host_definitions.json')
@@ -272,7 +278,7 @@ class Network:
         with open(conf_file) as f:
             type_config = yaml.safe_load(f)
         types = type_config["host_types"]
-        
+
         ## parse topology
         # parse routers
         for key, val in config["routers"].items():
@@ -382,7 +388,7 @@ class Network:
         network.initialize_interfacing()
         return network
 
-    def get_node_from_name(self, node: str) -> NetworkObject:
+    def get_node_from_name(self, node: str) -> NetworkObject | Host | Subnet | Router:
         """
         Return network object by name
 
@@ -712,7 +718,6 @@ class Network:
         :raises HostTypeNotFoundError:
         :returns HostType:
         """
-
 
         # match name to defined host_type name
         host_type = {}

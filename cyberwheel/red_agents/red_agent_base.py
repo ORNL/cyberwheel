@@ -9,6 +9,7 @@ from cyberwheel.red_actions.red_base import RedAction
 from cyberwheel.network.network_base import Host, Subnet
 from cyberwheel.network.service import Service
 from cyberwheel.red_actions.red_base import RedActionResults
+from cyberwheel.red_actions.actions.killchain_phases import KillChainPhase
 from cyberwheel.reward import RewardMap
 
 
@@ -17,9 +18,21 @@ class RedAgent(ABC):
         pass
 
     @abstractmethod
-    def act(self) -> str:
+    def act(self) -> Type[KillChainPhase]:
         pass
-    
+
+    @abstractmethod
+    def handle_network_change(self) -> None:
+        pass
+
+    @abstractmethod
+    def handle_killchain(self, action, success, target_host) -> None:
+        pass
+
+    @abstractmethod
+    def select_next_target(self) -> tuple[Host | None, bool]:
+        pass
+
     @abstractmethod
     def get_reward_map(self) -> RewardMap:
         pass

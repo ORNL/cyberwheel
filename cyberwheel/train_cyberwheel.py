@@ -89,7 +89,7 @@ def parse_args():
     parser.add_argument('--eval-episodes', type=int, default=50,
         help='Number of evaluation episodes to run')
     parser.add_argument("--eval-red-strategy", type=str,
-        help="the red agent strategies to evaluate against. Current options: 'killchain_agent' | 'red_recurring'", default="killchain_agent",)
+        help="the red agent strategies to evaluate against. Current options: 'killchain_agent' | 'red_recurring' | 'human_teaming'", default="killchain_agent",)
     parser.add_argument("--eval-scenarios", type=str, default="example_config.yaml",
         help="Cyberwheel network to train on.")
 
@@ -142,7 +142,7 @@ def evaluate(
     episodes=20,
     steps=100,
     reward_function="default",
-    red_agent="killchain_agent"
+    red_agent="killchain_agent",
 ):
     """Evaluate 'blue_agent' in the 'scenario' task against the 'red_agent' strategy"""
     # We evaluate on CPU because learning is already happening on GPUs.
@@ -158,7 +158,7 @@ def evaluate(
         max_decoys=max_decoys,
         blue_reward_scaling=blue_reward_scaling,
         reward_function=reward_function,
-        red_agent=red_agent
+        red_agent=red_agent,
     )
     episode_rewards = []
     total_reward = 0
@@ -189,16 +189,16 @@ def run_evals(eval_queue, model, args, globalstep):
     torch.backends.cudnn.deterministic = args.torch_deterministic
     env_funcs = [
         make_env(
-            args.seed, 
-            i, 
-            args.network_config, 
-            args.decoy_config, 
-            args.host_config, 
-            args.detector_config, 
-            min_decoys=args.min_decoys, 
-            max_decoys=args.max_decoys, 
-            blue_reward_scaling=args.reward_scaling
-        ) 
+            args.seed,
+            i,
+            args.network_config,
+            args.decoy_config,
+            args.host_config,
+            args.detector_config,
+            min_decoys=args.min_decoys,
+            max_decoys=args.max_decoys,
+            blue_reward_scaling=args.reward_scaling,
+        )
         for i in range(1)
     ]
 
@@ -211,7 +211,7 @@ def run_evals(eval_queue, model, args, globalstep):
     # Run evaluations in multiprocessing pool
     with multiprocessing.Pool(processes=args.max_eval_workers) as pool:
         # Create a list of arguments for the evaluate_helper function.
-        
+
         # TODO instead of giving network_config, maybe make the network here and give a deep copy of the network to each env?
         args_list = [
             (
@@ -232,15 +232,53 @@ def run_evals(eval_queue, model, args, globalstep):
         # Map the evaluate_helper function to the argument list using the pool
         results = pool.map(evaluate_helper, args_list)
         for result, args in zip(results, args_list):
-            _, network_config, decoy_config, _, _, _, _, min_decoys, max_decoys, reward_scaling, reward_function, red_agent = args
+            (
+                _,
+                network_config,
+                decoy_config,
+                _,
+                _,
+                _,
+                _,
+                min_decoys,
+                max_decoys,
+                reward_scaling,
+                reward_function,
+                red_agent,
+            ) = args
             # Place evaluation results in eval_queue to be read by the main training process.
             # We need to pass these to the main process where wandb is running for logging.
-            eval_queue.put((network_config, decoy_config, min_decoys, max_decoys, reward_scaling, reward_function, red_agent, result, globalstep))
+            eval_queue.put(
+                (
+                    network_config,
+                    decoy_config,
+                    min_decoys,
+                    max_decoys,
+                    reward_scaling,
+                    reward_function,
+                    red_agent,
+                    result,
+                    globalstep,
+                )
+            )
 
 
 def evaluate_helper(args):
     """Unpack arguments for evaluation"""
-    agent, network, decoy, host, detector, episodes, steps, min, max, scaling, function, red_agent = args
+    (
+        agent,
+        network,
+        decoy,
+        host,
+        detector,
+        episodes,
+        steps,
+        min,
+        max,
+        scaling,
+        function,
+        red_agent,
+    ) = args
     return evaluate(
         agent,
         network,
@@ -253,21 +291,20 @@ def evaluate_helper(args):
         max_decoys=max,
         blue_reward_scaling=scaling,
         reward_function=function,
-        red_agent=red_agent
+        red_agent=red_agent,
     )
-
 
 
 def create_cyberwheel_env(
     network_config: str,
     decoy_host_file: str,
     host_def_file: str,
-    detector_config: str, 
+    detector_config: str,
     min_decoys: int,
     max_decoys: int,
     blue_reward_scaling: float,
     reward_function: str,
-    red_agent: str
+    red_agent: str,
 ):
     """Create a Cyberwheel environment"""
     env = DecoyAgentCyberwheel(
@@ -279,9 +316,10 @@ def create_cyberwheel_env(
         max_decoys=max_decoys,
         blue_reward_scaling=blue_reward_scaling,
         reward_function=reward_function,
-        red_agent=red_agent
+        red_agent=red_agent,
     )
     return env
+
 
 def make_env(
     env_id: str,
@@ -289,7 +327,7 @@ def make_env(
     network_config: str,
     decoy_host_file: str,
     host_def_file: str,
-    detector_config: str, 
+    detector_config: str,
     seed: int = 0,
     min_decoys=0,
     max_decoys=1,
@@ -316,7 +354,7 @@ def make_env(
             max_decoys=max_decoys,
             blue_reward_scaling=blue_reward_scaling,
             reward_function=reward_function,
-            red_agent=red_agent
+            red_agent=red_agent,
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(
@@ -382,6 +420,7 @@ class Agent(nn.Module):
         if action is None:
             action = probs.sample()
         return action, probs.log_prob(action), probs.entropy(), self.critic(x)
+
 
 def main():
     args = parse_args()
@@ -529,10 +568,10 @@ def main():
         print(f"global_step={global_step}, episodic_return={mean_rew}")
         writer.add_scalar("charts/episodic_return", mean_rew, global_step)
         writer.add_scalar(
-                f"evaluation/episodic_runtime",
-                episode_time,
-                global_step,
-            )
+            f"evaluation/episodic_runtime",
+            episode_time,
+            global_step,
+        )
 
         # bootstrap value if not done
         # Calculate advantages used to optimize the policy and returns which are compared to values to optimize the critic.
@@ -662,7 +701,17 @@ def main():
 
             # Log eval results
             while not eval_queue.empty():
-                eval_network_config, eval_decoy_config, eval_min_decoys, eval_max_decoys, eval_reward_scaling, eval_reward_function, eval_red_agent, eval_return, eval_step = eval_queue.get()
+                (
+                    eval_network_config,
+                    eval_decoy_config,
+                    eval_min_decoys,
+                    eval_max_decoys,
+                    eval_reward_scaling,
+                    eval_reward_function,
+                    eval_red_agent,
+                    eval_return,
+                    eval_step,
+                ) = eval_queue.get()
                 writer.add_scalar(
                     f"evaluation/{eval_network_config.split('.')[0]}_{eval_decoy_config}_{eval_reward_scaling}|{eval_min_decoys}-{eval_max_decoys}_{eval_reward_function}reward__{eval_red_agent}_episodic_return",
                     eval_return,
@@ -699,17 +748,24 @@ def main():
 
         # Process evaluation results
         while not eval_queue.empty():
-            eval_network_config, eval_decoy_config, eval_min, eval_max, eval_scaling, eval_reward, eval_return, eval_step = eval_queue.get()
+            (
+                eval_network_config,
+                eval_decoy_config,
+                eval_min,
+                eval_max,
+                eval_scaling,
+                eval_reward,
+                eval_return,
+                eval_step,
+            ) = eval_queue.get()
             writer.add_scalar(
                 f"evaluation/{eval_network_config.split('.')[0]}_{eval_decoy_config}_{eval_scaling}|{eval_min}-{eval_max}_{eval_reward}rewardepisodic_return",
                 eval_return,
                 eval_step,
             )
 
-
     envs.close()
     writer.close()
-
 
 
 if __name__ == "__main__":

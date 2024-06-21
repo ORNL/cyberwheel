@@ -14,6 +14,7 @@ import pandas as pd
 from torch.distributions.categorical import Categorical
 
 from cyberwheel.cyberwheel_envs.cyberwheel_restore import RestoreCyberwheel
+from cyberwheel.cyberwheel_envs.cyberwheel_dynamic import DynamicCyberwheel
 
 from visualize import visualize
 
@@ -36,6 +37,7 @@ class Agent(nn.Module):
         # Actor network has an input layer, 2 hidden layers with 64 nodes, and an output layer.
         # Input layer is the size of the observation space and output layer is the size of the action space.
         # Predicts the best action to take at the current state.
+        print(envs.single_observation_space.shape)
         self.actor = nn.Sequential(
             layer_init(
                 nn.Linear(int(np.array(envs.single_observation_space.shape).prod()), 64)
@@ -99,7 +101,7 @@ def make_env(
     """
 
     def _init():
-        env = RestoreCyberwheel(
+        env = DynamicCyberwheel(
             network_config=network_config,
             decoy_host_file=decoy_host_file,
             host_def_file=host_def_file,
@@ -281,7 +283,7 @@ if __name__ == "__main__":
     for episode in tqdm(range(20)):
         blue_actions = []
         red_actions = []
-        for step in range(50):
+        for step in range(100):
             if step == 0:
                 obs = obs[0]
             obs = torch.Tensor(obs).to(device)

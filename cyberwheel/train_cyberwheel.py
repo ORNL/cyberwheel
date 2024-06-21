@@ -123,11 +123,11 @@ def parse_args():
     parser.add_argument("--num-hosts", help="num hosts", type=int, default=10)
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)   # Number of environment steps to performa backprop with
+    # args.total_timesteps *= args.num_steps // args.num_hosts
     args.minibatch_size = int(args.batch_size // args.num_minibatches)  # Number of environments steps to perform backprop with in each epoch
     args.num_updates = args.total_timesteps // args.batch_size  # Total number of policy update phases
-    args.num_saves = 1    # Number of model saves and evaluations to run throughout training
+    args.num_saves = 10    # Number of model saves and evaluations to run throughout training
     args.save_frequency = int(args.num_updates / args.num_saves)    # Number of policy updates between each model save and evaluation
-
 
     print(f"Running on network: {args.network_config}")
 
@@ -147,7 +147,8 @@ def evaluate(
     steps=100,
     reward_function="default",
     red_agent="killchain_agent",
-    blue_config="dynamic_blue_agent.yaml"
+    blue_config="dynamic_blue_agent.yaml",
+    num_steps=100
 ):
     """Evaluate 'blue_agent' in the 'scenario' task against the 'red_agent' strategy"""
     # We evaluate on CPU because learning is already happening on GPUs.
@@ -164,7 +165,8 @@ def evaluate(
         blue_reward_scaling=blue_reward_scaling,
         reward_function=reward_function,
         red_agent=red_agent,
-        blue_config=blue_config
+        blue_config=blue_config,
+        num_steps=num_steps
     )
     episode_rewards = []
     total_reward = 0
@@ -234,13 +236,14 @@ def run_evals(eval_queue, model, args, globalstep):
                 args.reward_scaling,
                 args.reward_function,
                 args.red_agent,
-                args.blue_config
+                args.blue_config,
+                args.num_steps
             )
         ]
         # Map the evaluate_helper function to the argument list using the pool
         results = pool.map(evaluate_helper, args_list)
         for result, args in zip(results, args_list):
-            _, network_config, decoy_config, _, _, _, _, min_decoys, max_decoys, reward_scaling, reward_function, red_agent, blue_config = args
+            _, network_config, decoy_config, _, _, _, _, min_decoys, max_decoys, reward_scaling, reward_function, red_agent, blue_config, num_steps = args
             # Place evaluation results in eval_queue to be read by the main training process.
             # We need to pass these to the main process where wandb is running for logging.
             eval_queue.put(
@@ -260,7 +263,7 @@ def run_evals(eval_queue, model, args, globalstep):
 
 def evaluate_helper(args):
     """Unpack arguments for evaluation"""
-    agent, network, decoy, host, detector, episodes, steps, min, max, scaling, function, red_agent, blue_config = args
+    agent, network, decoy, host, detector, episodes, steps, min, max, scaling, function, red_agent, blue_config, num_steps = args
     return evaluate(
         agent,
         network,
@@ -274,7 +277,8 @@ def evaluate_helper(args):
         blue_reward_scaling=scaling,
         reward_function=function,
         red_agent=red_agent,
-        blue_config=blue_config
+        blue_config=blue_config,
+        num_steps=num_steps
     )
 
 
@@ -288,7 +292,8 @@ def create_cyberwheel_env(
     blue_reward_scaling: float,
     reward_function: str,
     red_agent: str,
-    blue_config: str
+    blue_config: str,
+    num_steps: int,
 ):
     """Create a Cyberwheel environment"""
     env = DynamicCyberwheel(
@@ -301,7 +306,8 @@ def create_cyberwheel_env(
         blue_reward_scaling=blue_reward_scaling,
         reward_function=reward_function,
         red_agent=red_agent,
-        blue_config=blue_config
+        blue_config=blue_config,
+        num_steps=num_steps
     )
     return env
 
@@ -319,7 +325,8 @@ def make_env(
     blue_reward_scaling=10,
     reward_function="default",
     red_agent="killchain_agent",
-    blue_config="dynamic_blue_agent.yaml"
+    blue_config="dynamic_blue_agent.yaml",
+    num_steps=100
 ):
     """
     Utility function for multiprocessed env.
@@ -341,7 +348,8 @@ def make_env(
             blue_reward_scaling=blue_reward_scaling,
             reward_function=reward_function,
             red_agent=red_agent,
-            blue_config = blue_config
+            blue_config = blue_config,
+            num_steps=num_steps
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(
@@ -466,6 +474,7 @@ def main():
             blue_reward_scaling=args.reward_scaling,
             reward_function=args.reward_function,
             red_agent=args.red_agent,
+            num_steps=args.num_steps
         )
         for i in range(args.num_envs)
     ]

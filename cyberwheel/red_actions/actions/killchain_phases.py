@@ -276,6 +276,8 @@ class PrivilegeEscalation(KillChainPhase):
         #    # If the service is not vulnerable, then the attack cannot be performed at all
         #    return self.action_results
         self.action_results.detector_alert.add_src_host(self.src_host)
+        if self.src_host.isolated:
+            return self.action_results
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
@@ -460,8 +462,9 @@ class Discovery(KillChainPhase):
 
     def sim_execute(self):
         # Check if agent already has service info on Host with a PortScan
+        self.action_results.detector_alert.add_src_host(self.src_host)
         h = self.target_hosts[0]
-
+    
         is_portscanned = h in self.scanned_hosts
 
         # Check if agent already has subnet info on Subnet with a Pingsweep
@@ -559,6 +562,8 @@ class LateralMovement(KillChainPhase):
         # If the service is not vulnerable, then the attack cannot be performed at all
         #    return self.action_results
         self.action_results.detector_alert.add_src_host(self.src_host)
+        if self.src_host.isolated:
+            return self.action_results
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
@@ -799,6 +804,8 @@ class Impact(KillChainPhase):
         #    # If the service is not vulnerable, then the attack cannot be performed at all
         #    return self.action_results
         self.action_results.detector_alert.add_src_host(self.src_host)
+        if self.src_host.isolated:
+            return self.action_results
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
@@ -873,6 +880,8 @@ class Reconnaissance(KillChainPhase):
         # This class should return the vulnerbailities to the red agent
         # self.action_results.modify_alert(src=self.src_host)
         self.action_results.detector_alert.add_src_host(self.src_host)
+        if self.src_host.isolated:
+            return self.action_results
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
             if not validate_attack(host, self.target_service):
@@ -890,6 +899,10 @@ class Reconnaissance(KillChainPhase):
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)
                 # This action needs to be done to a Host before it can be exploited with LateralMovement
+
+
+            if host.decoy:
+                self.action_results.decoy = True
             self.action_results.add_successful_action(host)
             # self.action_results.set_cost(self.action_cost["Reconnaissance"])
         return self.action_results

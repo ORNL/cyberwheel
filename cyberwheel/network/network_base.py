@@ -77,14 +77,14 @@ class Network:
         self.graph.add_edge(node1, node2)
 
     def isolate_host(self, host: Host, subnet: Subnet):
+        # print(host.name, subnet.name)
         host.isolated = True
-        self.isolated_hosts.append(host)
+        # self.isolated_hosts.append(host)
         self.disconnect_nodes(host.name, subnet.name)
 
     def disconnect_nodes(self, node1, node2):
         self.graph.remove_edge(node1, node2)
         self.disconnected_nodes.append((node1, node2))
-
     # def define_routing_rules(self, router, routes):
     #    if router.name in self.graph.nodes:
     #        data_object = self.graph.nodes[router.name]['data']
@@ -699,8 +699,8 @@ class Network:
             self.remove_host_from_subnet(decoy)
         self.decoys = []
 
-        # for edge in self.disconnected_nodes:
-        #     self.connect_nodes(edge[0], edge[1])
+        for edge in self.disconnected_nodes:
+            self.connect_nodes(edge[0], edge[1])
         self.disconnected_nodes = []
 
         for host in self.isolated_hosts:

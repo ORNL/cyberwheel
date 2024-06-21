@@ -24,8 +24,8 @@ class ProbabilityDetector(Detector):
 
     def obs(self, perfect_alert: Alert) -> Iterable[Alert]:
         alerts = []
-        if perfect_alert.src_host.disconnected:
-            alerts.append(perfect_alert)
+        # if perfect_alert.src_host.decoy:
+        #     alerts.append(perfect_alert)
 
         for dst in perfect_alert.dst_hosts:
             detection_failed = True

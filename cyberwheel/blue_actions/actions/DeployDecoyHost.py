@@ -33,7 +33,11 @@ class DeployDecoyHost(SubnetAction):
     
     def execute(self, subnet: Subnet, **kwargs) ->  DynamicBlueActionReturn:
         name = generate_id()
-        host_type = HostType(name=name, services=self.services, decoy=True)
+        if "server" in self.type.lower():
+            host_type = HostType(name="Server", services=self.services, decoy=True)
+        else:
+            host_type = HostType(name="Workstation", services=self.services, decoy=True)
+
         self.host = self.network.create_decoy_host(name, subnet, host_type)
         self.decoy_list.append(name)
         return DynamicBlueActionReturn(name, True, 1)

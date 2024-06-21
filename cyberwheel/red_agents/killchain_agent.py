@@ -357,7 +357,6 @@ class KillChainAgent(RedAgent):
 
         """
         current_host_type = self.history.hosts[self.current_host.name].type
-        print(current_host_type)
         # print(
         #    f"Current Host: {self.current_host.name}\nCurrent Host Type: {current_host_type}"
         # )

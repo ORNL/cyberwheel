@@ -185,15 +185,15 @@ class DynamicBlueAgent(BlueAgent):
                 result = ri.action.execute()
                 break
             elif ri.action_type == "host":
-                index = (self.action_space_size - ri.range[0]) % self.num_hosts
+                index = (action - ri.range[0]) % self.num_hosts
                 result = ri.action.execute(self.hosts[index])
                 break
             elif ri.action_type == "subnet":
-                index = (self.action_space_size - action) % self.num_subnets
+                index = (action - ri.range[0]) % self.num_subnets
                 result = ri.action.execute(self.subnets[index])
                 break
             elif ri.action_type == "range":
-                index = (self.action_space_size - action) % (ri.range[1]- ri.range[0])
+                index = (action - ri.range[0]) % (ri.range[1]- ri.range[0])
                 result = ri.action.execute(index)
                 break
             else:
@@ -218,7 +218,6 @@ class DynamicBlueAgent(BlueAgent):
 if __name__ == "__main__":
     network = Network.create_network_from_yaml("/home/70d/cyberwheel/cyberwheel/resources/metadata/10-host-network.yaml")
     agent = DynamicBlueAgent("/home/70d/cyberwheel/cyberwheel/resources/configs/dynamic_blue_agent.yaml", network)
-    print(agent.action_space_size)
     agent.act(1)
     agent.act(2)
     agent.act(2)

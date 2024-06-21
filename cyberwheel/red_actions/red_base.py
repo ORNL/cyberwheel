@@ -140,6 +140,7 @@ class RedAction:
         self.target_hosts = target_hosts
         self.techniques = techniques
         self.action_results = RedActionResults()
+        self.decoy = False
         self.name = ""
 
     @abstractmethod

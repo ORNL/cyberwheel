@@ -2,13 +2,11 @@ from typing import List, Tuple
 
 from cyberwheel.reward.reward_base import Reward, RewardMap, RecurringAction, calc_quadratic
 
-class DecoyReward(Reward):
+class NewReward(Reward):
     def __init__(
         self,
         red_rewards: RewardMap,
         blue_rewards: RewardMap,
-        r: Tuple[int, int] = (0, 10),
-        scaling_factor: float = 10.0,
     ) -> None:
         """
         Increases the negative reward if the number of recurring actions is less than `r[0]` or greater than `r[1]`.
@@ -26,9 +24,7 @@ class DecoyReward(Reward):
 
         super().__init__(red_rewards, blue_rewards)
         self.blue_recurring_actions: List[RecurringAction] = []
-        self.red_recurring_actions= []
-        self.range = r
-        self.scaling_factor = scaling_factor
+        self.red_recurring_actions: List[RecurringAction] = []
 
     def calculate_reward(
         self,
@@ -36,37 +32,28 @@ class DecoyReward(Reward):
         blue_action: str,
         red_success: str,
         blue_success: bool,
-        red_action_alerted: bool,
+        decoy: bool
     ) -> int | float:
-        if red_action_alerted:
-            r = abs(self.red_rewards[red_action][0]) * self.scaling_factor * 10
-        elif red_success:
+        if red_success and not decoy:
             r = self.red_rewards[red_action][0]
             # self.handle_red_action_output(red_action)
         else:
-            r = 0
+            r = 50
 
         if blue_success:
             b = self.blue_rewards[blue_action][0]
         else:
-            b = -100 * self.scaling_factor
+            b = -100
+        
+        if len(self.blue_recurring_actions) < 1:
+            b -= 100
+
         return r + b + self.sum_recurring_blue() + self.sum_recurring_red()
 
     def sum_recurring_blue(self) -> int | float:
         sum = 0
         for ra in self.blue_recurring_actions:
             sum += self.blue_rewards[ra.action][1]
-
-        # Subtract the distance times the scaling factor away from the range
-        if len(self.blue_recurring_actions) > self.range[1]:
-            x = len(self.blue_recurring_actions) - self.range[1]
-            sum -= calc_quadratic(x, a=self.scaling_factor)
-        elif len(self.blue_recurring_actions) < self.range[0]:
-            x = self.range[0] - len(self.blue_recurring_actions)
-            sum -= calc_quadratic(x, a=self.scaling_factor)
-        
-        if len(self.blue_recurring_actions) == 0:
-            sum = -100
         return sum
 
 
@@ -83,7 +70,7 @@ class DecoyReward(Reward):
         sum = 0
         for ra in self.red_recurring_actions:
             if ra[1]:
-                sum -= self.red_rewards[ra[0].action][1] * self.scaling_factor * 10
+                sum -= self.red_rewards[ra[0].action][1] * 10
             else:
                 sum += self.red_rewards[ra[0].action][1]
         return sum

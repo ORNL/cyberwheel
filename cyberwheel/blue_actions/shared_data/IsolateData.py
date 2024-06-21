@@ -10,6 +10,9 @@ class IsolateData(CustomSharedData):
     def __getitem__(self, k):
         return self.decoys[k]
 
+    def __len__(self):
+        return len(self.decoys)
+
     def append_decoy(self, decoy: Host, subnet: Subnet)-> bool:
         if len(self.decoys) >= self.size:
             return False

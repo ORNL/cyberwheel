@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple, Any
 
-from cyberwheel.blue_actions.actions.restore import Restore
+from cyberwheel.blue_actions.actions.Restore import Restore
 from cyberwheel.blue_agents.blue_agent_base import BlueAgent, BlueAgentResult
 from cyberwheel.network.network_base import Network
 from cyberwheel.reward import RewardMap

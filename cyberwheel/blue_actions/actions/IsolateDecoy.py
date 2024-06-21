@@ -12,9 +12,9 @@ class IsolateDecoy(StandaloneAction):
 
 
     def execute(self, i, **kwargs) -> None:
-        if i >= len(self.isolate_data.decoys):
+        if i >= len(self.isolate_data):
             return DynamicBlueActionReturn("", False)
-        host, subnet = self.isolate_data.decoys[i]
+        host, subnet = self.isolate_data[i]
 
         if host.isolated:
             return DynamicBlueActionReturn("", False)

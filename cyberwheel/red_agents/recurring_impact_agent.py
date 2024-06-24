@@ -402,5 +402,5 @@ class RecurringImpactAgent(RedAgent):
                 "reconnaissance": (-2, 0),
                 "lateral-movement": (-4, 0),
                 "privilege-escalation": (-6, 0),
-                "impact": (-8,0),
+                "impact": (-8,-8),
                 }

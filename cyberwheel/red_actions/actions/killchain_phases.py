@@ -286,6 +286,7 @@ class PrivilegeEscalation(KillChainPhase):
             for p in host.processes:
                 if p.name == "malware.exe":
                     p.escalate_privilege()
+                    host.restored = False
             self.action_results.modify_alert(dst=host)
             self.action_results.detector_alert.add_techniques(type(self).techniques)
             if self.target_service not in self.action_results.detector_alert.services:
@@ -815,8 +816,8 @@ class Impact(KillChainPhase):
             self.action_results.detector_alert.add_techniques(type(self).techniques)
             if self.target_service not in self.action_results.detector_alert.services:
                 self.action_results.modify_alert(self.target_service)
-            # if not host.restored:
-            self.action_results.add_successful_action(host)
+            if not host.restored:
+                self.action_results.add_successful_action(host)
             # self.action_results.set_cost(self.action_cost["Impact"])
         return self.action_results
 

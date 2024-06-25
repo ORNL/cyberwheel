@@ -48,6 +48,7 @@ class Host(NetworkObject):
         self.default_route = None
         self.routes = set()
         self.decoy = False
+        self.os = "windows"  # 'windows', 'macos', or 'linux'
         self.interfaces = []
         self.cves = []
         # apply any HostType details
@@ -144,31 +145,31 @@ class Host(NetworkObject):
     def get_dhcp_lease(self):
         self.subnet.assign_dhcp_lease(self)
 
-
     def define_services(self, services: List[Service]):
         self.services = services
-
 
     def define_services_from_host_type(self, host_types_file=None):
         # TODO: not sure the best way to handle relative files here...
         if host_types_file is None:
-            host_types_file = 'resources/metadata/host_definitions.json'
+            host_types_file = "resources/metadata/host_definitions.json"
         # load host type definitions
         with open(host_types_file) as f:
             data = json.load(f)
 
         # create instace of each Service()
-        for host_type in data.get('host_types'):
-            defined_type = host_type.get('type')
+        for host_type in data.get("host_types"):
+            defined_type = host_type.get("type")
             if self.type == defined_type.lower():
-                for service in defined_type.get('services'):
-                    self.services.append(Service(service.get('name'),
-                                         service.get('port'),
-                                         service.get('protocol'),
-                                         service.get('version'),
-                                         service.get('vulnerabilities'))
-                                        )
-
+                for service in defined_type.get("services"):
+                    self.services.append(
+                        Service(
+                            service.get("name"),
+                            service.get("port"),
+                            service.get("protocol"),
+                            service.get("version"),
+                            service.get("vulnerabilities"),
+                        )
+                    )
 
     def get_services(self) -> Union[List[Service], list]:
         return self.services

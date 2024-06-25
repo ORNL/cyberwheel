@@ -12,6 +12,7 @@ targets = Union[List[Host], List[Subnet]]
 destination = Union[Host, Service]
 source = Union[Host, None]
 
+
 def check_vulnerability(service: Service, techniques: List[Technique]) -> bool:
     """
     Checks to see if the action can be used with the given service. This is accomplished by checking the techniques' cves against the service's cves.
@@ -101,8 +102,8 @@ class RedActionResults:
         """
         self.attack_success.append(host)
 
-    def add_metadata(self, host_or_subnet_name: str, metadata: Any) -> None:
-        self.metadata[host_or_subnet_name] = metadata
+    def add_metadata(self, key: str, value: Any) -> None:
+        self.metadata[key] = value
 
     def set_cost(self, cost) -> None:
         self.cost = cost
@@ -122,7 +123,6 @@ class RedAction:
     """
     Base class for defining red actions. New actions should inherit from this class and define sim_execute().
     """
-
 
     def __init__(
         self, src_host: Host, target_service, target_hosts, techniques
@@ -153,7 +153,43 @@ class RedAction:
 
     def get_techniques(self):
         return self.techniques
-    
+
+    @classmethod
+    def get_name(cls):
+        return cls.name
+
+
+class ARTAction:
+    """
+    Base class for defining Atomic Red Team actions. New ART actions should inherit from this class and define sim_execute().
+    """
+
+    def __init__(self, src_host: Host, target_host: Host) -> None:
+        """
+        - `src_host`: Host from which the attack originates.
+
+        - `target_service`: The service being targeted.
+
+        - `target_hosts`: The hosts being targeted. Can either be a list of hosts or list of subnets. If it is a list of subnets, then the attack should target all known hosts on that subnet.
+
+        - `techniques`: A list of techniques that can be used to perform this attack.
+        """
+        self.src_host = src_host
+        self.target_host = target_host
+        self.action_results = RedActionResults()
+        self.name = ""
+
+    @abstractmethod
+    def sim_execute(self) -> RedActionResults | type[NotImplementedError]:
+        pass
+
+    @abstractmethod
+    def perfect_alert(self):
+        pass
+
+    def get_techniques(self):
+        return self.techniques
+
     @classmethod
     def get_name(cls):
         return cls.name

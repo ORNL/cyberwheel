@@ -186,6 +186,6 @@ runs/
 wandb/
 graphs/
 action_logs/
-
+temp/
 
 # End of https://www.toptal.com/developers/gitignore/api/python

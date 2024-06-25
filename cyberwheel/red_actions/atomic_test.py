@@ -15,12 +15,12 @@ class Dependency:
         if prerequisite_command != "":
             self.prerequisite_command = prerequisite_command.strip().split("\n")
         else:
-            self.prerequisite_command = None
+            self.prerequisite_command = []
 
         if get_prerequisite_command != "":
             self.get_prerequisite_command = get_prerequisite_command.strip().split("\n")
         else:
-            self.get_prerequisite_command = None
+            self.get_prerequisite_command = []
 
     def __str__(self):
         return f"""
@@ -47,8 +47,12 @@ class Executor:
         self.elevation_required = elevation_required
         if command != "" and command != None:
             self.command = command.strip().split("\n")
+        else:
+            self.command = []
         if cleanup_command != "" and cleanup_command != None:
             self.cleanup_command = cleanup_command.strip().split("\n")
+        else:
+            self.cleanup_command = []
 
 
 class InputArgument:

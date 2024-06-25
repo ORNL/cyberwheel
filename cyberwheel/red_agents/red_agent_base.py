@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Type, List, Tuple
 
 from ray import init
-from cyberwheel.red_actions.red_base import RedAction
+from cyberwheel.red_actions.red_base import RedAction, ARTAction
 from cyberwheel.network.network_base import Host, Subnet
 from cyberwheel.network.service import Service
 from cyberwheel.red_actions.red_base import RedActionResults
@@ -43,6 +43,7 @@ class KnownHostInfo:
         self,
         last_step: int = -1,
         scanned: bool = False,
+        sweeped: bool = False,
         ip_address: IPv4Address | IPv6Address | None = None,
         type: str = "Unknown",
         services: List[Service] = [],
@@ -50,6 +51,7 @@ class KnownHostInfo:
     ):
         self.last_step = last_step
         self.ports_scanned = scanned
+        self.ping_sweeped = sweeped
         self.ip_address = ip_address
         self.services = services
         self.vulnerabilities = vulnerabilities  # TODO: Service-level host
@@ -127,7 +129,7 @@ class AgentHistory:
 
     def update_step(
         self,
-        action: Tuple[Type[RedAction], Host, Host],
+        action: Tuple[Type[RedAction] | Type[ARTAction], Host, Host],
         success: bool,
         red_action_results: RedActionResults,
     ):

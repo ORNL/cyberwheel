@@ -100,15 +100,9 @@ class ARTAgent(RedAgent):
     def handle_killchain(self, action, success, target_host) -> None:
         pass
 
-    def select_next_target(self) -> tuple[Host, bool]:
+    def select_next_target(self) -> Host:
         """
-        Should select next taget to be itself always.
-        """
-        return self.current_host, False
-
-    def move_to_host(self) -> bool:
-        """
-        This agent should move to another Host once it has impacted its current host, for now.
+        Should select next target to be itself until impacted.
         """
         if self.history.hosts[self.current_host.name].last_step == len(self.killchain):
             unimpacted_hosts = [
@@ -119,20 +113,14 @@ class ARTAgent(RedAgent):
             if len(unimpacted_hosts) > 0:
                 target_host_name = random.choice(unimpacted_hosts)
                 target_host = self.history.mapping[target_host_name]
-                action_results = ARTLateralMovement(
-                    self.current_host, target_host
-                ).sim_execute()
-                success = target_host in action_results.attack_success
-                self.history.update_step(
-                    (ARTLateralMovement, self.current_host, target_host),
-                    success,
-                    action_results,
-                )
-                if (
-                    success
-                ):  # NOTE: Currently, this code assumes success. Does not handle stochsticity yet.
-                    self.current_host = target_host
-                    return True
+                return target_host
+        return self.current_host
+
+    def move_to_host(self) -> bool:
+        """
+        This agent should move to another Host once it has impacted its current host, for now.
+        """
+        return False
 
     def run_action(
         self, target_host: Host
@@ -165,39 +153,48 @@ class ARTAgent(RedAgent):
             if target_host in action_results.attack_success:
                 self.history.hosts[target_host.name].ports_scanned = True
                 return action_results, ARTPortScan
+        elif self.current_host.name != target_host.name:
+            # do lateral movement to target host
+            action_results = ARTLateralMovement(
+                self.current_host, target_host
+            ).sim_execute()
+            success = target_host in action_results.attack_success
+            self.history.update_step(
+                (ARTLateralMovement, self.current_host, target_host),
+                success,
+                action_results,
+            )
+            if (
+                success
+            ):  # NOTE: Currently, this code assumes success. Does not handle stochsticity yet.
+                self.current_host = target_host
+                return action_results, ARTLateralMovement
 
         action = self.killchain[step]
-        return (
-            action(self.current_host, target_host).sim_execute(),
-            action,
-        )
+        return (action(self.current_host, target_host).sim_execute(), action)
 
     def act(self) -> type[ARTKillChainPhase]:
         self.handle_network_change()
 
-        # Decide whether to use LateralMovement to jump to another Host.
-        do_lateral_movement = self.move_to_host()
-        if do_lateral_movement:
-            return ARTLateralMovement
-
-        target_host, do_lateral_movement = self.select_next_target()
-        if do_lateral_movement:
-            return ARTLateralMovement
+        target_host = self.select_next_target()
 
         action_results, action = self.run_action(target_host)
         success = target_host in action_results.attack_success
-        if success:
+
+        no_update = [ARTLateralMovement, ARTPingSweep, ARTPortScan]
+
+        if success and action not in no_update:
             self.history.hosts[target_host.name].update_killchain_step()
 
         print(
             f"\n{self.current_host.name} ---{action.get_name()}--> {target_host.name}"
         )
-        print(
-            f"{action_results.metadata['mitre_id']} - {action_results.metadata['technique'].name}"
-        )
+        # print(
+        #    f"{action_results.metadata['mitre_id']} - {action_results.metadata['technique'].name}"
+        # )
         # print(action_results.metadata['technique'].description)
-        for p in action_results.metadata["commands"]:
-            print(f"\t{p}")
+        # for p in action_results.metadata["commands"]:
+        #    print(f"\t{p}")
 
         self.history.update_step(
             (action, self.current_host, target_host), success, action_results

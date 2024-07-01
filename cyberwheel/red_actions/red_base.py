@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import abstractmethod
 from typing import Union, List, Dict, Any
 from cyberwheel.network.network_object import NetworkObject

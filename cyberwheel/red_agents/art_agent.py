@@ -186,9 +186,9 @@ class ARTAgent(RedAgent):
         if success and action not in no_update:
             self.history.hosts[target_host.name].update_killchain_step()
 
-        print(
-            f"\n{self.current_host.name} ---{action.get_name()}--> {target_host.name}"
-        )
+        # print(
+        #    f"\n{self.current_host.name} ---{action.get_name()}--> {target_host.name}"
+        # )
         # print(
         #    f"{action_results.metadata['mitre_id']} - {action_results.metadata['technique'].name}"
         # )

@@ -1,0 +1,57 @@
+host_types:
+  example:
+    services:
+      - WindowsDiscoveryExploitableService
+      - WindowsLateralMovementExploitableService
+      - WindowsPrivilegeEscalationExploitableService
+      - WindowsImpactExploitableService
+    decoy: False
+    os: windows
+  workstation:
+    services:
+      - WindowsDiscoveryExploitableService
+      - WindowsLateralMovementExploitableService
+      - WindowsPrivilegeEscalationExploitableService
+      - WindowsImpactExploitableService
+    decoy: false
+    os: windows
+  web_server:
+    services:
+      - WindowsDiscoveryExploitableService
+      - WindowsLateralMovementExploitableService
+      - WindowsPrivilegeEscalationExploitableService
+      - WindowsImpactExploitableService
+    decoy: false
+    os: windows
+  mail_server:
+    services:
+      - WindowsDiscoveryExploitableService
+      - WindowsLateralMovementExploitableService
+      - WindowsPrivilegeEscalationExploitableService
+      - WindowsImpactExploitableService
+    decoy: false
+    os: windows
+  file_server:
+    services:
+      - WindowsDiscoveryExploitableService
+      - WindowsLateralMovementExploitableService
+      - WindowsPrivilegeEscalationExploitableService
+      - WindowsImpactExploitableService
+    decoy: false
+    os: windows
+  ssh_jump_server:
+    services:
+      - WindowsDiscoveryExploitableService
+      - WindowsLateralMovementExploitableService
+      - WindowsPrivilegeEscalationExploitableService
+      - WindowsImpactExploitableService
+    decoy: false
+    os: windows
+  proxy_server:
+    services:
+      - WindowsDiscoveryExploitableService
+      - WindowsLateralMovementExploitableService
+      - WindowsPrivilegeEscalationExploitableService
+      - WindowsImpactExploitableService
+    decoy: false
+    os: windows

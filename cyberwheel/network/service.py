@@ -1,41 +1,60 @@
 from pydantic import BaseModel, validator, PositiveInt
 from typing import Any, TypeVar, Type
 
-
 # this allows return type hints to work with @classmethods
 # https://stackoverflow.com/a/44644576
-T = TypeVar('T', bound='Service')
+T = TypeVar("T", bound="Service")
 
 
 # TODO
-class Vuln:
-    def __init__(self):
-        raise NotImplementedError()
-
-
-class Service(BaseModel):
+class Vuln(BaseModel):
     name: str
-    port: PositiveInt = 1 # default value so we can omit port for ICMP
-    protocol: str = 'tcp'
-    version: str | None = None
-    vulns: list[dict] = [] # TODO: list[dict] here? list[Vuln]??
-    description: str | None = None
-    decoy: bool | None = False
-
+    id: str
 
     def __key(self):
-        return (self.name,
-                self.port,
-                self.protocol,
-                self.version,
-                #self.vulns,
-                self.description,
-                self.decoy)
-
+        return (self.name, self.id)
 
     def __hash__(self):
         return hash(self.__key())
 
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Vuln):
+            name_matched: bool = self.name == other.name
+            id_matched: bool = self.id == other.id
+            return name_matched and id_matched
+        return False
+
+    # @validator('id')
+    # @classmethod
+    # def validate_id(cls, id: str) -> int:
+    #    if port not in range(2**16):
+    #        msg = 'Port should be an integer (1-65535)'
+    #        raise PortValueError(value=port, message=msg)
+    #    return port
+
+
+class Service(BaseModel):
+    name: str
+    port: PositiveInt = 1  # default value so we can omit port for ICMP
+    protocol: str = "tcp"
+    version: str | None = None
+    vulns: list[str] = []  # TODO: list[dict] here? list[Vuln]??
+    description: str | None = None
+    decoy: bool | None = False
+
+    def __key(self):
+        return (
+            self.name,
+            self.port,
+            self.protocol,
+            self.version,
+            self.vulns,
+            self.description,
+            self.decoy,
+        )
+
+    def __hash__(self):
+        return hash(self.__key())
 
     def __eq__(self, other) -> bool:
         if isinstance(other, Service):
@@ -45,51 +64,62 @@ class Service(BaseModel):
             return port_matched and proto_matched and version_matched
         return False
 
-
-    @validator('port')
+    @validator("port")
     @classmethod
     def validate_port(cls, port: PositiveInt) -> int:
         if port not in range(2**16):
-            msg = 'Port should be an integer (1-65535)'
+            msg = "Port should be an integer (1-65535)"
             raise PortValueError(value=port, message=msg)
         return port
 
-    @validator('protocol')
+    @validator("protocol")
     @classmethod
     def validate_proto(cls, proto) -> str:
-        if proto not in ['tcp', 'udp', 'icmp']:
+        if proto not in ["tcp", "udp", "icmp"]:
             msg = "Protocol should be 'tcp', 'udp', or 'icmp'"
             raise ProtocolValueError(value=proto, message=msg)
         return proto
-
 
     # using classmethod here only so I don't have to hard code `Service`
     @classmethod
     def create_service_from_dict(cls: Type[T], service: dict[str, Any]) -> T:
         # instantiate any defined Vulns
-        service_vulns = service.get('vulns', [])
-        vulns = [cls.create_vuln_from_dict(v) for v in service_vulns]
+        vulns = service.get("cve", [])
+        # vulns = [cls.create_vuln_from_list(v) for v in service_vulns]
 
-        return Service(name=service.get('name'),               #type: ignore
-                       port=service.get('port', 1),               #type: ignore
-                       protocol=service.get('protocol', 'tcp'),       #type: ignore
-                       version=service.get('version'),         #type: ignore
-                       vulns=vulns,
-                       description=service.get('description'), #type: ignore
-                       decoy=service.get('decoy'))             #type: ignore
+        return Service(
+            name=service.get("name"),  # type: ignore
+            port=service.get("port", 1),  # type: ignore
+            protocol=service.get("protocol", "tcp"),  # type: ignore
+            version=service.get("version"),  # type: ignore
+            vulns=vulns,
+            description=service.get("description"),  # type: ignore
+            decoy=service.get("decoy"),
+        )  # type: ignore
 
+    # using classmethod here only so I don't have to hard code `Service`
+    @classmethod
+    def create_service_from_yaml(
+        cls: Type[T], service_objs: list[dict[str, Any]], service_str: str
+    ) -> T:
+        # instantiate any defined Vulns
+        service = service_objs.get(service_str, {})
+        vulns = service.get("cve", [])
+        # vulns = [cls.create_vuln_from_list(v) for v in service_vulns]
 
-    @staticmethod
-    def create_vuln_from_dict(vuln: dict[str, Any]):
-        # TODO: return a Vuln instance
-        #try:
-        #    return Vuln(**vuln)
-        #except TypeError as e:
-        #    raise e
+        return Service(
+            name=service_str,  # type: ignore
+            port=service.get("port", 1),  # type: ignore
+            protocol=service.get("protocol", "tcp"),  # type: ignore
+            version=service.get("version"),  # type: ignore
+            vulns=vulns,
+            description=service.get("description"),  # type: ignore
+            decoy=service.get("decoy"),
+        )  # type: ignore
 
-        # this is just a place holder until ^ is done
-        return vuln
-        #raise NotImplementedError()
+    # @staticmethod
+    # def create_vuln_from_str(vuln: str):
+    #    return Vuln(name=vuln, id=vuln)
 
 
 class PortValueError(ValueError):
@@ -104,5 +134,3 @@ class ProtocolValueError(ValueError):
         self.value = value
         self.message = message
         super().__init__(message)
-
-

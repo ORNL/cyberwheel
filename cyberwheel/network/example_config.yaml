@@ -102,7 +102,7 @@ subnets:
     firewall:
 
 # Hosts
-host_type_config: resources/metadata/host_definitions.json
+host_type_config: resources/metadata/host_defs_services.yaml
 hosts:
 
   # User hosts

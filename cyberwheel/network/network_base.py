@@ -275,20 +275,20 @@ class Network:
             plt.show()
 
     @classmethod
-    def create_network_from_yaml(cls, config_file_path=None):  # type: ignore
-        if config_file_path is None:
+    def create_network_from_yaml(cls, network_config=None, host_config="host_defs_services.yaml"):  # type: ignore
+        if network_config is None:
             config_dir = files("cyberwheel.network")
-            config_file_path: PosixPath = config_dir.joinpath(
+            network_config: PosixPath = config_dir.joinpath(
                 "example_config.yaml"
             )  # type:ignore
             print(
                 "Using default network config file ({})".format(
-                    config_file_path.absolute()
+                    network_config.absolute()
                 )
             )
 
         # Load the YAML config file
-        with open(config_file_path, "r") as yaml_file:
+        with open(network_config, "r") as yaml_file:
             config = yaml.safe_load(yaml_file)
 
         # Create an instance of the Network class
@@ -298,7 +298,7 @@ class Network:
         # TODO: use create_host_type_from_yaml() instead?
         # conf_file = conf_dir.joinpath('host_definitions.json')
         # type = network.create_host_type_from_json(type_str, conf_file) #type: ignore
-        conf_file = conf_dir.joinpath("host_definitions.yaml")
+        conf_file = conf_dir.joinpath(host_config)
         with open(conf_file) as f:
             type_config = yaml.safe_load(f)
         types = type_config["host_types"]
@@ -759,6 +759,8 @@ class Network:
         :returns HostType:
         """
 
+        # print(config_file)
+
         # match name to defined host_type name
         host_type = {}
         host_type_name = ""
@@ -772,21 +774,26 @@ class Network:
             raise HostTypeNotFoundError(value=name, message=msg)
 
         services_list = host_type.get("services", [])
-        service_objects = []
+
+        windows_services = {}
+        config_dir = files("cyberwheel.resources.configs")
+        config_file_path: PosixPath = config_dir.joinpath(
+            "windows_exploitable_services.yaml"
+        )  # type:ignore
+        with open(config_file_path, "r") as f:
+            windows_services = yaml.safe_load(f)
+
+        running_services = []
         for service in services_list:
-            # srv_name = service.get('name')
-            # srv_port = service.get('port')
-            # srv_proto = service.get('protocol')
-            # srv_version = service.get('version')
-            # srv_vulns = service.get('vulns')
-            # srv_desc = service.get('description')
-            # srv_decoy: bool = service.get('decoy', False)
-            service_objects.append(Service.create_service_from_dict(service))
+            # print(service)
+            running_services.append(
+                Service.create_service_from_yaml(windows_services, service)
+            )
         decoy: bool = host_type.get("decoy", False)
         os: str = host_type.get("os", "")
 
         host_type = HostType(
-            name=host_type_name, services=service_objects, decoy=decoy, os=os
+            name=host_type_name, services=running_services, decoy=decoy, os=os
         )
 
         return host_type

@@ -12,8 +12,8 @@ class ARTKillChainPhase(ARTAction):
 
     def __init__(
         self,
-        src_host: Host,
-        target_host: Host = [],
+        src_host: Host = None,
+        target_host: Host = None,
     ) -> None:
         """
         Same parameters as defined and described in the RedAction base class.
@@ -227,12 +227,31 @@ class ARTKillChainPhase(ARTAction):
 
         host_os = host.os
         action_type = self.name
-        mitre_id = random.choice(self.validity_mapping[host_os][action_type])
+        host_cves = []
+        for service in host.host_type.services:
+            host_cves.extend(service.vulns)
+        # print(host_cves)
+        host_cves = list(set(host_cves))
+        random.shuffle(host_cves)
+        valid_mitre_ids = self.validity_mapping[host_os][action_type]
+
+        mitre_id = random.choice(
+            self.validity_mapping[host_os][action_type]
+        )  # Change to look for depending on service
         art_technique = self.technique_mapping[mitre_id]()
+        for mid in valid_mitre_ids:
+            temp_art = self.technique_mapping[mid]()
+            for cve in host_cves:
+                if cve in temp_art.cve_list:
+                    art_technique = temp_art
+                    mitre_id = mid
+                    break
+
         processes = []
         valid_tests = [
             at for at in art_technique.atomic_tests if host_os in at.supported_platforms
         ]
+        cves_associated = art_technique.cve_list
         chosen_test = random.choice(valid_tests)
         # Get prereq command, prereq command (if dependency). then run executor command(s) and cleanup command.
         for dep in chosen_test.dependencies:
@@ -242,7 +261,13 @@ class ARTKillChainPhase(ARTAction):
             processes.extend(chosen_test.executor.command)
             processes.extend(chosen_test.executor.cleanup_command)
 
-        self.action_results.add_successful_action(host)
+        if any(
+            cve in service.vulns
+            for service in self.target_host.host_type.services
+            for cve in cves_associated
+        ):
+            self.action_results.add_successful_action(host)
+
         self.action_results.add_metadata("commands", processes)
         self.action_results.add_metadata("mitre_id", mitre_id)
         self.action_results.add_metadata("technique", art_technique)

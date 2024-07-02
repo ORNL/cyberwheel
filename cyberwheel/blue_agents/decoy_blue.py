@@ -9,12 +9,17 @@ from cyberwheel.network.service import Service
 from cyberwheel.network.subnet import Subnet
 from cyberwheel.reward import RewardMap
 
-class DeployedHost():
+from importlib.resources import files
+import yaml
+from pathlib import PosixPath
+
+
+class DeployedHost:
     def __init__(self, id: str, host: Host) -> None:
         self.id = id
         self.host = host
 
-    def is_decoy_type(self, type: HostType, subnet: Subnet)-> bool:
+    def is_decoy_type(self, type: HostType, subnet: Subnet) -> bool:
         return self.host.name == type.name and self.host.subnet.name == subnet.name
 
 
@@ -42,7 +47,7 @@ class DecoyBlueAgent(BlueAgent):
 
     def __init__(
         self, network: Network, decoy_info: Dict[str, Any], host_defs: Dict[str, Any]
-        ) -> None:
+    ) -> None:
         self.network = network
         self.num_hosts = len(network.get_hosts())
         self.subnets = self.network.get_all_subnets()
@@ -58,7 +63,7 @@ class DecoyBlueAgent(BlueAgent):
     def act(self, action) -> BlueAgentResult:
         """
         Takes the action selected by the RL agent
-        
+
         It returns:
         - The name of the action it took (to index into the reward map)
         - The uuid as a string of hex digits belonging to the action (to differtiate this action from others)
@@ -76,14 +81,16 @@ class DecoyBlueAgent(BlueAgent):
         successful = False
         id = ""
         action_name = "failed"
-        
+
         # NOOP
         if action_type == 0:
             successful = True
             action_name = "nothing"
 
         # Deploy Host
-        elif action_type == 1:# and (len(self.deployed_hosts) < self.decoy_limit or self.decoy_limit == -1):
+        elif (
+            action_type == 1
+        ):  # and (len(self.deployed_hosts) < self.decoy_limit or self.decoy_limit == -1):
             decoy_type = self.host_types[decoy_index]
             id = uuid.uuid4().hex
             decoy_key = list(self.decoy_info.keys())[decoy_index]
@@ -91,7 +98,14 @@ class DecoyBlueAgent(BlueAgent):
             action_name = decoy_key
             reward = self.rewards[decoy_index][0]
             recurring_reward = self.rewards[decoy_index][1]
-            decoy = DeployDecoyHost(decoy_name, self.network, selected_subnet, decoy_type, reward=reward, recurring_reward=recurring_reward) 
+            decoy = DeployDecoyHost(
+                decoy_name,
+                self.network,
+                selected_subnet,
+                decoy_type,
+                reward=reward,
+                recurring_reward=recurring_reward,
+            )
             decoy.execute()
             self.deployed_hosts.append(DeployedHost(id, decoy.host))
             successful = True
@@ -115,7 +129,7 @@ class DecoyBlueAgent(BlueAgent):
     def get_reward_map(self) -> RewardMap:
         return self.reward_map
 
-    def _load_rewards(self)-> None:
+    def _load_rewards(self) -> None:
         self.rewards = []
         self.reward_map: RewardMap = {}
         for decoy_name in self.decoy_info:
@@ -129,14 +143,23 @@ class DecoyBlueAgent(BlueAgent):
         self.reward_map['nothing'] = (0, 0)
         self.reward_map['restore'] = (-100, )
 
-    def _load_host_types(self)-> None:
+    def _load_host_types(self) -> None:
+        windows_services = {}
+        config_dir = files("cyberwheel.resources.configs")
+        config_file_path: PosixPath = config_dir.joinpath(
+            "windows_exploitable_services.yaml"
+        )  # type:ignore
+        with open(config_file_path, "r") as f:
+            windows_services = yaml.safe_load(f)
         self.host_types = []
         for decoy_name in self.decoy_info:
             info = self.decoy_info[decoy_name]
             type_info = self.host_defs[info["type"]]
             services = []
             for service_info in type_info["services"]:
-                services.append(Service.create_service_from_dict(service_info))
+                services.append(
+                    Service.create_service_from_yaml(windows_services, service_info)
+                )
             host_type = HostType(name=info["type"], services=services, decoy=True)
             self.host_types.append(host_type)
 
@@ -152,11 +175,11 @@ class DecoyBlueAgent(BlueAgent):
         The list of decoy host types has a length of N where N is the
         number of different host types that can be deployed. N is assumed
         to be the same for each subnet. It also assumes 1 NOOP and no other
-        actions besides deploy/remove decoy. 
-        
+        actions besides deploy/remove decoy.
+
         `_get_decoy_type_index()` converts an integer I in the range (0, 2*N + 1] to be in the range [0, N]. If
         I = 0, then it returns -1. The resulting integer can then be used to index into the decoy_type list.
-        
+
         NOTE: This just gets the decoy's host type. Whether to deploy or remove the
         decoy is determined in `_get_action_type()`.
         """

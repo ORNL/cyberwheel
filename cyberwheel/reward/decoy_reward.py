@@ -1,6 +1,12 @@
 from typing import List, Tuple
 
-from cyberwheel.reward.reward_base import Reward, RewardMap, RecurringAction, calc_quadratic
+from cyberwheel.reward.reward_base import (
+    Reward,
+    RewardMap,
+    RecurringAction,
+    calc_quadratic,
+)
+
 
 class DecoyReward(Reward):
     def __init__(
@@ -68,7 +74,6 @@ class DecoyReward(Reward):
         if len(self.blue_recurring_actions) == 0:
             sum = -100
         return sum
-
 
     def add_recurring_blue_action(self, id: str, action: str) -> None:
         self.blue_recurring_actions.append(RecurringAction(id, action))

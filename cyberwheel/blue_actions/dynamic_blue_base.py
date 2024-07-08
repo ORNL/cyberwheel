@@ -1,9 +1,9 @@
-from abc import abstractmethod
-from enum import Enum
-from typing import Dict, Tuple, NewType
+
+
+from abc import abstractmethod, ABC
+from typing import  Dict
 import uuid
 
-from cyberwheel.blue_actions.blue_base import BlueAction
 from cyberwheel.network.network_base import Network
 from cyberwheel.network.host import Host
 from cyberwheel.network.subnet import Subnet
@@ -27,9 +27,8 @@ class DynamicBlueActionReturn:
         self.success = success
         self.recurring = recurring
 
-
-class DynamicBlueAction(BlueAction):
-    def __init__(self, network: Network, configs: Dict[str, any], **kwargs) -> None:
+class DynamicBlueAction(ABC):
+    def __init__(self, network: Network, configs: Dict[str, any], **kwargs)-> None:
         self.network = network
         self.configs = configs
 

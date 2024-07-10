@@ -1,0 +1,174 @@
+network:
+  name: example_net
+  desc: Example config that defines a simplified network
+
+# currently this block is not being parsed and is
+# only here to help visualize the topology
+topology:
+  - core_router:
+    - user_subnet:
+      - user02
+      - user03
+      - admin_workstation
+    - server_subnet:
+      - server01
+      - server02
+      - server03
+    - dmz_subnet:
+      - dmz01
+      - dmz02
+      - dmz03
+      - dmz_jump_box
+    # should the red agent start here or can we assume initial foothold already occured?
+    - internet:
+
+# Routers
+routers:
+  core_router:
+    default_route: internet
+    routes_by_name:
+      - user_subnet
+      - server_subnet
+      - dmz_subnet
+      - user_subnet2
+    routes:
+      - dest: 10.0.0.0/8
+        via: 10.0.0.1
+    firewall:
+
+# Subnets
+subnets:
+  user_subnet:
+    router: core_router
+    ip_range: 192.168.0.0/24
+    dns_server: 192.168.0.1
+    firewall:
+      # allow any traffic originating from server_subnet
+      - name: allow all from server_subnet
+        src: server_subnet
+
+      # only traffic allowed from dmz is from jump box on dest port 22
+      ## dest='all' and proto='tcp' is implied here
+      - name: allow ssh from dmz_jump_box
+        src: dmz_jump_box
+        port: 22
+
+      - src: internet
+
+  server_subnet:
+    router: core_router
+    ip_range: 192.168.1.0/24
+    firewall:
+      # allow admin_workstation to anything in server_subnet
+      - name: allow admin to server_subnet
+        src: admin_workstation
+        dest: server_subnet
+
+      # allow DNS for user_subnet
+      - name: allow DNS
+        src: user_subnet
+        dest: server_subnet
+        port: 53
+
+      # allow DHCP for user_subnet
+      - name: allow DHCP
+        src: user_subnet
+        dest: server_subnet
+        port: 68
+        proto: udp
+
+
+  dmz_subnet:
+    router: core_router
+    ip_range: 192.168.2.0/24
+    #firewall:
+    #  # implicit 'allow all' from user_subnet
+    #  - name: allow all user_subnet
+    #    src: user_subnet
+
+    #  # implicit 'allow all' from server_subnet
+    #  - name: allow all server_subnet
+    #    src: server_subnet
+
+    #  - name: allow https
+    #    src: all
+    #    dest: dmz_subnet
+    #    port: 443
+
+  # should we visualize the internet as another "subnet"?
+  internet:
+    default_route:
+    ip_range: 1.0.0.0/24
+    firewall:
+
+# Hosts
+host_type_config: resources/metadata/host_defs_services.yaml
+hosts:
+
+  # User hosts
+  user01:
+    type: workstation
+    subnet: user_subnet
+    firewall:  # if firewall is undefined or empty assume 'allow all'
+    routes:
+      - dest: 192.168.2.0/24
+        via: 192.168.0.1
+  user02:
+    type: workstation
+    subnet: user_subnet
+    firewall:
+      - name: foo
+        src: server01
+        port: 3389
+  user03:
+    type: workstation
+    subnet: user_subnet
+  admin_workstation:
+    type: workstation
+    subnet: user_subnet
+    firewall:
+      - name: allow SSH
+        src: all
+        port: 22
+
+  # Server hosts
+  server01:
+    type: web_server
+    subnet: server_subnet
+  server02:
+    type: web_server
+    subnet: server_subnet
+  server03:
+    type: web_server
+    subnet: server_subnet
+  # server04:
+  #   type: web_server
+  #   subnet: user_subnet
+
+  # DMZ hosts
+  dmz01:
+    type: workstation
+    subnet: dmz_subnet
+  dmz02:
+    type: workstation
+    subnet: dmz_subnet
+  dmz03:
+    type: workstation
+    subnet: dmz_subnet
+    firewall:
+      - name: foo
+        src: all
+        dest: dmz03
+        port: 443
+        proto: tcp
+  dmz_jump_box:
+    type: workstation
+    subnet: dmz_subnet
+    firewall:
+      - name: allow SSH
+        port: 22
+interfaces:
+  user01:
+    - dmz01
+  dmz01:
+    - server01

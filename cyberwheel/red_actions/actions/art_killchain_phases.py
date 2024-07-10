@@ -268,9 +268,11 @@ class ARTKillChainPhase(ARTAction):
         ):
             self.action_results.add_successful_action(host)
 
-        self.action_results.add_metadata("commands", processes)
-        self.action_results.add_metadata("mitre_id", mitre_id)
-        self.action_results.add_metadata("technique", art_technique)
+        self.action_results.add_metadata(
+            host.name,
+            {"commands": processes, "mitre_id": mitre_id, "technique": art_technique},
+        )
+
         return self.action_results
 
 
@@ -325,9 +327,21 @@ class ARTPingSweep(ARTKillChainPhase):
             processes.extend(chosen_test.executor.cleanup_command)
 
         self.action_results.add_successful_action(host)
-        self.action_results.add_metadata("commands", processes)
-        self.action_results.add_metadata("mitre_id", mitre_id)
-        self.action_results.add_metadata("technique", art_technique)
+        self.action_results.add_metadata(
+            host.name,
+            {"commands": processes, "mitre_id": mitre_id, "technique": art_technique},
+        )
+
+        subnet_hosts = host.subnet.connected_hosts
+        self.action_results.add_metadata(
+            host.subnet.name, {"subnet_scanned": host.subnet}
+        )
+        for each_host in subnet_hosts:
+            for h in each_host.interfaces:
+                subnet_hosts.append(h)
+        for h in subnet_hosts:
+            self.action_results.add_metadata(h.name, {"ip_address": h.ip_address})
+
         return self.action_results
 
 
@@ -382,9 +396,11 @@ class ARTPortScan(ARTKillChainPhase):
             processes.extend(chosen_test.executor.cleanup_command)
 
         self.action_results.add_successful_action(host)
-        self.action_results.add_metadata("commands", processes)
-        self.action_results.add_metadata("mitre_id", mitre_id)
-        self.action_results.add_metadata("technique", art_technique)
+        self.action_results.add_metadata(
+            host.name,
+            {"commands": processes, "mitre_id": mitre_id, "technique": art_technique},
+        )
+
         return self.action_results
 
 

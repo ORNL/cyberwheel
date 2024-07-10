@@ -60,7 +60,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         evaluation=False,
         **kwargs,
     ):
-        network_conf_file = files("cyberwheel.network").joinpath(network_config)
+        network_conf_file = files("cyberwheel.resources.metadata").joinpath(
+            network_config
+        )
         decoy_conf_file = files("cyberwheel.resources.metadata").joinpath(
             decoy_host_file
         )
@@ -136,6 +138,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         self.evaluation = evaluation
 
     def step(self, action):
+        # blue_action_name = "nothing"
+        # rec_id = 0
+        # blue_success = False
         blue_action_name, rec_id, blue_success = self.blue_agent.act(action)
         self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id)
         red_action_name = (
@@ -144,6 +149,10 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
         action_metadata = self.red_agent.history.history[-1]
         red_action_type, red_action_src, red_action_dst = action_metadata.action
+
+        print(
+            f"{self.current_step} - {red_action_name} : {red_action_src.name} --> {red_action_dst.name}"
+        )
 
         red_action_success = action_metadata.success
 

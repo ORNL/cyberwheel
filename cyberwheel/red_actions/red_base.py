@@ -104,7 +104,11 @@ class RedActionResults:
         self.attack_success.append(host)
 
     def add_metadata(self, key: str, value: Any) -> None:
-        self.metadata[key] = value
+        if key in self.metadata:
+            for k, v in value.items():
+                self.metadata[key][k] = v
+        else:
+            self.metadata[key] = value
 
     def set_cost(self, cost) -> None:
         self.cost = cost

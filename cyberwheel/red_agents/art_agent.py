@@ -104,11 +104,14 @@ class ARTAgent(RedAgent):
         """
         Should select next target to be itself until impacted.
         """
-        if self.history.hosts[self.current_host.name].last_step == len(self.killchain):
+        if (
+            self.history.hosts[self.current_host.name].last_step
+            == len(self.killchain) - 1
+        ):
             unimpacted_hosts = [
                 h
                 for h, info in self.history.hosts.items()
-                if info.last_step != len(self.killchain)
+                if info.last_step < len(self.killchain) - 1
             ]
             if len(unimpacted_hosts) > 0:
                 target_host_name = random.choice(unimpacted_hosts)
@@ -196,6 +199,9 @@ class ARTAgent(RedAgent):
         # for p in action_results.metadata["commands"]:
         #    print(f"\t{p}")
 
+        for h_name in action_results.metadata.keys():
+            self.add_host_info(h_name, action_results.metadata[h_name])
+
         self.history.update_step(
             (action, self.current_host, target_host), success, action_results
         )
@@ -221,11 +227,7 @@ class ARTAgent(RedAgent):
             and the available IPS of a Subnet to history.subnets[Subnet].available_ips
         """
         for k, v in metadata.items():
-            if k == "vulnerabilities":
-                self.history.hosts[host_name].vulnerabilites = v
-            elif k == "services":
-                self.history.hosts[host_name].services = v
-            elif k == "type":
+            if k == "type":
                 host_type = v
                 known_type = "Unknown"
                 if "server" in host_type.lower():
@@ -233,9 +235,7 @@ class ARTAgent(RedAgent):
                 elif "workstation" in host_type.lower():
                     known_type = "User"
                 self.history.hosts[host_name].type = known_type
-            elif (
-                k == "subnet_scanned"
-            ):  # TODO: This should have the subnet object as a value, would be easier
+            elif k == "subnet_scanned":
                 if v.name not in self.history.subnets.keys():
                     self.history.mapping[v.name] = v
                     self.history.subnets[v.name] = KnownSubnetInfo(scanned=True)
@@ -250,12 +250,10 @@ class ARTAgent(RedAgent):
                     if h.name not in self.history.hosts.keys():
                         self.history.mapping[h.name] = h
                         self.history.hosts[h.name] = KnownHostInfo()
-            elif k == "interfaces":
-                for interfaced_host in v:
-                    if interfaced_host.name in self.history.hosts.keys():
-                        continue
-                    self.history.hosts[interfaced_host.name] = KnownHostInfo()
-                    self.history.mapping[interfaced_host.name] = interfaced_host
+            elif k == "ip_address":
+                if host_name not in self.history.hosts.keys():
+                    self.history.hosts[host_name] = KnownHostInfo(ip_address=v)
+                    # print(f"adding {host_name} to known_hosts!")
 
     def get_reward_map(self) -> RewardMap:
         return {

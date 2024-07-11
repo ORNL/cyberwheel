@@ -1,25 +1,16 @@
+action_module_path: "cyberwheel.blue_actions.actions"
+action_space_module_path: "cyberwheel.blue_agents.action_space"
+
 actions:
-  # Unique name for this action
-  nothing:
-    # Name of the module. Should be importable from cyberwheel.blue_actions.actions
-    module: Nothing
-    # The class's name
-    class: Nothing
-    # Configs that this action needs
-    # Key is what the class expects the config to be named.
-    # Value is the name of the file found in cyberwheel/resources/configs
-    configs:
-    # Rewards for this action
+  nothing: # Unique name for this action
+    module: Nothing # Module this action's class is located in
+    class: Nothing # The action class's name
+    configs: # List of config file names this action needs. Must be in cyberwheel/resources/metadata
     reward:
-      immediate: 0
-      recurring: 0
-    # Type of action. Can be host, subnet, standalone, custom
-    # host means this actions is repeated for each host. I.e. it's dependent on hosts
-    # subnet means this action is repeated for each subnet. I.e it's dependent on subnets
-    # standalone means this action is not repeated. I.e. it's independent of the network
-    # custom allows for the action to be repeated for a specifc number of times.
-    type: standalone
-    # List of shared data this action needs from the blue agent.
+      immediate: 0.0 # Reward gained for executing this action.
+      recurring: 0.0 # Reward gained for on this step and all subsequent steps after taking this action.
+    action_space_args: 
+      type: standalone
     shared_data:
 
   decoy0:
@@ -30,58 +21,26 @@ actions:
       host_definitions: host_defs_services.yaml
       services: windows_exploitable_services.yaml
     reward:
-      immediate: -20
-      recurring: -0.2
-    type: subnet
+      immediate: -20.0
+      recurring: 0.0
+    action_space_args:
+      type: subnet
     shared_data:
-      # - isolate_data
-
-  # Second deploy action
-  # decoy1:
-  #   module: DeployDecoyHost
-  #   class: DeployDecoyHost
-  #   configs:
-  #     decoy_hosts: decoy_user_hosts.yaml
-  #     host_definitions: host_definitions.yaml
-  #   reward:
-  #     immediate: -10
-  #     recurring: -0.1
-  #   type: subnet
-  #   shared_data:
-      # - isolate_data
-
-  remove_decoy:
-    module: RemoveDecoyHost
-    class: RemoveDecoyHost
-    configs:
-    reward:
-        immediate: 0
-        recurring: 0
-    type: subnet
-    shared_data:
-
-
-  # isolate_decoy:
-  #   module: IsolateDecoy
-  #   class: IsolateDecoy
-  #   configs:
-  #   reward:
-  #     immediate: 0
-  #     recurring: 0
-  #   type: range
-  #   range: 4
-  #   shared_data:
-  #     - isolate_data
+      - isolate_data
 
 # Shared data is additional data that is shared by blue actions
 # The actions define what data they want to use
 # The type of the data is defined here.
 # Can be a list, set, dict or another object that implements a `clear()` method.
 shared_data:
-  decoy_list: list
   isolate_data:
     module: cyberwheel.blue_actions.shared_data.IsolateData
     class: IsolateData
     # OPTIONAL. Parameters for initializing the class.
     args:
       size: 4
+
+action_space:
+  module: discrete
+  class: DiscreteConverter
+  args:

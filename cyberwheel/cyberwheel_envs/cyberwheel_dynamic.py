@@ -6,7 +6,7 @@ from typing import Dict, Iterable, List
 import yaml
 
 from .cyberwheel import Cyberwheel
-from cyberwheel.blue_agents.dynamic_blue_agent import DynamicBlueAgent
+from cyberwheel.blue_agents import DynamicBlueAgent
 from cyberwheel.observation import HistoryObservation
 from cyberwheel.detectors.alert import Alert
 
@@ -94,14 +94,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
         self.decoy_types = list(self.decoy_info.keys())
 
-        #num_decoys = len(self.decoy_types)
-        #num_subnets = len(self.network.get_all_subnets())
         num_hosts = len(self.network.get_hosts())
-        """
-        There needs to be an action for deploying each host on each subnet.
-        action_space[0] == which decoy host type to deploy
-        action_space[1] == which subnet to deploy it on
-        """
 
         self.observation_space = spaces.Box(0, 1, shape=(2 * num_hosts,))
         self.alert_converter = HistoryObservation(
@@ -124,7 +117,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
             blue_config
         )
         self.blue_agent = DynamicBlueAgent(self.blue_conf_file, self.network)
-        self.action_space = spaces.Discrete(self.blue_agent.get_action_space_size())
+        self.action_space = spaces.Discrete(self.blue_agent.get_action_space_shape()[0])
         # self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
 
         detector_conf_file = files("cyberwheel.resources.configs.detector").joinpath(

@@ -12,52 +12,26 @@ from cyberwheel.reward.reward_base import RewardMap
 from cyberwheel.network.network_base import Network
 from cyberwheel.network.host import Host
 from cyberwheel.network.subnet import Subnet
+from cyberwheel.blue_agents.action_space.action_space import ActionSpaceConverter
 
 
-range = NewType("range", Tuple[int, int])
-
-
-class _ActionConfigInfo:
-    def __init__(
-        self,
-        name="",
-        configs=[],
-        immediate_reward=0.0,
-        recurring_reward=0.0,
-        action_type: str = "",
-        shared_data=[],
-        range=0,
-    ) -> None:
+class _ActionConfigInfo():
+    def __init__(self, 
+                 name: str  = "", 
+                 configs: List = [], 
+                 immediate_reward: float = 0.0, 
+                 recurring_reward: float = 0.0, 
+                 action_space_args: Dict = {}, 
+                 shared_data: List = []) -> None:
         self.name = name
         self.configs = configs
         self.immediate_reward = immediate_reward
         self.recurring_reward = recurring_reward
-        self.action_type = action_type
         self.shared_data = shared_data
-        self.range = range
+        self.action_space_args = action_space_args
 
     def __str__(self) -> str:
         return f"config: {self.configs}, immediate_reward: {self.immediate_reward}, reccuring_reward: {self.recurring_reward}, action_type: {self.action_type}"
-
-
-class _ActionRuntime:
-    def __init__(
-        self,
-        name: str,
-        action_type: str,
-        action: DynamicBlueAction,
-        range: range,
-        is_recurring: bool,
-    ) -> None:
-        self.name = name
-        self.action_type = action_type
-        self.action = action
-        self.range = range
-        self.is_recurring = is_recurring
-
-    def check_range(self, action: int) -> bool:
-        return action >= self.range[0] and action < self.range[1]
-
 
 class DynamicBlueAgent(BlueAgent):
     """
@@ -77,52 +51,64 @@ class DynamicBlueAgent(BlueAgent):
     def __init__(self, config: str, network: Network) -> None:
         super().__init__()
         self.config = config
-        self.from_yaml()
-        self.configs: Dict[str, any] = {}
-        self.action_space_size = 0
-
         self.network = network
-        self.hosts = network.get_hosts()
-        self.subnets = network.get_all_subnets()
-        self.num_hosts = len(self.hosts)
-        self.num_subnets = len(self.subnets)
-
-        self._init_action_runtime_info()
+        self.configs: Dict[str, any] = {}
+        self.action_space_converter: ActionSpaceConverter = None
+        
+        self.from_yaml()
+        self._init_blue_actions()
         self._init_reward_map()
 
     def from_yaml(self):
-        module_path = "cyberwheel.blue_actions.actions."
-        actions = []
         with open(self.config, "r") as r:
             contents = yaml.safe_load(r)
-        # Load class types and get action info
-        for k, v in contents["actions"].items():
-            module_name = v["module"]
-            class_name = v["class"]
+
+        # Get module import paths
+        action_module_path = contents['action_module_path']
+        if not isinstance(action_module_path, str):
+            raise TypeError(f'value for key "action_module_path" must be a string')
+        as_module_path = contents['action_space_module_path']
+        if not isinstance(as_module_path, str):
+            raise TypeError(f'value for key "action_space_module_path" must be a string')        
+        
+        # Initialize the action space converter
+        action_space = contents['action_space']
+        as_module = action_space['module']
+        as_class = action_space['class']
+        if 'args' in action_space:
+            as_args = action_space['args']
+            if as_args is None:
+                as_args = {}
+        import_path = ".".join([as_module_path, as_module])
+        m = importlib.import_module(import_path)
+        self.action_space_converter = getattr(m, as_class)(self.network, **as_args)      
+
+
+        # Get information needed to later initialize blue actions.
+        actions = []
+        for k, v in contents['actions'].items():
+            module_name = v['module']
+            class_name = v['class']
             configs = {}
             if isinstance(v["configs"], Dict):
                 configs = v["configs"]
             shared_data = []
-            if isinstance(v["shared_data"], List):
-                shared_data = v["shared_data"]
-            range = 0
-            if v["type"] == "range":
-                range = v["range"]
-            import_path = module_path + module_name
-            a = importlib.import_module(import_path)
-            class_ = getattr(a, class_name)
-            action_info = _ActionConfigInfo(
-                k,
-                configs,
-                v["reward"]["immediate"],
-                v["reward"]["recurring"],
-                v["type"],
-                shared_data,
-                range,
-            )
+            if isinstance(v['shared_data'], List):
+                shared_data = v['shared_data']
+            
+            import_path = ".".join([action_module_path, module_name])
+            m = importlib.import_module(import_path)
+            class_ = getattr(m, class_name)
+            action_info = _ActionConfigInfo(k, 
+                                            configs, 
+                                            v['reward']['immediate'], 
+                                            v['reward']['recurring'], 
+                                            v['action_space_args'], 
+                                            shared_data)
             actions.append((class_, action_info))
         self.actions = actions
-        # Set up additional data that actions have requested.
+        
+        # Set up data shared between actions
         self.shared_data = {}
         self.reset_map = {}
         if contents["shared_data"] is None:
@@ -144,9 +130,8 @@ class DynamicBlueAgent(BlueAgent):
                     kwargs = v["args"]
 
                 self.shared_data[k] = data_type(**kwargs)
-
-    def _init_action_runtime_info(self) -> None:
-        self.runtime_info: List[_ActionRuntime] = []
+            
+    def _init_blue_actions(self)-> None:
         for action_class, action_info in self.actions:
             # Check configs and read them if they are new
             action_configs = {}
@@ -162,35 +147,14 @@ class DynamicBlueAgent(BlueAgent):
                     action_configs[name] = contents
                 else:
                     action_configs[name] = self.configs[config]
-            # print(action_configs)
-            # Calculate action space size and initialize blue actions
-            start = self.action_space_size
-            if action_info.action_type == "standalone":
-                self.action_space_size += 1
-            elif action_info.action_type.lower() == "host":
-                self.action_space_size += self.num_hosts
-            elif action_info.action_type.lower() == "subnet":
-                self.action_space_size += self.num_subnets
-            elif action_info.action_type.lower() == "range":
-                self.action_space_size += action_info.range
-            else:
-                raise ValueError(
-                    f"action_type for {action_info.name} must be 'host', 'subnet', 'standalone', or 'range'"
-                )
-            end = self.action_space_size
-            r = (start, end)
 
-            kwargs = {}
+            action_kwargs = {}
             for sd in action_info.shared_data:
-                kwargs[sd] = self.shared_data[sd]
-            runtime = _ActionRuntime(
-                action_info.name,
-                action_info.action_type,
-                action_class(self.network, action_configs, **kwargs),
-                r,
-                bool(action_info.recurring_reward),
-            )
-            self.runtime_info.append(runtime)
+                action_kwargs[sd] = self.shared_data[sd]
+            action = action_class(self.network, action_configs, **action_kwargs)
+
+            self.action_space_converter.add_action(action_info.name, action, **action_info.action_space_args)
+        self.action_space_converter.finalize()
 
     def _init_reward_map(self) -> None:
         self.reward_map: RewardMap = {}
@@ -205,39 +169,19 @@ class DynamicBlueAgent(BlueAgent):
             )
 
     def act(self, action: int) -> BlueAgentResult:
-        for ri in self.runtime_info:
-            if not ri.check_range(action):
-                continue
-            name = ri.name
-            if ri.action_type == "standalone":
-                result = ri.action.execute()
-                break
-            elif ri.action_type == "host":
-                index = (action - ri.range[0]) % self.num_hosts
-                result = ri.action.execute(self.hosts[index])
-                break
-            elif ri.action_type == "subnet":
-                index = (action - ri.range[0]) % self.num_subnets
-                result = ri.action.execute(self.subnets[index])
-                break
-            elif ri.action_type == "range":
-                index = (action - ri.range[0]) % (ri.range[1] - ri.range[0])
-                result = ri.action.execute(index)
-                break
-            else:
-                raise TypeError("Unknown action type.")
-
+        asc_return = self.action_space_converter.select_action(action)
+        result = asc_return.action.execute(*asc_return.args, **asc_return.kwargs)
         id = result.id
         success = result.success
         recurring = result.recurring
-        return name, id, success, recurring
-
+        return asc_return.name, id, success, recurring
+    
     def get_reward_map(self) -> RewardMap:
         return self.reward_map
 
-    def get_action_space_size(self) -> int:
-        return self.action_space_size
-
+    def get_action_space_shape(self) -> tuple[int, ...]:
+        return self.action_space_converter.get_action_space_shape()
+    
     def reset(self):
         # I think all this needs to do is set all shared_data values to their default values
         for v in self.shared_data.values():

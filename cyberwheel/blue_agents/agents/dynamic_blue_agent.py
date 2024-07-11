@@ -1,18 +1,15 @@
 import builtins
 import importlib
-import uuid
 import yaml
 
 from importlib.resources import files
-from typing import Iterable, Union, Dict, Tuple, List, NewType
+from typing import Dict, List
+from gym import Space
 
 from cyberwheel.blue_agents.blue_agent_base import BlueAgent, BlueAgentResult
-from cyberwheel.blue_actions.dynamic_blue_base import DynamicBlueAction
 from cyberwheel.reward.reward_base import RewardMap
 from cyberwheel.network.network_base import Network
-from cyberwheel.network.host import Host
-from cyberwheel.network.subnet import Subnet
-from cyberwheel.blue_agents.action_space.action_space import ActionSpaceConverter
+from cyberwheel.blue_agents.action_space.action_space import ActionSpace
 
 
 class _ActionConfigInfo():
@@ -37,7 +34,7 @@ class DynamicBlueAgent(BlueAgent):
     """
     The purpose of this blue agent is to prevent having to create new blue agents everytime a new
     blue action is introduced. The idea is to have a config file specify what blue actions this instance
-    has and import them dynamically (I think that's the right term...).
+    has and import them dynamically.
 
     Actions need to be very standardized. Each one will need to have the following associated with it:
     - An action name: The name of the action performed. If you have two deploy actions, then the names would
@@ -53,7 +50,7 @@ class DynamicBlueAgent(BlueAgent):
         self.config = config
         self.network = network
         self.configs: Dict[str, any] = {}
-        self.action_space_converter: ActionSpaceConverter = None
+        self.action_space: ActionSpace = None
         
         self.from_yaml()
         self._init_blue_actions()
@@ -81,7 +78,7 @@ class DynamicBlueAgent(BlueAgent):
                 as_args = {}
         import_path = ".".join([as_module_path, as_module])
         m = importlib.import_module(import_path)
-        self.action_space_converter = getattr(m, as_class)(self.network, **as_args)      
+        self.action_space = getattr(m, as_class)(self.network, **as_args)      
 
 
         # Get information needed to later initialize blue actions.
@@ -153,8 +150,8 @@ class DynamicBlueAgent(BlueAgent):
                 action_kwargs[sd] = self.shared_data[sd]
             action = action_class(self.network, action_configs, **action_kwargs)
 
-            self.action_space_converter.add_action(action_info.name, action, **action_info.action_space_args)
-        self.action_space_converter.finalize()
+            self.action_space.add_action(action_info.name, action, **action_info.action_space_args)
+        self.action_space.finalize()
 
     def _init_reward_map(self) -> None:
         self.reward_map: RewardMap = {}
@@ -169,7 +166,7 @@ class DynamicBlueAgent(BlueAgent):
             )
 
     def act(self, action: int) -> BlueAgentResult:
-        asc_return = self.action_space_converter.select_action(action)
+        asc_return = self.action_space.select_action(action)
         result = asc_return.action.execute(*asc_return.args, **asc_return.kwargs)
         id = result.id
         success = result.success
@@ -180,7 +177,10 @@ class DynamicBlueAgent(BlueAgent):
         return self.reward_map
 
     def get_action_space_shape(self) -> tuple[int, ...]:
-        return self.action_space_converter.get_action_space_shape()
+        return self.action_space.get_shape()
+    
+    def create_action_space(self) -> Space:
+        return self.action_space.create_action_space()
     
     def reset(self):
         # I think all this needs to do is set all shared_data values to their default values

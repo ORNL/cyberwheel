@@ -1,17 +1,18 @@
 from abc import abstractmethod, ABC
 from gym.core import ActType
+from gym import Space
 
 from cyberwheel.blue_actions.dynamic_blue_base import DynamicBlueAction
 from cyberwheel.network.network_base import Network
 
-class ASCReturn:
+class ASReturn:
     def __init__(self, name: str, action: DynamicBlueAction, args=(), kwargs={}) -> None:
         self.name = name
         self.action = action
         self.args = args
         self.kwargs = kwargs
 
-class ActionSpaceConverter(ABC):
+class ActionSpace(ABC):
     """
     A base class for converting the output of `gym.Space.sample()` to a blue action. 
     Must implement:
@@ -20,7 +21,7 @@ class ActionSpaceConverter(ABC):
       action is to be executed by the blue agent. 
     - `add_actions()`: Method for adding an action. Used while parsing the dynamic blue agent's config file to
       add mappings from `ActType` to a blue action. 
-    - `get_action_space_shape()`: Method for getting the shape of the action space. NOTE: Might be replaced
+    - `get_shape()`: Method for getting the shape of the action space. NOTE: Might be replaced
       by an actual implementation of the action space. I.e. this class also sets up the action space for the env.
 
     """
@@ -32,7 +33,7 @@ class ActionSpaceConverter(ABC):
         self.num_subnets = len(self.subnets)
 
     @abstractmethod
-    def select_action(self, action: ActType, **kwargs)-> ASCReturn:
+    def select_action(self, action: ActType, **kwargs)-> ASReturn:
         """
         Selects which action to perform based on the value of `action`. Other information necessary 
         can be passed through `**kwargs`.
@@ -48,10 +49,14 @@ class ActionSpaceConverter(ABC):
         pass
 
     @abstractmethod
-    def get_action_space_shape(self) -> tuple[int, ...]:
+    def get_shape(self) -> tuple[int, ...]:
         """
         Returns the an action space's shape.
         """
+        pass
+    
+    @abstractmethod
+    def create_action_space(self) -> Space:
         pass
 
     def finalize(self):

@@ -1,1 +1,1 @@
-from .action_space import ActionSpaceConverter
+from .action_space import ActionSpace

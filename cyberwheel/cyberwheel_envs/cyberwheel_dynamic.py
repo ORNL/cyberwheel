@@ -117,7 +117,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
             blue_config
         )
         self.blue_agent = DynamicBlueAgent(self.blue_conf_file, self.network)
-        self.action_space = spaces.Discrete(self.blue_agent.get_action_space_shape()[0])
+        self.action_space = self.blue_agent.create_action_space()
         # self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
 
         detector_conf_file = files("cyberwheel.resources.configs.detector").joinpath(

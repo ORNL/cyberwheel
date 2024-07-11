@@ -1,7 +1,9 @@
 from typing import List
+from gym import Space
+from gym.spaces import Discrete
 from gym.core import ActType
 
-from .action_space import ActionSpaceConverter, ASCReturn
+from .action_space import ActionSpace, ASReturn
 from cyberwheel.network.network_base import Network
 from cyberwheel.blue_actions.dynamic_blue_base import DynamicBlueAction
 
@@ -16,13 +18,13 @@ class _ActionRangeChecker():
     def check_range(self, index: int) -> bool:
         return index >= self.lower_bound and index < self.upper_bound
 
-class DiscreteConverter(ActionSpaceConverter):
+class DiscreteActionSpace(ActionSpace):
     def __init__(self, network: Network) -> None:
         super().__init__(network)
         self._action_space_size: int  = 0
         self._action_checkers: List[_ActionRangeChecker] = []
     
-    def select_action(self, action: ActType) -> ASCReturn:
+    def select_action(self, action: ActType) -> ASReturn:
             try:
                action = int(action)
             except:
@@ -33,16 +35,16 @@ class DiscreteConverter(ActionSpaceConverter):
                     continue
                 name = ac.name
                 if ac.type == "standalone":
-                    return ASCReturn(name, ac.action)
+                    return ASReturn(name, ac.action)
                 elif ac.type == "host":
                     index = (action - ac.lower_bound) % self.num_hosts
-                    return ASCReturn(name, ac.action, args=[self.hosts[index]])
+                    return ASReturn(name, ac.action, args=[self.hosts[index]])
                 elif ac.type == "subnet":
                     index = (action - ac.lower_bound) % self.num_subnets
-                    return ASCReturn(name, ac.action, args=[self.subnets[index]])
+                    return ASReturn(name, ac.action, args=[self.subnets[index]])
                 elif ac.type == "range":
                     index = (action - ac.lower_bound) % (ac.upper_bound - ac.lower_bound)
-                    return ASCReturn(name, ac.action, args=[index])
+                    return ASReturn(name, ac.action, args=[index])
                 else:
                     raise TypeError(f"Unknown action type: {ac.type}.")
 
@@ -66,5 +68,8 @@ class DiscreteConverter(ActionSpaceConverter):
         upper_bound = self._action_space_size
         self._action_checkers.append(_ActionRangeChecker(name, action, action_type, lower_bound, upper_bound))
 
-    def get_action_space_shape(self) -> tuple[int, ...]:
+    def get_shape(self) -> tuple[int, ...]:
         return (self._action_space_size,)
+
+    def create_action_space(self) -> Space:
+        return Discrete(self._action_space_size)

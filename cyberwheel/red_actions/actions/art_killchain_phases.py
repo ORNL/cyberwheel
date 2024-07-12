@@ -218,7 +218,6 @@ class ARTKillChainPhase(ARTAction):
                 "impact": ["T1531", "T1485", "T1486", "T1496", "T1529"],
             },
         }
-        self.technique_mapping = art_techniques.technique_mapping
 
     def sim_execute(self):
         self.action_results.detector_alert.add_src_host(self.src_host)
@@ -238,14 +237,14 @@ class ARTKillChainPhase(ARTAction):
         mitre_id = random.choice(
             self.validity_mapping[host_os][action_type]
         )  # Change to look for depending on service
-        art_technique = self.technique_mapping[mitre_id]()
-        for mid in valid_mitre_ids:
-            temp_art = self.technique_mapping[mid]()
-            for cve in host_cves:
-                if cve in temp_art.cve_list:
-                    art_technique = temp_art
-                    mitre_id = mid
-                    break
+        art_technique = art_techniques.technique_mapping[mitre_id]()
+        #for mid in valid_mitre_ids:
+        #    temp_art = art_techniques.technique_mapping[mid]()
+        #    for cve in host_cves:
+        #        if cve in temp_art.cve_list:
+        #            art_technique = temp_art
+        #            mitre_id = mid
+        #            break
 
         processes = []
         valid_tests = [
@@ -261,12 +260,12 @@ class ARTKillChainPhase(ARTAction):
             processes.extend(chosen_test.executor.command)
             processes.extend(chosen_test.executor.cleanup_command)
 
-        if any(
-            cve in service.vulns
-            for service in self.target_host.host_type.services
-            for cve in cves_associated
-        ):
-            self.action_results.add_successful_action(host)
+        #if any(
+        #    cve in service.vulns
+        #    for service in self.target_host.host_type.services
+        #    for cve in cves_associated
+        #):
+        #    self.action_results.add_successful_action(host)
 
         self.action_results.add_metadata(
             host.name,
@@ -333,14 +332,15 @@ class ARTPingSweep(ARTKillChainPhase):
         )
 
         subnet_hosts = host.subnet.connected_hosts
+        interfaces = []
         self.action_results.add_metadata(
             host.subnet.name, {"subnet_scanned": host.subnet}
         )
         for each_host in subnet_hosts:
             for h in each_host.interfaces:
-                subnet_hosts.append(h)
-        for h in subnet_hosts:
-            self.action_results.add_metadata(h.name, {"ip_address": h.ip_address})
+                interfaces.append(h)
+        for h in interfaces:
+            self.action_results.add_metadata(h.name, {"ip_address": h})
 
         return self.action_results
 
@@ -455,6 +455,14 @@ class ARTDiscovery(ARTKillChainPhase):
     ) -> None:
         super().__init__(src_host, target_host)
         self.name = "discovery"
+
+    def sim_execute(self):
+        super().sim_execute()
+        self.action_results.add_metadata(
+            self.target_host.name,
+            {"type": self.target_host.host_type.name},
+        )
+        return self.action_results
 
 
 class ARTLateralMovement(ARTKillChainPhase):

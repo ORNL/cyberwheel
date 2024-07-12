@@ -5,16 +5,16 @@ from gymnasium import spaces
 from typing import Dict, Iterable, List
 import yaml
 
-from .cyberwheel import Cyberwheel
-from blue_agents.decoy_blue import DecoyBlueAgent
+from cyberwheel.cyberwheel_envs import Cyberwheel
+from cyberwheel.blue_agents import DecoyBlueAgent
 from cyberwheel.observation import HistoryObservation
-from detectors.alert import Alert
+from cyberwheel.detectors.alert import Alert
 
 # from detectors.detector import DecoyDetector, CoinFlipDetector
-from detectors.detectors.probability_detector import ProbabilityDetector
-from network.network_base import Network
-from network.host import Host
-from red_agents import KillChainAgent, RecurringImpactAgent, ARTAgent
+from cyberwheel.detectors.detectors.probability_detector import ProbabilityDetector
+from cyberwheel.network.network_base import Network
+from cyberwheel.network.host import Host
+from cyberwheel.red_agents import KillChainAgent, RecurringImpactAgent, ARTAgent
 from cyberwheel.reward import DecoyReward, StepDetectedReward
 
 
@@ -58,6 +58,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         reward_function="default",
         red_agent="killchain_agent",
         evaluation=False,
+        max_steps=100,
         **kwargs,
     ):
         network_conf_file = files("cyberwheel.resources.metadata").joinpath(
@@ -69,7 +70,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         host_conf_file = files("cyberwheel.resources.metadata").joinpath(host_def_file)
         super().__init__(config_file_path=network_conf_file)
         self.total = 0
-        self.max_steps = 100
+        self.max_steps = max_steps
         self.current_step = 0
 
         # Create action space. Decoy action for each decoy type for each subnet.
@@ -138,10 +139,11 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         self.evaluation = evaluation
 
     def step(self, action):
-        # blue_action_name = "nothing"
-        # rec_id = 0
-        # blue_success = False
-        blue_action_name, rec_id, blue_success = self.blue_agent.act(action)
+        blue_action_name = "nothing"
+        rec_id = 0
+        blue_success = False
+        #blue_action_name, rec_id, blue_success = self.blue_agent.act(action)
+        #print(blue_action_name + " - ")
         self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id)
         red_action_name = (
             self.red_agent.act().get_name()
@@ -150,9 +152,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         action_metadata = self.red_agent.history.history[-1]
         red_action_type, red_action_src, red_action_dst = action_metadata.action
 
-        print(
-            f"{self.current_step} - {red_action_name} : {red_action_src.name} --> {red_action_dst.name}"
-        )
+        #print(
+        #    f"{self.current_step} - {red_action_name} : {red_action_src.name} --> {red_action_dst.name}"
+        #)
 
         red_action_success = action_metadata.success
 
@@ -209,6 +211,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         pass
 
     def reset(self, seed=None, options=None):
+        #print("------------------------------------------------------------")
         self.total = 0
         self.current_step = 0
 

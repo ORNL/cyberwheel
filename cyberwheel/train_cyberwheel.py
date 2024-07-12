@@ -19,6 +19,7 @@ from torch import multiprocessing
 from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+import sys
 
 from cyberwheel.cyberwheel_envs.cyberwheel_dynamic import DynamicCyberwheel
 
@@ -128,6 +129,8 @@ def parse_args():
     args.num_updates = args.total_timesteps // args.batch_size  # Total number of policy update phases
     args.num_saves = 10    # Number of model saves and evaluations to run throughout training
     args.save_frequency = int(args.num_updates / args.num_saves)    # Number of policy updates between each model save and evaluation
+    if args.save_frequency == 0:
+        args.save_frequency = 1
 
     print(f"Running on network: {args.network_config}")
 

@@ -15,8 +15,11 @@ from torch.distributions.categorical import Categorical
 
 from cyberwheel.cyberwheel_envs.cyberwheel_restore import RestoreCyberwheel
 from cyberwheel.cyberwheel_envs.cyberwheel_dynamic import DynamicCyberwheel
+from cyberwheel.blue_agents.decoy_blue import DecoyBlueAgent
+from cyberwheel.red_agents import KillChainAgent, ARTAgent
+from cyberwheel.cyberwheel_envs.cyberwheel_decoyagent import *
 
-from visualize import visualize
+from cyberwheel.visualize import visualize
 
 
 def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
@@ -89,7 +92,8 @@ def make_env(
     max_decoys=1,
     blue_reward_scaling=10,
     reward_function="default",
-    red_agent="killchain_agent"
+    red_agent="killchain_agent",
+    max_steps=50
 ):
     """
     Utility function for multiprocessed env.
@@ -111,7 +115,8 @@ def make_env(
             blue_reward_scaling=blue_reward_scaling,
             reward_function=reward_function,
             red_agent=red_agent,
-            evaluation=True
+            evaluation=True,
+            max_steps=max_steps
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         return env
@@ -204,6 +209,20 @@ def parse_args():
         default="default",
     )
 
+    parser.add_argument(
+        "--num-steps",
+        help="Number of steps per episode for evaluation",
+        type=int,
+        default=50
+    )
+
+    parser.add_argument(
+        "--num-episodes",
+        help="Number of episodes to evaluate",
+        type=int,
+        default=10
+    )
+
     args = parser.parse_args()
 
     # print(args)
@@ -233,7 +252,8 @@ if __name__ == "__main__":
             max_decoys=args.max_decoys,
             blue_reward_scaling=args.reward_scaling,
             reward_function=args.reward_function,
-            red_agent=args.agent
+            red_agent=args.agent,
+            max_steps=args.num_steps
         )
     ]
     envs = gym.vector.SyncVectorEnv(env_funcs)
@@ -280,10 +300,10 @@ if __name__ == "__main__":
     full_blue_actions = []
     full_rewards = []
 
-    for episode in tqdm(range(20)):
+    for episode in tqdm(range(args.num_episodes)):
         blue_actions = []
         red_actions = []
-        for step in range(100):
+        for step in range(args.num_steps):
             if step == 0:
                 obs = obs[0]
             obs = torch.Tensor(obs).to(device)

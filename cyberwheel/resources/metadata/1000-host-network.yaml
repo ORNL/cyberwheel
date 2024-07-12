@@ -1,0 +1,6265 @@
+host_type_config:
+hosts:
+  host0:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host1:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host10:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host100:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host101:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host102:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: mail_server
+  host103:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: proxy_server
+  host104:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: web_server
+  host105:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: proxy_server
+  host106:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host107:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host108:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host109:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host11:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host110:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: mail_server
+  host111:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: mail_server
+  host112:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host113:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: web_server
+  host114:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: proxy_server
+  host115:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: mail_server
+  host116:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: proxy_server
+  host117:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: mail_server
+  host118:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host119:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host12:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host120:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: proxy_server
+  host121:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: web_server
+  host122:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: proxy_server
+  host123:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host124:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: mail_server
+  host125:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: mail_server
+  host126:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host127:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host128:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host129:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: web_server
+  host13:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host130:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host131:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host132:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host133:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host134:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: web_server
+  host135:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host136:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: proxy_server
+  host137:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: proxy_server
+  host138:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host139:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: mail_server
+  host14:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host140:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: web_server
+  host141:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host142:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: web_server
+  host143:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host144:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host145:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: file_server
+  host146:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host147:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: web_server
+  host148:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: web_server
+  host149:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: ssh_jump_server
+  host15:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host150:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host151:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host152:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host153:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host154:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host155:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host156:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host157:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host158:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host159:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host16:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host160:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host161:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host162:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host163:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host164:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host165:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host166:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host167:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host168:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host169:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host17:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host170:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host171:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host172:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host173:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host174:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host175:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host176:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host177:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host178:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host179:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host18:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host180:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host181:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host182:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host183:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host184:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host185:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host186:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host187:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host188:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host189:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host19:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host190:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host191:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host192:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host193:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host194:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host195:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host196:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host197:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host198:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host199:
+    firewall:
+    routes:
+    subnet: subnet3
+    type: workstation
+  host2:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host20:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host200:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: file_server
+  host201:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: mail_server
+  host202:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: proxy_server
+  host203:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: mail_server
+  host204:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: web_server
+  host205:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: web_server
+  host206:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: file_server
+  host207:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: mail_server
+  host208:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: web_server
+  host209:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host21:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host210:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host211:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: proxy_server
+  host212:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: file_server
+  host213:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host214:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host215:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: file_server
+  host216:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: proxy_server
+  host217:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: web_server
+  host218:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: proxy_server
+  host219:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host22:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host220:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: proxy_server
+  host221:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host222:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: mail_server
+  host223:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: file_server
+  host224:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host225:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host226:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host227:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: file_server
+  host228:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host229:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: proxy_server
+  host23:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host230:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: proxy_server
+  host231:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: web_server
+  host232:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: proxy_server
+  host233:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host234:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host235:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: file_server
+  host236:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: proxy_server
+  host237:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host238:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: mail_server
+  host239:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host24:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host240:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: mail_server
+  host241:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: mail_server
+  host242:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: ssh_jump_server
+  host243:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: proxy_server
+  host244:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: mail_server
+  host245:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: mail_server
+  host246:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: web_server
+  host247:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: mail_server
+  host248:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: file_server
+  host249:
+    firewall:
+    routes:
+    subnet: subnet4
+    type: mail_server
+  host25:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host250:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: proxy_server
+  host251:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: ssh_jump_server
+  host252:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: ssh_jump_server
+  host253:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: file_server
+  host254:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: ssh_jump_server
+  host255:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: ssh_jump_server
+  host256:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: proxy_server
+  host257:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: ssh_jump_server
+  host258:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: web_server
+  host259:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: web_server
+  host26:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host260:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: ssh_jump_server
+  host261:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: ssh_jump_server
+  host262:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: web_server
+  host263:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: proxy_server
+  host264:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: proxy_server
+  host265:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: file_server
+  host266:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: file_server
+  host267:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: web_server
+  host268:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: proxy_server
+  host269:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: mail_server
+  host27:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host270:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: file_server
+  host271:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: proxy_server
+  host272:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: proxy_server
+  host273:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: ssh_jump_server
+  host274:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: mail_server
+  host275:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: mail_server
+  host276:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: web_server
+  host277:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: ssh_jump_server
+  host278:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: file_server
+  host279:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: web_server
+  host28:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host280:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: mail_server
+  host281:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: mail_server
+  host282:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: proxy_server
+  host283:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: proxy_server
+  host284:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: mail_server
+  host285:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: web_server
+  host286:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: file_server
+  host287:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: ssh_jump_server
+  host288:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: file_server
+  host289:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: web_server
+  host29:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host290:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: proxy_server
+  host291:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: ssh_jump_server
+  host292:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: file_server
+  host293:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: web_server
+  host294:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: file_server
+  host295:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: mail_server
+  host296:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: proxy_server
+  host297:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: file_server
+  host298:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: ssh_jump_server
+  host299:
+    firewall:
+    routes:
+    subnet: subnet5
+    type: file_server
+  host3:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host30:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host300:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host301:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host302:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host303:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host304:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host305:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host306:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host307:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host308:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host309:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host31:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host310:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host311:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host312:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host313:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host314:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host315:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host316:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host317:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host318:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host319:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host32:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host320:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host321:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host322:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host323:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host324:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host325:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host326:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host327:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host328:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host329:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host33:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host330:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host331:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host332:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host333:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host334:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host335:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host336:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host337:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host338:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host339:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host34:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host340:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host341:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host342:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host343:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host344:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host345:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host346:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host347:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host348:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host349:
+    firewall:
+    routes:
+    subnet: subnet6
+    type: workstation
+  host35:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host350:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: mail_server
+  host351:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host352:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host353:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: proxy_server
+  host354:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host355:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host356:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: proxy_server
+  host357:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: file_server
+  host358:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host359:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: proxy_server
+  host36:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host360:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host361:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: mail_server
+  host362:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: mail_server
+  host363:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: file_server
+  host364:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host365:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: proxy_server
+  host366:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host367:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host368:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: file_server
+  host369:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: mail_server
+  host37:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host370:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host371:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: mail_server
+  host372:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: mail_server
+  host373:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host374:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host375:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host376:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host377:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host378:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: file_server
+  host379:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host38:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host380:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host381:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host382:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: proxy_server
+  host383:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host384:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: proxy_server
+  host385:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host386:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host387:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host388:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host389:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host39:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host390:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host391:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host392:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host393:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host394:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: proxy_server
+  host395:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host396:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: mail_server
+  host397:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: proxy_server
+  host398:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: web_server
+  host399:
+    firewall:
+    routes:
+    subnet: subnet7
+    type: ssh_jump_server
+  host4:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host40:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host400:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: file_server
+  host401:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host402:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: ssh_jump_server
+  host403:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host404:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: mail_server
+  host405:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host406:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: web_server
+  host407:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: mail_server
+  host408:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host409:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: web_server
+  host41:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host410:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: web_server
+  host411:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: mail_server
+  host412:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: ssh_jump_server
+  host413:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host414:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: web_server
+  host415:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: web_server
+  host416:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host417:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: file_server
+  host418:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: file_server
+  host419:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: file_server
+  host42:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host420:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: web_server
+  host421:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: mail_server
+  host422:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host423:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: mail_server
+  host424:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: file_server
+  host425:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host426:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: mail_server
+  host427:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: ssh_jump_server
+  host428:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: file_server
+  host429:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host43:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host430:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host431:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: ssh_jump_server
+  host432:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host433:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: mail_server
+  host434:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: ssh_jump_server
+  host435:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: file_server
+  host436:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: web_server
+  host437:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host438:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: file_server
+  host439:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host44:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host440:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host441:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: web_server
+  host442:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: mail_server
+  host443:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host444:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: mail_server
+  host445:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: mail_server
+  host446:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: proxy_server
+  host447:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: web_server
+  host448:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: ssh_jump_server
+  host449:
+    firewall:
+    routes:
+    subnet: subnet8
+    type: web_server
+  host45:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host450:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host451:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host452:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host453:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host454:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host455:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host456:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host457:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host458:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host459:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host46:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host460:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host461:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host462:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host463:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host464:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host465:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host466:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host467:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host468:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host469:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host47:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host470:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host471:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host472:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host473:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host474:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host475:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host476:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host477:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host478:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host479:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host48:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host480:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host481:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host482:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host483:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host484:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host485:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host486:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host487:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host488:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host489:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host49:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host490:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host491:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host492:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host493:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host494:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host495:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host496:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host497:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host498:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host499:
+    firewall:
+    routes:
+    subnet: subnet9
+    type: workstation
+  host5:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host50:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: proxy_server
+  host500:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: proxy_server
+  host501:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: file_server
+  host502:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: file_server
+  host503:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: mail_server
+  host504:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: proxy_server
+  host505:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: web_server
+  host506:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: file_server
+  host507:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: mail_server
+  host508:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: proxy_server
+  host509:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: proxy_server
+  host51:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: mail_server
+  host510:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: web_server
+  host511:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: mail_server
+  host512:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: ssh_jump_server
+  host513:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: ssh_jump_server
+  host514:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: proxy_server
+  host515:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: web_server
+  host516:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: mail_server
+  host517:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: file_server
+  host518:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: ssh_jump_server
+  host519:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: ssh_jump_server
+  host52:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host520:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: proxy_server
+  host521:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: ssh_jump_server
+  host522:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: ssh_jump_server
+  host523:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: proxy_server
+  host524:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: file_server
+  host525:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: web_server
+  host526:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: ssh_jump_server
+  host527:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: web_server
+  host528:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: proxy_server
+  host529:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: proxy_server
+  host53:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host530:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: ssh_jump_server
+  host531:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: ssh_jump_server
+  host532:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: file_server
+  host533:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: mail_server
+  host534:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: ssh_jump_server
+  host535:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: file_server
+  host536:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: mail_server
+  host537:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: file_server
+  host538:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: file_server
+  host539:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: proxy_server
+  host54:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: proxy_server
+  host540:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: ssh_jump_server
+  host541:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: web_server
+  host542:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: proxy_server
+  host543:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: ssh_jump_server
+  host544:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: mail_server
+  host545:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: proxy_server
+  host546:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: mail_server
+  host547:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: file_server
+  host548:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: web_server
+  host549:
+    firewall:
+    routes:
+    subnet: subnet10
+    type: file_server
+  host55:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: mail_server
+  host550:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: mail_server
+  host551:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: proxy_server
+  host552:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: file_server
+  host553:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: mail_server
+  host554:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: proxy_server
+  host555:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: web_server
+  host556:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: file_server
+  host557:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: web_server
+  host558:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: mail_server
+  host559:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: ssh_jump_server
+  host56:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host560:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: proxy_server
+  host561:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: ssh_jump_server
+  host562:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: mail_server
+  host563:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: web_server
+  host564:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: file_server
+  host565:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: ssh_jump_server
+  host566:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: file_server
+  host567:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: file_server
+  host568:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: ssh_jump_server
+  host569:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: ssh_jump_server
+  host57:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host570:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: web_server
+  host571:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: mail_server
+  host572:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: file_server
+  host573:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: file_server
+  host574:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: proxy_server
+  host575:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: ssh_jump_server
+  host576:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: file_server
+  host577:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: proxy_server
+  host578:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: ssh_jump_server
+  host579:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: mail_server
+  host58:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host580:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: ssh_jump_server
+  host581:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: mail_server
+  host582:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: file_server
+  host583:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: mail_server
+  host584:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: ssh_jump_server
+  host585:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: web_server
+  host586:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: web_server
+  host587:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: proxy_server
+  host588:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: mail_server
+  host589:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: web_server
+  host59:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host590:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: proxy_server
+  host591:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: proxy_server
+  host592:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: ssh_jump_server
+  host593:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: proxy_server
+  host594:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: file_server
+  host595:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: proxy_server
+  host596:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: web_server
+  host597:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: mail_server
+  host598:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: file_server
+  host599:
+    firewall:
+    routes:
+    subnet: subnet11
+    type: ssh_jump_server
+  host6:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host60:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host600:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host601:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host602:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host603:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host604:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host605:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host606:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host607:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host608:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host609:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host61:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: mail_server
+  host610:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host611:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host612:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host613:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host614:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host615:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host616:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host617:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host618:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host619:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host62:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: proxy_server
+  host620:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host621:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host622:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host623:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host624:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host625:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host626:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host627:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host628:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host629:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host63:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host630:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host631:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host632:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host633:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host634:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host635:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host636:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host637:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host638:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host639:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host64:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host640:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host641:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host642:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host643:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host644:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host645:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host646:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host647:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host648:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host649:
+    firewall:
+    routes:
+    subnet: subnet12
+    type: workstation
+  host65:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: mail_server
+  host650:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: file_server
+  host651:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host652:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: proxy_server
+  host653:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: ssh_jump_server
+  host654:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host655:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: proxy_server
+  host656:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: ssh_jump_server
+  host657:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: proxy_server
+  host658:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: file_server
+  host659:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: web_server
+  host66:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host660:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: web_server
+  host661:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host662:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: file_server
+  host663:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: proxy_server
+  host664:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: proxy_server
+  host665:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: proxy_server
+  host666:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host667:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host668:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: ssh_jump_server
+  host669:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host67:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host670:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host671:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: ssh_jump_server
+  host672:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: web_server
+  host673:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: file_server
+  host674:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host675:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: web_server
+  host676:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: web_server
+  host677:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: ssh_jump_server
+  host678:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: file_server
+  host679:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host68:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: mail_server
+  host680:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: file_server
+  host681:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: file_server
+  host682:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: web_server
+  host683:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: file_server
+  host684:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: file_server
+  host685:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: file_server
+  host686:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: ssh_jump_server
+  host687:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: proxy_server
+  host688:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: proxy_server
+  host689:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: proxy_server
+  host69:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host690:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: proxy_server
+  host691:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: ssh_jump_server
+  host692:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: proxy_server
+  host693:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host694:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: file_server
+  host695:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host696:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host697:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host698:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: mail_server
+  host699:
+    firewall:
+    routes:
+    subnet: subnet13
+    type: file_server
+  host7:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host70:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host700:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host701:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: ssh_jump_server
+  host702:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host703:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host704:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: ssh_jump_server
+  host705:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: file_server
+  host706:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: proxy_server
+  host707:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: ssh_jump_server
+  host708:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host709:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: proxy_server
+  host71:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: proxy_server
+  host710:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: file_server
+  host711:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host712:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: ssh_jump_server
+  host713:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: proxy_server
+  host714:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: ssh_jump_server
+  host715:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: ssh_jump_server
+  host716:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: web_server
+  host717:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: file_server
+  host718:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host719:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: ssh_jump_server
+  host72:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host720:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: ssh_jump_server
+  host721:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: ssh_jump_server
+  host722:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: web_server
+  host723:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host724:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: file_server
+  host725:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: web_server
+  host726:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: web_server
+  host727:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: file_server
+  host728:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host729:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: ssh_jump_server
+  host73:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host730:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host731:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: file_server
+  host732:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: web_server
+  host733:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host734:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: proxy_server
+  host735:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: web_server
+  host736:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: file_server
+  host737:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host738:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: proxy_server
+  host739:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host74:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host740:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: web_server
+  host741:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: proxy_server
+  host742:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: web_server
+  host743:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: mail_server
+  host744:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: proxy_server
+  host745:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: web_server
+  host746:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: proxy_server
+  host747:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: ssh_jump_server
+  host748:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: proxy_server
+  host749:
+    firewall:
+    routes:
+    subnet: subnet14
+    type: file_server
+  host75:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host750:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host751:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host752:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host753:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host754:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host755:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host756:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host757:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host758:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host759:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host76:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host760:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host761:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host762:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host763:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host764:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host765:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host766:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host767:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host768:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host769:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host77:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host770:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host771:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host772:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host773:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host774:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host775:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host776:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host777:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host778:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host779:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host78:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host780:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host781:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host782:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host783:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host784:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host785:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host786:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host787:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host788:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host789:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host79:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host790:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host791:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host792:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host793:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host794:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host795:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host796:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host797:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host798:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host799:
+    firewall:
+    routes:
+    subnet: subnet15
+    type: workstation
+  host8:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host80:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host800:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: mail_server
+  host801:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: mail_server
+  host802:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: proxy_server
+  host803:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: mail_server
+  host804:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host805:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: proxy_server
+  host806:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: mail_server
+  host807:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host808:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host809:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: web_server
+  host81:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host810:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: ssh_jump_server
+  host811:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host812:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: mail_server
+  host813:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: web_server
+  host814:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: proxy_server
+  host815:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: mail_server
+  host816:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: ssh_jump_server
+  host817:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: web_server
+  host818:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: ssh_jump_server
+  host819:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: ssh_jump_server
+  host82:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host820:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host821:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host822:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: mail_server
+  host823:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: ssh_jump_server
+  host824:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: proxy_server
+  host825:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host826:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: ssh_jump_server
+  host827:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host828:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: web_server
+  host829:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: proxy_server
+  host83:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host830:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: ssh_jump_server
+  host831:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host832:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: mail_server
+  host833:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: ssh_jump_server
+  host834:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: proxy_server
+  host835:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: ssh_jump_server
+  host836:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host837:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: ssh_jump_server
+  host838:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: web_server
+  host839:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host84:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host840:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: ssh_jump_server
+  host841:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: proxy_server
+  host842:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: web_server
+  host843:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: proxy_server
+  host844:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: proxy_server
+  host845:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: ssh_jump_server
+  host846:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host847:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: web_server
+  host848:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: web_server
+  host849:
+    firewall:
+    routes:
+    subnet: subnet16
+    type: file_server
+  host85:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: proxy_server
+  host850:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: mail_server
+  host851:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: ssh_jump_server
+  host852:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: mail_server
+  host853:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: web_server
+  host854:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: proxy_server
+  host855:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: proxy_server
+  host856:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: mail_server
+  host857:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: ssh_jump_server
+  host858:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: proxy_server
+  host859:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: mail_server
+  host86:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host860:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: mail_server
+  host861:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: file_server
+  host862:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: mail_server
+  host863:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: mail_server
+  host864:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: web_server
+  host865:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: ssh_jump_server
+  host866:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: file_server
+  host867:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: ssh_jump_server
+  host868:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: proxy_server
+  host869:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: mail_server
+  host87:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: mail_server
+  host870:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: mail_server
+  host871:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: mail_server
+  host872:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: web_server
+  host873:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: ssh_jump_server
+  host874:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: ssh_jump_server
+  host875:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: web_server
+  host876:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: file_server
+  host877:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: file_server
+  host878:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: ssh_jump_server
+  host879:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: proxy_server
+  host88:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: proxy_server
+  host880:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: proxy_server
+  host881:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: file_server
+  host882:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: file_server
+  host883:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: file_server
+  host884:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: ssh_jump_server
+  host885:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: file_server
+  host886:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: proxy_server
+  host887:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: proxy_server
+  host888:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: ssh_jump_server
+  host889:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: ssh_jump_server
+  host89:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: mail_server
+  host890:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: file_server
+  host891:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: mail_server
+  host892:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: proxy_server
+  host893:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: file_server
+  host894:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: proxy_server
+  host895:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: proxy_server
+  host896:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: proxy_server
+  host897:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: file_server
+  host898:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: mail_server
+  host899:
+    firewall:
+    routes:
+    subnet: subnet17
+    type: ssh_jump_server
+  host9:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host90:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host900:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host901:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host902:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host903:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host904:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host905:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host906:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host907:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host908:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host909:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host91:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host910:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host911:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host912:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host913:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host914:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host915:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host916:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host917:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host918:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host919:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host92:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host920:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host921:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host922:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host923:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host924:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host925:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host926:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host927:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host928:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host929:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host93:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host930:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host931:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host932:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host933:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host934:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host935:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host936:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host937:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host938:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host939:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host94:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: proxy_server
+  host940:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host941:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host942:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host943:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host944:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host945:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host946:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host947:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host948:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host949:
+    firewall:
+    routes:
+    subnet: subnet18
+    type: workstation
+  host95:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host950:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+  host951:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: mail_server
+  host952:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: file_server
+  host953:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: mail_server
+  host954:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+  host955:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: file_server
+  host956:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: file_server
+  host957:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: web_server
+  host958:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+  host959:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: file_server
+  host96:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: file_server
+  host960:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: file_server
+  host961:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: web_server
+  host962:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: web_server
+  host963:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: proxy_server
+  host964:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: web_server
+  host965:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: file_server
+  host966:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: mail_server
+  host967:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+  host968:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+  host969:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: web_server
+  host97:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: web_server
+  host970:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: web_server
+  host971:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: mail_server
+  host972:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: web_server
+  host973:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: web_server
+  host974:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: proxy_server
+  host975:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: proxy_server
+  host976:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: mail_server
+  host977:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+  host978:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: web_server
+  host979:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+  host98:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: proxy_server
+  host980:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: file_server
+  host981:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: mail_server
+  host982:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+  host983:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+  host984:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: mail_server
+  host985:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: mail_server
+  host986:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+  host987:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: file_server
+  host988:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: mail_server
+  host989:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+  host99:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: ssh_jump_server
+  host990:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: proxy_server
+  host991:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: mail_server
+  host992:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: mail_server
+  host993:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: proxy_server
+  host994:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: proxy_server
+  host995:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: web_server
+  host996:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: proxy_server
+  host997:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+  host998:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: mail_server
+  host999:
+    firewall:
+    routes:
+    subnet: subnet19
+    type: ssh_jump_server
+interfaces:
+  host0:
+  - host20
+  - host980
+  host100:
+  - host80
+  - host120
+  host120:
+  - host100
+  - host140
+  host140:
+  - host120
+  - host160
+  host160:
+  - host140
+  - host180
+  host180:
+  - host160
+  - host200
+  host20:
+  - host0
+  - host40
+  host200:
+  - host180
+  - host220
+  host220:
+  - host200
+  - host240
+  host240:
+  - host220
+  - host260
+  host260:
+  - host240
+  - host280
+  host280:
+  - host260
+  - host300
+  host300:
+  - host280
+  - host320
+  host320:
+  - host300
+  - host340
+  host340:
+  - host320
+  - host360
+  host360:
+  - host340
+  - host380
+  host380:
+  - host360
+  - host400
+  host40:
+  - host20
+  - host60
+  host400:
+  - host380
+  - host420
+  host420:
+  - host400
+  - host440
+  host440:
+  - host420
+  - host460
+  host460:
+  - host440
+  - host480
+  host480:
+  - host460
+  - host500
+  host500:
+  - host480
+  - host520
+  host520:
+  - host500
+  - host540
+  host540:
+  - host520
+  - host560
+  host560:
+  - host540
+  - host580
+  host580:
+  - host560
+  - host600
+  host60:
+  - host40
+  - host80
+  host600:
+  - host580
+  - host620
+  host620:
+  - host600
+  - host640
+  host640:
+  - host620
+  - host660
+  host660:
+  - host640
+  - host680
+  host680:
+  - host660
+  - host700
+  host700:
+  - host680
+  - host720
+  host720:
+  - host700
+  - host740
+  host740:
+  - host720
+  - host760
+  host760:
+  - host740
+  - host780
+  host780:
+  - host760
+  - host800
+  host80:
+  - host60
+  - host100
+  host800:
+  - host780
+  - host820
+  host820:
+  - host800
+  - host840
+  host840:
+  - host820
+  - host860
+  host860:
+  - host840
+  - host880
+  host880:
+  - host860
+  - host900
+  host900:
+  - host880
+  - host920
+  host920:
+  - host900
+  - host940
+  host940:
+  - host920
+  - host960
+  host960:
+  - host940
+  - host980
+  host980:
+  - host960
+  - host0
+network:
+  desc: default description
+  name: 1000-host-network
+routers:
+  core_router:
+    default_route:
+    firewall:
+    routes:
+    routes_by_name:
+subnets:
+  subnet0:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet1:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet10:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet11:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet12:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet13:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet14:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet15:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet16:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet17:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet18:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet19:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet2:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet3:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet4:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet5:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet6:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet7:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet8:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet9:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+topology:
+  core_router:
+    subnet0:
+    - host0
+    - host1
+    - host2
+    - host3
+    - host4
+    - host5
+    - host6
+    - host7
+    - host8
+    - host9
+    - host10
+    - host11
+    - host12
+    - host13
+    - host14
+    - host15
+    - host16
+    - host17
+    - host18
+    - host19
+    - host20
+    - host21
+    - host22
+    - host23
+    - host24
+    - host25
+    - host26
+    - host27
+    - host28
+    - host29
+    - host30
+    - host31
+    - host32
+    - host33
+    - host34
+    - host35
+    - host36
+    - host37
+    - host38
+    - host39
+    - host40
+    - host41
+    - host42
+    - host43
+    - host44
+    - host45
+    - host46
+    - host47
+    - host48
+    - host49
+    subnet1:
+    - host50
+    - host51
+    - host52
+    - host53
+    - host54
+    - host55
+    - host56
+    - host57
+    - host58
+    - host59
+    - host60
+    - host61
+    - host62
+    - host63
+    - host64
+    - host65
+    - host66
+    - host67
+    - host68
+    - host69
+    - host70
+    - host71
+    - host72
+    - host73
+    - host74
+    - host75
+    - host76
+    - host77
+    - host78
+    - host79
+    - host80
+    - host81
+    - host82
+    - host83
+    - host84
+    - host85
+    - host86
+    - host87
+    - host88
+    - host89
+    - host90
+    - host91
+    - host92
+    - host93
+    - host94
+    - host95
+    - host96
+    - host97
+    - host98
+    - host99
+    subnet10:
+    - host500
+    - host501
+    - host502
+    - host503
+    - host504
+    - host505
+    - host506
+    - host507
+    - host508
+    - host509
+    - host510
+    - host511
+    - host512
+    - host513
+    - host514
+    - host515
+    - host516
+    - host517
+    - host518
+    - host519
+    - host520
+    - host521
+    - host522
+    - host523
+    - host524
+    - host525
+    - host526
+    - host527
+    - host528
+    - host529
+    - host530
+    - host531
+    - host532
+    - host533
+    - host534
+    - host535
+    - host536
+    - host537
+    - host538
+    - host539
+    - host540
+    - host541
+    - host542
+    - host543
+    - host544
+    - host545
+    - host546
+    - host547
+    - host548
+    - host549
+    subnet11:
+    - host550
+    - host551
+    - host552
+    - host553
+    - host554
+    - host555
+    - host556
+    - host557
+    - host558
+    - host559
+    - host560
+    - host561
+    - host562
+    - host563
+    - host564
+    - host565
+    - host566
+    - host567
+    - host568
+    - host569
+    - host570
+    - host571
+    - host572
+    - host573
+    - host574
+    - host575
+    - host576
+    - host577
+    - host578
+    - host579
+    - host580
+    - host581
+    - host582
+    - host583
+    - host584
+    - host585
+    - host586
+    - host587
+    - host588
+    - host589
+    - host590
+    - host591
+    - host592
+    - host593
+    - host594
+    - host595
+    - host596
+    - host597
+    - host598
+    - host599
+    subnet12:
+    - host600
+    - host601
+    - host602
+    - host603
+    - host604
+    - host605
+    - host606
+    - host607
+    - host608
+    - host609
+    - host610
+    - host611
+    - host612
+    - host613
+    - host614
+    - host615
+    - host616
+    - host617
+    - host618
+    - host619
+    - host620
+    - host621
+    - host622
+    - host623
+    - host624
+    - host625
+    - host626
+    - host627
+    - host628
+    - host629
+    - host630
+    - host631
+    - host632
+    - host633
+    - host634
+    - host635
+    - host636
+    - host637
+    - host638
+    - host639
+    - host640
+    - host641
+    - host642
+    - host643
+    - host644
+    - host645
+    - host646
+    - host647
+    - host648
+    - host649
+    subnet13:
+    - host650
+    - host651
+    - host652
+    - host653
+    - host654
+    - host655
+    - host656
+    - host657
+    - host658
+    - host659
+    - host660
+    - host661
+    - host662
+    - host663
+    - host664
+    - host665
+    - host666
+    - host667
+    - host668
+    - host669
+    - host670
+    - host671
+    - host672
+    - host673
+    - host674
+    - host675
+    - host676
+    - host677
+    - host678
+    - host679
+    - host680
+    - host681
+    - host682
+    - host683
+    - host684
+    - host685
+    - host686
+    - host687
+    - host688
+    - host689
+    - host690
+    - host691
+    - host692
+    - host693
+    - host694
+    - host695
+    - host696
+    - host697
+    - host698
+    - host699
+    subnet14:
+    - host700
+    - host701
+    - host702
+    - host703
+    - host704
+    - host705
+    - host706
+    - host707
+    - host708
+    - host709
+    - host710
+    - host711
+    - host712
+    - host713
+    - host714
+    - host715
+    - host716
+    - host717
+    - host718
+    - host719
+    - host720
+    - host721
+    - host722
+    - host723
+    - host724
+    - host725
+    - host726
+    - host727
+    - host728
+    - host729
+    - host730
+    - host731
+    - host732
+    - host733
+    - host734
+    - host735
+    - host736
+    - host737
+    - host738
+    - host739
+    - host740
+    - host741
+    - host742
+    - host743
+    - host744
+    - host745
+    - host746
+    - host747
+    - host748
+    - host749
+    subnet15:
+    - host750
+    - host751
+    - host752
+    - host753
+    - host754
+    - host755
+    - host756
+    - host757
+    - host758
+    - host759
+    - host760
+    - host761
+    - host762
+    - host763
+    - host764
+    - host765
+    - host766
+    - host767
+    - host768
+    - host769
+    - host770
+    - host771
+    - host772
+    - host773
+    - host774
+    - host775
+    - host776
+    - host777
+    - host778
+    - host779
+    - host780
+    - host781
+    - host782
+    - host783
+    - host784
+    - host785
+    - host786
+    - host787
+    - host788
+    - host789
+    - host790
+    - host791
+    - host792
+    - host793
+    - host794
+    - host795
+    - host796
+    - host797
+    - host798
+    - host799
+    subnet16:
+    - host800
+    - host801
+    - host802
+    - host803
+    - host804
+    - host805
+    - host806
+    - host807
+    - host808
+    - host809
+    - host810
+    - host811
+    - host812
+    - host813
+    - host814
+    - host815
+    - host816
+    - host817
+    - host818
+    - host819
+    - host820
+    - host821
+    - host822
+    - host823
+    - host824
+    - host825
+    - host826
+    - host827
+    - host828
+    - host829
+    - host830
+    - host831
+    - host832
+    - host833
+    - host834
+    - host835
+    - host836
+    - host837
+    - host838
+    - host839
+    - host840
+    - host841
+    - host842
+    - host843
+    - host844
+    - host845
+    - host846
+    - host847
+    - host848
+    - host849
+    subnet17:
+    - host850
+    - host851
+    - host852
+    - host853
+    - host854
+    - host855
+    - host856
+    - host857
+    - host858
+    - host859
+    - host860
+    - host861
+    - host862
+    - host863
+    - host864
+    - host865
+    - host866
+    - host867
+    - host868
+    - host869
+    - host870
+    - host871
+    - host872
+    - host873
+    - host874
+    - host875
+    - host876
+    - host877
+    - host878
+    - host879
+    - host880
+    - host881
+    - host882
+    - host883
+    - host884
+    - host885
+    - host886
+    - host887
+    - host888
+    - host889
+    - host890
+    - host891
+    - host892
+    - host893
+    - host894
+    - host895
+    - host896
+    - host897
+    - host898
+    - host899
+    subnet18:
+    - host900
+    - host901
+    - host902
+    - host903
+    - host904
+    - host905
+    - host906
+    - host907
+    - host908
+    - host909
+    - host910
+    - host911
+    - host912
+    - host913
+    - host914
+    - host915
+    - host916
+    - host917
+    - host918
+    - host919
+    - host920
+    - host921
+    - host922
+    - host923
+    - host924
+    - host925
+    - host926
+    - host927
+    - host928
+    - host929
+    - host930
+    - host931
+    - host932
+    - host933
+    - host934
+    - host935
+    - host936
+    - host937
+    - host938
+    - host939
+    - host940
+    - host941
+    - host942
+    - host943
+    - host944
+    - host945
+    - host946
+    - host947
+    - host948
+    - host949
+    subnet19:
+    - host950
+    - host951
+    - host952
+    - host953
+    - host954
+    - host955
+    - host956
+    - host957
+    - host958
+    - host959
+    - host960
+    - host961
+    - host962
+    - host963
+    - host964
+    - host965
+    - host966
+    - host967
+    - host968
+    - host969
+    - host970
+    - host971
+    - host972
+    - host973
+    - host974
+    - host975
+    - host976
+    - host977
+    - host978
+    - host979
+    - host980
+    - host981
+    - host982
+    - host983
+    - host984
+    - host985
+    - host986
+    - host987
+    - host988
+    - host989
+    - host990
+    - host991
+    - host992
+    - host993
+    - host994
+    - host995
+    - host996
+    - host997
+    - host998
+    - host999
+    subnet2:
+    - host100
+    - host101
+    - host102
+    - host103
+    - host104
+    - host105
+    - host106
+    - host107
+    - host108
+    - host109
+    - host110
+    - host111
+    - host112
+    - host113
+    - host114
+    - host115
+    - host116
+    - host117
+    - host118
+    - host119
+    - host120
+    - host121
+    - host122
+    - host123
+    - host124
+    - host125
+    - host126
+    - host127
+    - host128
+    - host129
+    - host130
+    - host131
+    - host132
+    - host133
+    - host134
+    - host135
+    - host136
+    - host137
+    - host138
+    - host139
+    - host140
+    - host141
+    - host142
+    - host143
+    - host144
+    - host145
+    - host146
+    - host147
+    - host148
+    - host149
+    subnet3:
+    - host150
+    - host151
+    - host152
+    - host153
+    - host154
+    - host155
+    - host156
+    - host157
+    - host158
+    - host159
+    - host160
+    - host161
+    - host162
+    - host163
+    - host164
+    - host165
+    - host166
+    - host167
+    - host168
+    - host169
+    - host170
+    - host171
+    - host172
+    - host173
+    - host174
+    - host175
+    - host176
+    - host177
+    - host178
+    - host179
+    - host180
+    - host181
+    - host182
+    - host183
+    - host184
+    - host185
+    - host186
+    - host187
+    - host188
+    - host189
+    - host190
+    - host191
+    - host192
+    - host193
+    - host194
+    - host195
+    - host196
+    - host197
+    - host198
+    - host199
+    subnet4:
+    - host200
+    - host201
+    - host202
+    - host203
+    - host204
+    - host205
+    - host206
+    - host207
+    - host208
+    - host209
+    - host210
+    - host211
+    - host212
+    - host213
+    - host214
+    - host215
+    - host216
+    - host217
+    - host218
+    - host219
+    - host220
+    - host221
+    - host222
+    - host223
+    - host224
+    - host225
+    - host226
+    - host227
+    - host228
+    - host229
+    - host230
+    - host231
+    - host232
+    - host233
+    - host234
+    - host235
+    - host236
+    - host237
+    - host238
+    - host239
+    - host240
+    - host241
+    - host242
+    - host243
+    - host244
+    - host245
+    - host246
+    - host247
+    - host248
+    - host249
+    subnet5:
+    - host250
+    - host251
+    - host252
+    - host253
+    - host254
+    - host255
+    - host256
+    - host257
+    - host258
+    - host259
+    - host260
+    - host261
+    - host262
+    - host263
+    - host264
+    - host265
+    - host266
+    - host267
+    - host268
+    - host269
+    - host270
+    - host271
+    - host272
+    - host273
+    - host274
+    - host275
+    - host276
+    - host277
+    - host278
+    - host279
+    - host280
+    - host281
+    - host282
+    - host283
+    - host284
+    - host285
+    - host286
+    - host287
+    - host288
+    - host289
+    - host290
+    - host291
+    - host292
+    - host293
+    - host294
+    - host295
+    - host296
+    - host297
+    - host298
+    - host299
+    subnet6:
+    - host300
+    - host301
+    - host302
+    - host303
+    - host304
+    - host305
+    - host306
+    - host307
+    - host308
+    - host309
+    - host310
+    - host311
+    - host312
+    - host313
+    - host314
+    - host315
+    - host316
+    - host317
+    - host318
+    - host319
+    - host320
+    - host321
+    - host322
+    - host323
+    - host324
+    - host325
+    - host326
+    - host327
+    - host328
+    - host329
+    - host330
+    - host331
+    - host332
+    - host333
+    - host334
+    - host335
+    - host336
+    - host337
+    - host338
+    - host339
+    - host340
+    - host341
+    - host342
+    - host343
+    - host344
+    - host345
+    - host346
+    - host347
+    - host348
+    - host349
+    subnet7:
+    - host350
+    - host351
+    - host352
+    - host353
+    - host354
+    - host355
+    - host356
+    - host357
+    - host358
+    - host359
+    - host360
+    - host361
+    - host362
+    - host363
+    - host364
+    - host365
+    - host366
+    - host367
+    - host368
+    - host369
+    - host370
+    - host371
+    - host372
+    - host373
+    - host374
+    - host375
+    - host376
+    - host377
+    - host378
+    - host379
+    - host380
+    - host381
+    - host382
+    - host383
+    - host384
+    - host385
+    - host386
+    - host387
+    - host388
+    - host389
+    - host390
+    - host391
+    - host392
+    - host393
+    - host394
+    - host395
+    - host396
+    - host397
+    - host398
+    - host399
+    subnet8:
+    - host400
+    - host401
+    - host402
+    - host403
+    - host404
+    - host405
+    - host406
+    - host407
+    - host408
+    - host409
+    - host410
+    - host411
+    - host412
+    - host413
+    - host414
+    - host415
+    - host416
+    - host417
+    - host418
+    - host419
+    - host420
+    - host421
+    - host422
+    - host423
+    - host424
+    - host425
+    - host426
+    - host427
+    - host428
+    - host429
+    - host430
+    - host431
+    - host432
+    - host433
+    - host434
+    - host435
+    - host436
+    - host437
+    - host438
+    - host439
+    - host440
+    - host441
+    - host442
+    - host443
+    - host444
+    - host445
+    - host446
+    - host447
+    - host448
+    - host449
+    subnet9:
+    - host450
+    - host451
+    - host452
+    - host453
+    - host454
+    - host455
+    - host456
+    - host457
+    - host458
+    - host459
+    - host460
+    - host461
+    - host462
+    - host463
+    - host464
+    - host465
+    - host466
+    - host467
+    - host468
+    - host469
+    - host470
+    - host471
+    - host472
+    - host473
+    - host474
+    - host475
+    - host476
+    - host477
+    - host478
+    - host479
+    - host480
+    - host481
+    - host482
+    - host483
+    - host484
+    - host485
+    - host486
+    - host487
+    - host488
+    - host489
+    - host490
+    - host491
+    - host492
+    - host493
+    - host494
+    - host495
+    - host496
+    - host497
+    - host498
+    - host499

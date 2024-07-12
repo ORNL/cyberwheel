@@ -1,5 +1,5 @@
 from cyberwheel.network.network_base import Network
-from copy import deepcopy
+from copy import deepcopy, copy
 
 
 class Cyberwheel:
@@ -12,7 +12,7 @@ class Cyberwheel:
         # self.network = RandomNetwork(number_hosts,number_subnets,connect_subnets_probability)
         # print("begin reading")
         self.network = Network.create_network_from_yaml(self.config_file_path)
-        # self.network_copy = deepcopy(self.network)
+        self.network_copy = copy(self.network)
         self.evaluation = False
         # print("end reading")
     # private method that converts state into observation

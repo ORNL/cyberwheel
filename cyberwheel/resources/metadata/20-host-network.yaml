@@ -1,0 +1,176 @@
+host_type_config:
+hosts:
+  host0:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host1:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host10:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: workstation
+  host11:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: workstation
+  host2:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host3:
+    firewall:
+    routes:
+    subnet: subnet0
+    type: workstation
+  host4:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: workstation
+  host5:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: workstation
+  host6:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: workstation
+  host7:
+    firewall:
+    routes:
+    subnet: subnet1
+    type: workstation
+  host8:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: workstation
+  host9:
+    firewall:
+    routes:
+    subnet: subnet2
+    type: workstation
+  server0:
+    firewall:
+    routes:
+    subnet: server_subnet0
+    type: file_server
+  server1:
+    firewall:
+    routes:
+    subnet: server_subnet0
+    type: web_server
+  server2:
+    firewall:
+    routes:
+    subnet: server_subnet0
+    type: web_server
+  server3:
+    firewall:
+    routes:
+    subnet: server_subnet0
+    type: ssh_jump_server
+  server4:
+    firewall:
+    routes:
+    subnet: server_subnet1
+    type: web_server
+  server5:
+    firewall:
+    routes:
+    subnet: server_subnet1
+    type: ssh_jump_server
+  server6:
+    firewall:
+    routes:
+    subnet: server_subnet1
+    type: ssh_jump_server
+  server7:
+    firewall:
+    routes:
+    subnet: server_subnet1
+    type: ssh_jump_server
+interfaces:
+  host0:
+  - server0
+  host11:
+  - server4
+  host3:
+  - host4
+  host4:
+  - host3
+  host7:
+  - host8
+  host8:
+  - host7
+  server0:
+  - host0
+  server4:
+  - host11
+network:
+  desc: default description
+  name: 20-host-network
+routers:
+  core_router:
+    default_route:
+    firewall:
+    routes:
+    routes_by_name:
+subnets:
+  server_subnet0:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  server_subnet1:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet0:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet1:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+  subnet2:
+    firewall:
+    ip_range: 192.168.0.0/24
+    router: core_router
+topology:
+  core_router:
+    server_subnet0:
+    - server0
+    - server1
+    - server2
+    - server3
+    server_subnet1:
+    - server4
+    - server5
+    - server6
+    - server7
+    subnet0:
+    - host0
+    - host1
+    - host2
+    - host3
+    subnet1:
+    - host4
+    - host5
+    - host6
+    - host7
+    subnet2:
+    - host8
+    - host9
+    - host10
+    - host11

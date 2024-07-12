@@ -18,13 +18,13 @@ from cyberwheel.network.network_base import Network
 
 
 def color_map(state) -> str:
-    if state == "Discovery":
-        return "green"
-    elif state == "Reconnaissance":
+    if state == "ARTDiscovery":
         return "yellow"
-    elif state == "PrivilegeEscalation":
+    elif state == "ARTPingsweep" or state == "ARTPortScan":
+        return "green"
+    elif state == "ARTPrivilegeEscalation":
         return "orange"
-    elif state == "Impact":
+    elif state == "ARTImpact":
         return "red"
     else:
         return "gray"
@@ -43,7 +43,7 @@ def visualize(network: Network, episode, step, experiment_name, history, killcha
     source_host = history.history[-1].action[1].name
     target_host = history.history[-1].action[2].name
     current_action = history.history[-1].action[0].__name__
-    if current_action == "LateralMovement":
+    if current_action == "ARTLateralMovement":
         source_host = target_host
 
     host_color = {}

@@ -1,0 +1,49 @@
+# Adjaceny list representation for the detector graph.
+# The graph is a directed, acyclic graph. 
+# It is assumed that the graph provided is acyclic.
+#
+# The graph represents the filtering of a list of alerts.
+# Each node is a subset of the original list.
+# Each edge is a function (a detector) that filters down the list.
+#
+# Each element in the adjacency list has the form:
+# [src. dst1, dst2, ...]
+# This defines edges from src->dst1, src->dst2, ...
+# The detector associated with src (defined under init_info) is applied to src's alerts
+# and is given to dst1, dst2, ...
+# Traversal begins with start. Start passes the perfect alerts to its children unchanged.
+# Traversal begins with end. End has no children. End's inputs is the result of the filtering.
+adjacency_list:
+  - [start, d1, d2] # Give the perfect alerts to nodes d1, d2
+  - [d1, end] # Apply the detector associated with d1 and give the result to end
+  - [d2, d3, d4] # Apply the detector associated with d2 and give the result to d3, d4
+  - [d3, d4, d5] # Apply the detector associated with d3 and give the result to d4, d5
+  - [d4, d5] # Apply the detector associated with d4 and give the result to d5 
+  - [d5, end] # Apply the detector associated with d5 and give the result to end. This uses the results from d3 and d4
+  # (Implied) End compiles the results d1 and d5's detectors into a list. This list is the result of the filtering.
+
+# Information necessary to load detectors.
+# module: the module where this detector is defined. Should be importable from cyberwheel.detectors.detectors
+# class: the detector's class located in the specified module
+# config: optional file path to a config file for initializing the detector
+# Start and end should not appear here. If they do, they are ignored.
+init_info:
+  d1:
+    module: example_detectors
+    class: CoinFlipDetector
+    config:
+  d2:
+    module: example_detectors
+    class: CoinFlipDetector
+  d3:
+    module: example_detectors
+    class: CoinFlipDetector
+    config:
+  d4:
+    module: example_detectors
+    class: CoinFlipDetector
+    config:
+  d5:
+    module: example_detectors
+    class: CoinFlipDetector
+    config:

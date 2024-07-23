@@ -7,7 +7,6 @@ from cyberwheel.network.service import Service
 from cyberwheel.red_actions.technique import Technique
 IPAddress = Union[IPv4Address, IPv6Address, None]
 
-# NOTE Consider making an Alert base class with src_host and technique member variables and then inherit to make alerts for network/host
 class Alert():
     FIELD_NAMES = set(['src_host', 'dst_hosts', 'services'])
     def __init__(self, 
@@ -42,17 +41,17 @@ class Alert():
             - files: additional files being accessed. I.e log files
             - other_resources: other resources used in an abnormal way that are specifically targeted by an action. I.e. a local database
             - os: the OS of the system
-            - os_version: version of the OS. (Maybe this should be combined with os? But then you'd make logic based off of version require parsing of a string...)
+            - os_version: version of the OS
         """
         
         self.src_host = src_host
-        self.techniques = techniques # Use to determine probabilty of detection. This might actually end up being 1 technique.
+        self.techniques = techniques 
 
         self.dst_hosts = dst_hosts
         self.services = services
 
-        if self.src_host is not None: self.src_ip = self.src_host.ip_address
-        if self.dst_hosts is not None: self.dst_ips = [h.ip_address for h in self.dst_hosts]
+        if self.src_host is not None: self.src_ip = self.src_host.mac_address
+        if self.dst_hosts is not None: self.dst_ips = [h.mac_address for h in self.dst_hosts]
         if self.services is not None: self.dst_ports = [s.port for s in self.services]
 
         self.user = user
@@ -66,7 +65,7 @@ class Alert():
 
     def add_dst_host(self, host: Host) -> None:
         self.dst_hosts.append(host)
-        self.dst_ips.append(host.ip_address)
+        self.dst_ips.append(host.mac_address)
 
     def add_src_host(self, host: Host) -> None:
         self.src_host = host

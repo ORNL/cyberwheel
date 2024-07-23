@@ -8,8 +8,7 @@ import yaml
 from .cyberwheel import Cyberwheel
 from cyberwheel.blue_agents import DynamicBlueAgent
 from cyberwheel.observation import HistoryObservation
-from cyberwheel.detectors.alert import Alert
-
+from cyberwheel.detectors import Alert
 # from detectors.detector import DecoyDetector, CoinFlipDetector
 from cyberwheel.detectors.detectors.probability_detector import ProbabilityDetector
 from cyberwheel.detectors.detectors.example_detectors import (
@@ -155,12 +154,8 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         red_action_type, red_action_src, red_action_dst = action_metadata.action
         red_action_success = action_metadata.success
 
-        # print(red_action_type, red_action_src.name, red_action_dst.name, red_action_success)
-        self.reward_calculator.handle_red_action_output(
-            red_action_name, red_action_dst.decoy
-        )
+        self.reward_calculator.handle_red_action_output(red_action_name, red_action_dst.decoy)
 
-        # print(red_action_success)
         red_action_result = (
             self.red_agent.history.recent_history()
         )  # red action results

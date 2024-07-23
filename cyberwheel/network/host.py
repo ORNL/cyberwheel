@@ -60,6 +60,7 @@ class Host(NetworkObject):
         self.vulnerabilities = []
         self.processes = []
         self.command_history = []
+        self.dns_server = None
 
     def __str__(self) -> str:
         str = f'Host(name="{self.name}", subnet="{self.subnet.name}", '

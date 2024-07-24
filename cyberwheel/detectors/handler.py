@@ -15,9 +15,6 @@ class DetectorHandler:
         self.config = config
         self._from_config()
 
-    def obs(self, perfect_alerts: Iterator[Alert]) -> Iterator[Alert]:
-        pass
-
     def _create_graph(self):
         self.DG = nx.DiGraph()
     
@@ -40,6 +37,21 @@ class DetectorHandler:
             for child in entry[1:]:
                 self.DG.add_edge(node, child, attr={"detector": detector})
 
+
+        # Start should have no in-edges and End should have not out-edges/
+        # All other nodes should have at least 1 of both.
+        for node, in_degree in self.DG.in_degree():
+            if node == 'start' and in_degree > 0:
+                raise ValueError("'start' node must have an in-degree of 0")
+            elif node != 'start' and in_degree == 0:
+                raise ValueError(f"node '{node}' must have an in-degree > 0")
+            
+        for node, out_degree in self.DG.out_degree():
+            if node == 'end' and out_degree > 0:
+                raise ValueError("'end' node must have an out-degree of 0")
+            elif node != 'end' and out_degree == 0:
+                raise ValueError(f"node '{node}' must have an out-degree > 0")
+
         return self.DG
 
     def obs(self, perfect_alerts: Iterator[Alert]) -> Iterator[Alert]:
@@ -52,9 +64,9 @@ class DetectorHandler:
                 input_alerts = node_data_view[edge[0]]
                 detector = self.DG.get_edge_data(*edge)['attr']['detector'] 
                 result = detector.obs(input_alerts)
-            for r in result:
-                if r not in next_node_input:
-                    next_node_input.append(r)
+            # for r in result:
+            #     if r not in next_node_input:
+            next_node_input.extend(result)
             self.DG.add_node(edge[1], detector_output=next_node_input)
         return self.DG.nodes.data("detector_output", default=[])['end']
 
@@ -79,7 +91,7 @@ def import_detector(module: str, class_: str, config: str | None) -> Detector:
       
 
 def main():
-    handler = DetectorHandler("/home/70d/cyberwheel/cyberwheel/resources/configs/example_detector_handler.yaml")
+    handler = DetectorHandler("/home/70d/cyberwheel/cyberwheel/resources/configs/detector_handler.yaml")
     handler.draw()
     s = Subnet("subnet", "192.168.0.0/24", None)
     src_host = Host("Host1", None, None)
@@ -92,11 +104,7 @@ def main():
     alert2 = Alert(src_host, dst_hosts=dst_hosts[:2], services=[])
     alert3 = Alert(src_host, dst_hosts=[dst_hosts[2]], services=[])
     perfect_alerts = [alert, alert2, alert3]
-    # print(perfect_alerts)
     print(handler.obs(perfect_alerts))
 
 if __name__ == "__main__":
     main()
-
-# bigtree.print_tree(handler.tree)
-

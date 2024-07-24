@@ -8,14 +8,8 @@ import yaml
 from .cyberwheel import Cyberwheel
 from cyberwheel.blue_agents import DynamicBlueAgent
 from cyberwheel.observation import HistoryObservation
-from cyberwheel.detectors import Alert
-# from detectors.detector import DecoyDetector, CoinFlipDetector
-from cyberwheel.detectors.detectors.probability_detector import ProbabilityDetector
-from cyberwheel.detectors.detectors.example_detectors import (
-    IsolateDetector,
-    DecoyDetector,
-    PerfectDetector,
-)
+from cyberwheel.detectors.alert import Alert
+from cyberwheel.detectors.handler import DetectorHandler
 from cyberwheel.network.network_base import Network
 from cyberwheel.network.host import Host
 from cyberwheel.red_agents import KillChainAgent, ARTAgent
@@ -122,7 +116,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         detector_conf_file = files("cyberwheel.resources.configs.detector").joinpath(
             detector_config
         )
-        self.detectors = [ProbabilityDetector(detector_conf_file), DecoyDetector()]
+        self.detector = DetectorHandler(detector_conf_file)
 
         self.reward_function = reward_function
 
@@ -159,10 +153,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         red_action_result = (
             self.red_agent.history.recent_history()
         )  # red action results
-
-        alerts = []
-        for detector in self.detectors:
-            alerts.extend(detector.obs(red_action_result.detector_alert))
+        alerts = self.detector.obs([red_action_result.detector_alert])
         obs_vec = self._get_obs(alerts)
         # x = decoy_alerted(alerts)
         if self.reward_function == "step_detected":

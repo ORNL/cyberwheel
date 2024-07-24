@@ -1,0 +1,29 @@
+adjacency_list:
+- - start
+  - d1
+- - d1
+  - d2
+  - d3
+- - d3
+  - d4
+- - d4
+  - d2
+- - d2
+  - end
+init_info:
+  d1:
+    class: CoinFlipDetector
+    config: null
+    module: example_detectors
+  d2:
+    class: CoinFlipDetector
+    config: null
+    module: example_detectors
+  d3:
+    class: CoinFlipDetector
+    config: null
+    module: example_detectors
+  d4:
+    class: CoinFlipDetector
+    config: null
+    module: example_detectors

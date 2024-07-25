@@ -1,10 +1,8 @@
 import uuid
 from typing import Dict, List, Tuple, Any
 
-from cyberwheel.blue_actions.actions.decoys.deploy_decoy_host import (
-    DeployDecoyHost,
-    random_decoy,
-)
+from cyberwheel.blue_actions.actions import DeployDecoyHost
+
 from cyberwheel.blue_actions.actions.decoys.remove_decoy import RemoveDecoyHost
 from cyberwheel.blue_actions.blue_base import BlueAction
 from cyberwheel.blue_actions.actions.isolate.isolate_host import IsolateHost
@@ -12,7 +10,7 @@ from cyberwheel.network.host import Host, HostType
 from cyberwheel.network.network_base import Network
 from cyberwheel.network.service import Service
 from cyberwheel.network.subnet import Subnet
-from cyberwheel.reward.reward import RewardMap
+from cyberwheel.reward.reward_base import RewardMap
 
 class DeployedHost():
     def __init__(self, id: str, host: Host) -> None:

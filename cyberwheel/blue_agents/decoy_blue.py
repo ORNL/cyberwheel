@@ -2,7 +2,7 @@ import uuid
 from typing import Dict, List, Tuple, Any
 
 from cyberwheel.blue_actions.actions import DeployDecoyHost, RemoveDecoyHost
-from cyberwheel.blue_agents import BlueAgent, BlueAgentResult
+from cyberwheel.blue_agents.blue_agent_base import BlueAgent, BlueAgentResult
 from cyberwheel.network.host import Host, HostType
 from cyberwheel.network.network_base import Network
 from cyberwheel.network.service import Service

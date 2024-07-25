@@ -3,22 +3,6 @@ import random
 def impact_all_servers(agent_obj):
     current_host_type = agent_obj.history.hosts[agent_obj.current_host.name].type
 
-    servers = [
-            agent_obj.history.mapping[k]
-            for k, h in agent_obj.history.hosts.items()
-            if h.type == "Server" and k not in agent_obj.impacted_hosts
-        ]
-    server_names = [s.name for s in servers]
-
-    #unimpacted_servers = [s.name for s in servers if s.name not in agent_obj.impacted_hosts]
-
-    unknowns = [
-            agent_obj.history.mapping[k]
-            for k, h in agent_obj.history.hosts.items()
-            if h.type == "Unknown"
-        ]
-    unknown_names = [s.name for s in unknowns]
-
     """
     It should continue impacting the current host if: it is Unknown or if it is a Server that has not been impacted yet. Otherwise it should move to another host.
     It should prioritize attacking other Servers that are unimpacted in its view. Then it should prioritize Unknown hosts in its view.
@@ -26,16 +10,12 @@ def impact_all_servers(agent_obj):
     """
     
     target_host = agent_obj.current_host
-    if current_host_type == "Unknown" or (current_host_type == "Server" and agent_obj.current_host in servers):
+    if current_host_type == "Unknown" or agent_obj.unimpacted_servers.check_membership(agent_obj.current_host.name):
         target_host = agent_obj.current_host
-    elif len(servers) > 0:
-        target_host = random.choice(servers)
-    elif len(unknowns) > 0:
-        target_host = random.choice(unknowns)
-    else:
-        if not agent_obj.temp_flag:
-            print(agent_obj.history.step)
-        agent_obj.temp_flag = True
+    elif agent_obj.unimpacted_servers.length() > 0:
+        target_host = agent_obj.history.mapping[agent_obj.unimpacted_servers.get_random()] # O(1)
+    elif agent_obj.unknowns.length() > 0:
+        target_host = agent_obj.history.mapping[agent_obj.unknowns.get_random()] # O(1)
     return target_host
     
 def dfs_impact(agent_obj):

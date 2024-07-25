@@ -95,38 +95,36 @@ class AtomicTest:
     # dependencies: List[Dependency]  # optional
 
     def __init__(self, atomic_test_dict):
-        valid_params = list(atomic_test_dict.keys())
-
-        self.name = atomic_test_dict["name"] if "name" in valid_params else ""
+        self.name = atomic_test_dict["name"] if "name" in atomic_test_dict else ""
         self.auto_generated_guid = (
             atomic_test_dict["auto_generated_guid"]
-            if "auto_generated_guid" in valid_params
+            if "auto_generated_guid" in atomic_test_dict
             else ""
         )
         self.description = (
-            atomic_test_dict["description"] if "description" in valid_params else ""
+            atomic_test_dict["description"] if "description" in atomic_test_dict else ""
         )
         self.supported_platforms = (
             atomic_test_dict["supported_platforms"]
-            if "supported_platforms" in valid_params
+            if "supported_platforms" in atomic_test_dict
             else []
         )
 
         executor_name = ""
-        if "executor" in valid_params:
+        if "executor" in atomic_test_dict:
             executor = atomic_test_dict["executor"]
-            executor_name = executor["name"] if "name" in list(executor.keys()) else ""
+            executor_name = executor["name"] if "name" in executor else ""
             executor_command = (
-                executor["command"] if "command" in list(executor.keys()) else ""
+                executor["command"] if "command" in executor else ""
             )
             executor_cleanup_command = (
                 executor["cleanup_command"]
-                if "cleanup_command" in list(executor.keys())
+                if "cleanup_command" in executor
                 else ""
             )
             executor_elevation_required = (
                 executor["elevation_required"]
-                if "elevation_required" in list(executor.keys())
+                if "elevation_required" in executor
                 else True
             )  # TODO: Is it better for default elevation required to be T or F???
 
@@ -139,10 +137,10 @@ class AtomicTest:
         else:
             self.executor = None
 
-        if "input_arguments" in valid_params:
+        if "input_arguments" in atomic_test_dict:
             input_arguments = atomic_test_dict["input_arguments"]
             inargs = []
-            for name in list(input_arguments.keys()):
+            for name in input_arguments:
                 arg = input_arguments[name]
                 inargs.append(
                     InputArgument(name, arg["description"], arg["type"], arg["default"])
@@ -151,12 +149,12 @@ class AtomicTest:
         else:
             self.input_arguments = []
 
-        if "dependency_executor_name" in valid_params:
+        if "dependency_executor_name" in atomic_test_dict:
             self.dependency_executor_name = atomic_test_dict["dependency_executor_name"]
         else:
             self.dependency_executor_name = executor_name
 
-        if "dependencies" in valid_params:
+        if "dependencies" in atomic_test_dict:
             dependencies = atomic_test_dict["dependencies"]
             self.dependencies = []
             for d in dependencies:

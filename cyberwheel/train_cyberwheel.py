@@ -93,16 +93,9 @@ def parse_args():
         help="the red agent strategies to evaluate against. Current options: 'killchain_agent' | 'red_recurring' | 'human_teaming'", default="killchain_agent",)
     parser.add_argument("--eval-scenarios", type=str, default="example_config.yaml",
         help="Cyberwheel network to train on.")
-
-    # Cage Arguments
-    #parser.add_argument('--baseline',action='store_true')
-    parser.add_argument("--red-agent", type=str, default="killchain_agent",
-        help="the red agent strategies to train against. Current options: 'killchain_agent' | 'red_recurring'")
-    #group = parser.add_mutually_exclusive_group(required=True)
-    #group.add_argument("--scenario", type=str,
-    #    help="Cage scenario to train on.")
-    #group.add_argument("--generate-scenario", action='store_true')
-    #group.add_argument("--load-scenario", type=str)
+    
+    parser.add_argument("--red-agent", type=str, default="art_agent",
+        help="the red agent strategies to train against. Current options: 'killchain_agent' | 'red_recurring' | 'art_agent'")
 
     # network generation args
     parser.add_argument("--network-config", help="Input the network config filename", type=str, default='example_config.yaml')
@@ -520,7 +513,6 @@ def main():
     next_obs = torch.Tensor(resets).to(device)
     next_done = torch.zeros(args.num_envs).to(device)
     num_updates = args.total_timesteps // args.batch_size
-    # print(list(np.zeros(envs.single_observation_space.shape)))
 
     for update in range(1, num_updates + 1):
         # We need to manually reset the environment for CAGE. Most environments don't require this.
@@ -552,8 +544,6 @@ def main():
             logprobs[step] = logprob
             # TRY NOT TO MODIFY: execute the game and log data.
             # Execute the selected action in the environment to collect experience for training.
-            # action_list = [action]
-            # print(action.cpu().numpy())
             temp_action = action.cpu().numpy()
             next_obs, reward, done, _, info = envs.step(temp_action)
             rewards[step] = torch.tensor(reward).to(device).view(-1)

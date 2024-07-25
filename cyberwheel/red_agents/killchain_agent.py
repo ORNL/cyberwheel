@@ -80,7 +80,7 @@ class KillChainAgent(RedAgent):
         """
         current_hosts = set(self.network.get_host_names())
         new_hosts = current_hosts - (
-            self.initial_host_names | set(self.history.hosts.keys())
+            self.initial_host_names | self.history.hosts.keys()
         )
         new_host = None
         network_change = False

@@ -13,8 +13,9 @@ from .process import Process
 
 class HostType(BaseModel):
     name: str | None = None
-    services: list[Service] = []
+    services: set[Service] = set()
     processes: list[Process] = []
+    cve_list: set[str] = set()
     decoy: bool = False
     os: str = ""
 

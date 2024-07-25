@@ -139,10 +139,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         self.evaluation = evaluation
 
     def step(self, action):
-        blue_action_name = "nothing"
-        rec_id = 0
-        blue_success = False
-        #blue_action_name, rec_id, blue_success = self.blue_agent.act(action)
+        blue_action_name, rec_id, blue_success = self.blue_agent.act(action)
         #print(blue_action_name + " - ")
         self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id)
         red_action_name = (
@@ -226,9 +223,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
                 self.network.get_random_user_host(), network=self.network
             )
         elif self.red_agent_choice == "art_agent":
-            self.red_agent = ARTAgent(
-                self.network.get_random_user_host(), network=self.network
-            )
+            self.red_agent.reset(self.network.get_random_user_host(), network=self.network)
         else:
             self.red_agent = KillChainAgent(
                 self.network.get_random_user_host(), network=self.network

@@ -57,6 +57,7 @@ class KnownHostInfo:
         self.vulnerabilities = vulnerabilities  # TODO: Service-level host
         self.type = type
         self.routes = None  # TODO: If route not set, defaults to Router and local Subnet-level network
+        self.impacted = False
 
     def scan(self):
         self.ports_scanned = True
@@ -141,3 +142,29 @@ class AgentHistory:
 
     def recent_history(self) -> RedActionResults:
         return self.red_action_history[-1]
+
+import random
+
+class HybridSetList:
+    def __init__(self):
+        self.data_set = set()
+        self.data_list = []
+
+    def add(self, value):
+        if value not in self.data_set:
+            self.data_set.add(value)
+            self.data_list.append(value)
+
+    def remove(self, value):
+        if value in self.data_set:
+            self.data_set.remove(value)
+            self.data_list.remove(value)
+
+    def get_random(self):
+        return random.choice(self.data_list)
+
+    def check_membership(self, value):
+        return value in self.data_set
+    
+    def length(self):
+        return len(self.data_set)

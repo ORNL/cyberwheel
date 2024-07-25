@@ -155,12 +155,14 @@ class DecoyBlueAgent(BlueAgent):
         for decoy_name in self.decoy_info:
             info = self.decoy_info[decoy_name]
             type_info = self.host_defs[info["type"]]
-            services = []
+            cve_list = set()
+            services = set()
             for service_info in type_info["services"]:
-                services.append(
-                    Service.create_service_from_yaml(windows_services, service_info)
-                )
+                service = Service.create_service_from_yaml(windows_services, service_info) 
+                services.add(service)
+                cve_list.update(service.vulns)
             host_type = HostType(name=info["type"], services=services, decoy=True)
+            host_type.cve_list = cve_list
             self.host_types.append(host_type)
 
     def _get_subnet_index(self, action: int, i=1) -> int:

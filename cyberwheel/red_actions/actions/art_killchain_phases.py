@@ -9,24 +9,7 @@ class ARTKillChainPhase(ARTAction):
     """
     Base for defining a KillChainPhase. Any new Killchain Phase (probably not needed) should inherit from this class.
     """
-
-    def __init__(
-        self,
-        src_host: Host = None,
-        target_host: Host = None,
-    ) -> None:
-        """
-        Same parameters as defined and described in the RedAction base class.
-        - `src_host`: Host from which the attack originates.
-
-        - `target_service`: The service being targeted.
-
-        - `target_hosts`: The hosts being targeted. Can either be a list of hosts or list of subnets. If it is a list of subnets, then the attack should target all known hosts on that subnet.
-
-        - `techniques`: A list of techniques that can be used to perform this attack.
-        """
-        super().__init__(src_host, target_host)
-        self.validity_mapping = {
+    validity_mapping = {
             "windows": {
                 "discovery": [
                     "T1010",
@@ -218,59 +201,54 @@ class ARTKillChainPhase(ARTAction):
                 "impact": ["T1531", "T1485", "T1486", "T1496", "T1529"],
             },
         }
+    
+    def __init__(
+        self,
+        src_host: Host = None,
+        target_host: Host = None,
+        valid_techniques : list[str] = []
+    ) -> None:
+        """
+        Same parameters as defined and described in the RedAction base class.
+        - `src_host`: Host from which the attack originates.
+
+        - `target_service`: The service being targeted.
+
+        - `target_hosts`: The hosts being targeted. Can either be a list of hosts or list of subnets. If it is a list of subnets, then the attack should target all known hosts on that subnet.
+
+        - `techniques`: A list of techniques that can be used to perform this attack.
+        """
+        super().__init__(src_host, target_host)
+        self.valid_techniques = valid_techniques
 
     def sim_execute(self):
         self.action_results.detector_alert.add_src_host(self.src_host)
         host = self.target_host
+        host_os = host.os
         self.action_results.modify_alert(dst=host)
 
-        host_os = host.os
-        action_type = self.name
-        host_cves = []
-        for service in host.host_type.services:
-            host_cves.extend(service.vulns)
-        # print(host_cves)
-        host_cves = list(set(host_cves))
-        random.shuffle(host_cves)
-        valid_mitre_ids = self.validity_mapping[host_os][action_type]
+        if len(self.valid_techniques) > 0:
+            self.action_results.add_successful_action(host)
+            mitre_id = random.choice(self.valid_techniques)  # Change to look for depending on service
+            art_technique = art_techniques.technique_mapping[mitre_id]
 
-        mitre_id = random.choice(
-            self.validity_mapping[host_os][action_type]
-        )  # Change to look for depending on service
-        art_technique = art_techniques.technique_mapping[mitre_id]()
-        #for mid in valid_mitre_ids:
-        #    temp_art = art_techniques.technique_mapping[mid]()
-        #    for cve in host_cves:
-        #        if cve in temp_art.cve_list:
-        #            art_technique = temp_art
-        #            mitre_id = mid
-        #            break
+            processes = []
+            valid_tests = [
+                at for at in art_technique.atomic_tests if host_os in at.supported_platforms
+            ]
+            chosen_test = random.choice(valid_tests)
+            # Get prereq command, prereq command (if dependency). then run executor command(s) and cleanup command.
+            for dep in chosen_test.dependencies:
+                processes.extend(dep.get_prerequisite_command)
+                processes.extend(dep.prerequisite_command)
+            if chosen_test.executor != None:
+                processes.extend(chosen_test.executor.command)
+                processes.extend(chosen_test.executor.cleanup_command)
 
-        processes = []
-        valid_tests = [
-            at for at in art_technique.atomic_tests if host_os in at.supported_platforms
-        ]
-        cves_associated = art_technique.cve_list
-        chosen_test = random.choice(valid_tests)
-        # Get prereq command, prereq command (if dependency). then run executor command(s) and cleanup command.
-        for dep in chosen_test.dependencies:
-            processes.extend(dep.get_prerequisite_command)
-            processes.extend(dep.prerequisite_command)
-        if chosen_test.executor != None:
-            processes.extend(chosen_test.executor.command)
-            processes.extend(chosen_test.executor.cleanup_command)
-
-        #if any(
-        #    cve in service.vulns
-        #    for service in self.target_host.host_type.services
-        #    for cve in cves_associated
-        #):
-        #    self.action_results.add_successful_action(host)
-
-        self.action_results.add_metadata(
-            host.name,
-            {"commands": processes, "mitre_id": mitre_id, "technique": art_technique},
-        )
+            self.action_results.add_metadata(
+                host.name,
+                {"commands": processes, "mitre_id": mitre_id, "technique": art_technique},
+            )
 
         return self.action_results
 
@@ -310,7 +288,7 @@ class ARTPingSweep(ARTKillChainPhase):
 
         host_os = host.os
         action_type = self.name
-        art_technique = art_techniques.RemoteSystemDiscovery()
+        art_technique = art_techniques.technique_mapping['T1018']
         mitre_id = art_technique.mitre_id
         processes = []
         valid_tests = [
@@ -380,7 +358,7 @@ class ARTPortScan(ARTKillChainPhase):
 
         host_os = host.os
         action_type = self.name
-        art_technique = art_techniques.NetworkServiceDiscovery()
+        art_technique = art_techniques.technique_mapping['T1046']
         mitre_id = art_technique.mitre_id
         processes = []
         valid_tests = [
@@ -428,8 +406,9 @@ class ARTPrivilegeEscalation(ARTKillChainPhase):
         self,
         src_host: Host,
         target_host: Host,
+        valid_techniques: list[str] = []
     ) -> None:
-        super().__init__(src_host, target_host)
+        super().__init__(src_host, target_host, valid_techniques=valid_techniques)
         self.name = "privilege-escalation"
 
 
@@ -452,16 +431,18 @@ class ARTDiscovery(ARTKillChainPhase):
         self,
         src_host: Host,
         target_host: Host,
+        valid_techniques: list[str] = []
     ) -> None:
-        super().__init__(src_host, target_host)
+        super().__init__(src_host, target_host, valid_techniques=valid_techniques)
         self.name = "discovery"
 
     def sim_execute(self):
         super().sim_execute()
-        self.action_results.add_metadata(
-            self.target_host.name,
-            {"type": self.target_host.host_type.name},
-        )
+        if self.target_host in self.action_results.attack_success:
+            self.action_results.add_metadata(
+                self.target_host.name,
+                {"type": self.target_host.host_type.name},
+            )
         return self.action_results
 
 
@@ -484,8 +465,9 @@ class ARTLateralMovement(ARTKillChainPhase):
         self,
         src_host: Host,
         target_host: Host,
+        valid_techniques: list[str] = []
     ) -> None:
-        super().__init__(src_host, target_host)
+        super().__init__(src_host, target_host, valid_techniques=valid_techniques)
         self.name = "lateral-movement"
 
 
@@ -507,6 +489,7 @@ class ARTImpact(ARTKillChainPhase):
         self,
         src_host: Host,
         target_host: Host,
+        valid_techniques: list[str] = []
     ) -> None:
-        super().__init__(src_host, target_host)
+        super().__init__(src_host, target_host, valid_techniques=valid_techniques)
         self.name = "impact"

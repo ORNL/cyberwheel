@@ -38,7 +38,7 @@ class Service(BaseModel):
     port: PositiveInt = 1  # default value so we can omit port for ICMP
     protocol: str = "tcp"
     version: str | None = None
-    vulns: list[str] = []  # TODO: list[dict] here? list[Vuln]??
+    vulns: set[str] = set()
     description: str | None = None
     decoy: bool | None = False
 
@@ -48,7 +48,6 @@ class Service(BaseModel):
             self.port,
             self.protocol,
             self.version,
-            self.vulns,
             self.description,
             self.decoy,
         )
@@ -104,7 +103,7 @@ class Service(BaseModel):
     ) -> T:
         # instantiate any defined Vulns
         service = service_objs.get(service_str, {})
-        vulns = service.get("cve", [])
+        vulns = service.get("cve", set())
         # vulns = [cls.create_vuln_from_list(v) for v in service_vulns]
 
         return Service(
@@ -112,7 +111,7 @@ class Service(BaseModel):
             port=service.get("port", 1),  # type: ignore
             protocol=service.get("protocol", "tcp"),  # type: ignore
             version=service.get("version"),  # type: ignore
-            vulns=vulns,
+            vulns=set(vulns),
             description=service.get("description"),  # type: ignore
             decoy=service.get("decoy"),
         )  # type: ignore

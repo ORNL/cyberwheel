@@ -114,7 +114,7 @@ class Network:
         hosts = self.get_hosts()
         user_hosts = []
         for h in hosts:
-            if h.host_type != None and "workstation" in h.host_type.name.lower():
+            if h.host_type.name != None and "workstation" in h.host_type.name.lower():
                 user_hosts.append(h)
         random_host = random.choice(user_hosts)
         return random_host
@@ -395,7 +395,7 @@ class Network:
                         services = []
                     # TODO: Maybe integrate with routers instead
                     interfaces = []
-                    if key in list(config["interfaces"].keys()):
+                    if key in config["interfaces"]:
                         interfaces = config["interfaces"][key]
                     # instantiate host
                     host = network.add_host_to_subnet(
@@ -783,17 +783,17 @@ class Network:
         with open(config_file_path, "r") as f:
             windows_services = yaml.safe_load(f)
 
+        cve_list = set()
         running_services = []
         for service in services_list:
-            # print(service)
-            running_services.append(
-                Service.create_service_from_yaml(windows_services, service)
-            )
+            temp_service = Service.create_service_from_yaml(windows_services, service)
+            running_services.append(temp_service)
+            cve_list.update(temp_service.vulns)
         decoy: bool = host_type.get("decoy", False)
         os: str = host_type.get("os", "")
 
         host_type = HostType(
-            name=host_type_name, services=running_services, decoy=decoy, os=os
+            name=host_type_name, services=running_services, decoy=decoy, os=os, cve_list=cve_list
         )
 
         return host_type

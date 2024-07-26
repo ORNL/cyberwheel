@@ -53,7 +53,9 @@ class DecoyBlueAgent(BlueAgent):
         self.subnets = self.network.get_all_subnets()
         self.decoy_info = decoy_info
         self.num_decoy_types = len(self.decoy_info)
-        self.action_space_length = 2 * self.num_decoy_types * len(self.subnets) + self.num_hosts
+        self.action_space_length = (
+            2 * self.num_decoy_types * len(self.subnets) + self.num_hosts
+        )
         self.host_defs = host_defs
         self._load_host_types()
         self._load_rewards()
@@ -72,9 +74,9 @@ class DecoyBlueAgent(BlueAgent):
         # Even if the agent choses to do nothing, the recurring rewards of
         # previous actions still need to be summed.
         # Decide what action to take
-        decoy_index = self._get_decoy_type_index(action, i=1+self.num_hosts)
+        decoy_index = self._get_decoy_type_index(action, i=1 + self.num_hosts)
         action_type = self._get_action_type(action)
-        subnet_index = self._get_subnet_index(action, i=1+self.num_hosts)
+        subnet_index = self._get_subnet_index(action, i=1 + self.num_hosts)
 
         # Perform the action
         selected_subnet = self.subnets[subnet_index]
@@ -139,13 +141,13 @@ class DecoyBlueAgent(BlueAgent):
             self.reward_map[decoy_name] = rewards
 
         # Add remove and nothing manually for right now
-        self.reward_map['remove'] = (-50, 0)
-        self.reward_map['nothing'] = (0, 0)
-        self.reward_map['restore'] = (-100, )
+        self.reward_map["remove"] = (-50, 0)
+        self.reward_map["nothing"] = (0, 0)
+        self.reward_map["restore"] = (-100,)
 
     def _load_host_types(self) -> None:
         windows_services = {}
-        config_dir = files("cyberwheel.resources.configs")
+        config_dir = files("cyberwheel.resources.configs.services")
         config_file_path: PosixPath = config_dir.joinpath(
             "windows_exploitable_services.yaml"
         )  # type:ignore
@@ -158,7 +160,9 @@ class DecoyBlueAgent(BlueAgent):
             cve_list = set()
             services = set()
             for service_info in type_info["services"]:
-                service = Service.create_service_from_yaml(windows_services, service_info) 
+                service = Service.create_service_from_yaml(
+                    windows_services, service_info
+                )
                 services.add(service)
                 cve_list.update(service.vulns)
             host_type = HostType(name=info["type"], services=services, decoy=True)

@@ -86,14 +86,14 @@ def make_env(
     network_config: str,
     decoy_host_file: str,
     host_def_file: str,
-    detector_config : str,
+    detector_config: str,
     seed: int = 0,
     min_decoys=1,
     max_decoys=1,
     blue_reward_scaling=10,
     reward_function="default",
     red_agent="killchain_agent",
-    max_steps=50
+    max_steps=50,
 ):
     """
     Utility function for multiprocessed env.
@@ -116,7 +116,7 @@ def make_env(
             reward_function=reward_function,
             red_agent=red_agent,
             evaluation=True,
-            max_steps=max_steps
+            max_steps=max_steps,
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         return env
@@ -213,14 +213,11 @@ def parse_args():
         "--num-steps",
         help="Number of steps per episode for evaluation",
         type=int,
-        default=50
+        default=50,
     )
 
     parser.add_argument(
-        "--num-episodes",
-        help="Number of episodes to evaluate",
-        type=int,
-        default=10
+        "--num-episodes", help="Number of episodes to evaluate", type=int, default=10
     )
 
     args = parser.parse_args()
@@ -235,9 +232,9 @@ def parse_args():
     return args
 
 
-if __name__ == "__main__":
+def evaluate_cyberwheel():
     args = parse_args()
-    device = torch.device("cpu")  # "cuda" if torch.cuda.is_available() else "cpu"
+    device = torch.device("cpu")
     print(f"Using device {device}")
 
     env_funcs = [
@@ -253,7 +250,7 @@ if __name__ == "__main__":
             blue_reward_scaling=args.reward_scaling,
             reward_function=args.reward_function,
             red_agent=args.agent,
-            max_steps=args.num_steps
+            max_steps=args.num_steps,
         )
     ]
     envs = gym.vector.SyncVectorEnv(env_funcs)
@@ -381,3 +378,7 @@ if __name__ == "__main__":
         print(f"Mean Episodic Reward: {float(total_reward) / episodes}")
 
     print(f"Total Time Elapsed: {total_time}")
+
+
+if __name__ == "__main__":
+    evaluate_cyberwheel()

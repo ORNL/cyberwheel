@@ -34,21 +34,22 @@ class Network:
 
     def get_decoys(self):
         return self.decoys
-    
+
     def num_decoys(self):
         return len(self.decoys)
-    
+
     def get_disconnected(self):
         return self.disconnected_nodes
-    
+
     def get_connected(self):
         return [
-            host for _, host in self.graph.nodes(data="data") if isinstance(host, Host) and not host.disconnected 
-        ] 
+            host
+            for _, host in self.graph.nodes(data="data")
+            if isinstance(host, Host) and not host.disconnected
+        ]
 
     def num_disconnected(self):
         return len(self.disconnected_nodes)
-
 
     # TODO: remove these in favor of self.add_node()
     def add_subnet(self, subnet):
@@ -85,6 +86,7 @@ class Network:
     def disconnect_nodes(self, node1, node2):
         self.graph.remove_edge(node1, node2)
         self.disconnected_nodes.append((node1, node2))
+
     # def define_routing_rules(self, router, routes):
     #    if router.name in self.graph.nodes:
     #        data_object = self.graph.nodes[router.name]['data']
@@ -277,7 +279,7 @@ class Network:
     @classmethod
     def create_network_from_yaml(cls, network_config=None, host_config="host_defs_services.yaml"):  # type: ignore
         if network_config is None:
-            config_dir = files("cyberwheel.network")
+            config_dir = files("cyberwheel.resources.configs.network")
             network_config: PosixPath = config_dir.joinpath(
                 "example_config.yaml"
             )  # type:ignore
@@ -294,7 +296,7 @@ class Network:
         # Create an instance of the Network class
         network = cls(name=config["network"].get("name"))
 
-        conf_dir = files("cyberwheel.resources.metadata")
+        conf_dir = files("cyberwheel.resources.configs.host_types")
         # TODO: use create_host_type_from_yaml() instead?
         # conf_file = conf_dir.joinpath('host_definitions.json')
         # type = network.create_host_type_from_json(type_str, conf_file) #type: ignore
@@ -681,7 +683,7 @@ class Network:
         host = self.add_host_to_subnet(*args, decoy=True, **kwargs)
         self.decoys.append(host)
         return host
-    
+
     def remove_decoy_host(self, host: Host) -> None:
         for _, h in self.graph.nodes(data="data"):
             if not isinstance(h, Host):
@@ -693,7 +695,7 @@ class Network:
             if self.decoys[i].name == host.name:
                 break
         self.decoys.remove(i)
-        
+
     def reset(self):
         for decoy in self.decoys:
             self.remove_host_from_subnet(decoy)
@@ -776,7 +778,7 @@ class Network:
         services_list = host_type.get("services", [])
 
         windows_services = {}
-        config_dir = files("cyberwheel.resources.configs")
+        config_dir = files("cyberwheel.resources.configs.services")
         config_file_path: PosixPath = config_dir.joinpath(
             "windows_exploitable_services.yaml"
         )  # type:ignore
@@ -793,7 +795,11 @@ class Network:
         os: str = host_type.get("os", "")
 
         host_type = HostType(
-            name=host_type_name, services=running_services, decoy=decoy, os=os, cve_list=cve_list
+            name=host_type_name,
+            services=running_services,
+            decoy=decoy,
+            os=os,
+            cve_list=cve_list,
         )
 
         return host_type

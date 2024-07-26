@@ -25,10 +25,10 @@ actions:
   decoy0:
     module: DeployDecoyHost
     class: DeployDecoyHost
-    configs: 
+    configs:
       decoy_hosts: decoy_server_hosts.yaml
       host_definitions: host_definitions.yaml
-    reward: 
+    reward:
       immediate: -20
       recurring: -0.2
     type: subnet
@@ -39,10 +39,10 @@ actions:
   # decoy1:
   #   module: DeployDecoyHost
   #   class: DeployDecoyHost
-  #   configs: 
+  #   configs:
   #     decoy_hosts: decoy_user_hosts.yaml
   #     host_definitions: host_definitions.yaml
-  #   reward: 
+  #   reward:
   #     immediate: -10
   #     recurring: -0.1
   #   type: subnet
@@ -60,7 +60,7 @@ actions:
     shared_data:
 
 
-  # isolate_decoy:  
+  # isolate_decoy:
   #   module: IsolateDecoy
   #   class: IsolateDecoy
   #   configs:

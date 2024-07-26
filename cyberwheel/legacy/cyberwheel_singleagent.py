@@ -2,7 +2,7 @@ import gymnasium as gym
 from gymnasium import spaces
 from cyberwheel.network.network_base import Network
 from .cyberwheel import Cyberwheel
-from redagents.longestpath import LongestPathRedAgent
+from cyberwheel.redagents.longestpath import LongestPathRedAgent
 
 # import numpy as np
 import yaml

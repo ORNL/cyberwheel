@@ -14,6 +14,7 @@ from copy import deepcopy
 
 from cyberwheel.reward import RewardMap
 
+
 class RecurringImpactAgent(RedAgent):
     def __init__(
         self,
@@ -31,7 +32,7 @@ class RecurringImpactAgent(RedAgent):
     ):
         """
         A Killchain Agent variant that can continue to explore and attack a network after impacting servers.
-        The impacts will continue to accrue a negative reward while the game goes on. The killchain and logic 
+        The impacts will continue to accrue a negative reward while the game goes on. The killchain and logic
         remain the same as the default Killchain Agent.
 
         Important member variables:
@@ -73,7 +74,9 @@ class RecurringImpactAgent(RedAgent):
     def check_network(self) -> Tuple[bool, Host]:
         # initial_host_names = [h.name for h in self.initial_network.get_hosts()]
         current_hosts = set(self.network.get_host_names())
-        new_hosts = current_hosts - (self.initial_host_names | set(self.history.hosts.keys()))
+        new_hosts = current_hosts - (
+            self.initial_host_names | set(self.history.hosts.keys())
+        )
         # print(len(new_hosts), len(current_hosts), len(self.initial_host_names), len(self.history.hosts.keys()))
         for host_name in new_hosts:
             h = self.network.get_node_from_name(host_name)
@@ -113,18 +116,20 @@ class RecurringImpactAgent(RedAgent):
         known_hosts = list(self.history.hosts.items())  # Host.name, KnownHostInfo
         max_host = 0
         for i in range(len(known_hosts)):
-            if known_hosts[max_host][1].get_next_step() >= len(self.killchain): # If it's already impacted the current max host, use next one
+            if known_hosts[max_host][1].get_next_step() >= len(
+                self.killchain
+            ):  # If it's already impacted the current max host, use next one
                 self.impacted_hosts.append(known_hosts[max_host][0])
                 max_host += 1
                 continue
-            k = known_hosts[i][0] # hostname
-            v = known_hosts[i][1] # host_info class
+            k = known_hosts[i][0]  # hostname
+            v = known_hosts[i][1]  # host_info class
             if v.get_next_step() > known_hosts[max_host][1].get_next_step():
                 if v.get_next_step() >= len(self.killchain):
                     self.impacted_hosts.append(k)
                 max_host = i
         target_host_name = known_hosts[max_host][0]
-        #print(target_host_name)
+        # print(target_host_name)
 
         target_host = self.history.mapping[target_host_name]
 
@@ -139,7 +144,9 @@ class RecurringImpactAgent(RedAgent):
 
         # If the current Host is a 'Server' or 'Unknown', keep advancing its killchain.
         # The agent wants to attack Server Hosts and gain more information on Unknown Hosts.
-        already_impacted = self.current_host.name in self.impacted_hosts # don't set target to this one, look for another server if possible
+        already_impacted = (
+            self.current_host.name in self.impacted_hosts
+        )  # don't set target to this one, look for another server if possible
 
         if current_host_type == "Server" and not already_impacted:
             target_host = self.current_host
@@ -164,7 +171,9 @@ class RecurringImpactAgent(RedAgent):
             if success:
                 self.current_host = target_host
             self.history.update_step(
-                (LateralMovement, self.current_host, target_host), success=success, red_action_results=action_results
+                (LateralMovement, self.current_host, target_host),
+                success=success,
+                red_action_results=action_results,
             )
             return LateralMovement
 
@@ -203,7 +212,7 @@ class RecurringImpactAgent(RedAgent):
         # Store any new information of Hosts/Subnets as metadata in its History
         for h_name in action_results.metadata.keys():
             self.add_host_info(h_name, action_results.metadata[h_name])
-        
+
         return action
 
     def select_service(
@@ -288,9 +297,6 @@ class RecurringImpactAgent(RedAgent):
 
         Metadata Keys Supported:
 
-        * `vulnerabilities` : List[str]
-            - Adds CVEs of Host to history.hosts[Host].vulnerabilities
-
         * `services` : List[Service]
             - Adds available services on Host to history.hosts[Host].services
 
@@ -302,9 +308,7 @@ class RecurringImpactAgent(RedAgent):
             and the available IPS of a Subnet to history.subnets[Subnet].available_ips
         """
         for k, v in metadata.items():
-            if k == "vulnerabilities":
-                self.history.hosts[host_name].vulnerabilites = v
-            elif k == "services":
+            if k == "services":
                 self.history.hosts[host_name].services = v
             elif k == "type":
                 host_type = v
@@ -351,23 +355,32 @@ class RecurringImpactAgent(RedAgent):
         #    f"Current Host: {self.current_host.name}\nCurrent Host Type: {current_host_type}"
         # )
 
-        #known_server_host_types = [
+        # known_server_host_types = [
         #    self.history.mapping[h]
         #    for h, v in self.history.hosts.items()
         #    if v.type == "Server"
-        #]
+        # ]
         servers = [
-                self.history.mapping[k]
-                for k, h in self.history.hosts.items()
-                if h.type == "Server" and k not in self.impacted_hosts
-            ]
+            self.history.mapping[k]
+            for k, h in self.history.hosts.items()
+            if h.type == "Server" and k not in self.impacted_hosts
+        ]
         server_names = [s.name for s in servers]
 
         # If the current host is Unknown (NOTE: This shouldn't happen), stay on it and continue attacking.
-        if current_host_type == "Unknown" or (current_host_type == "Server" and self.current_host.name not in self.impacted_hosts):
+        if current_host_type == "Unknown" or (
+            current_host_type == "Server"
+            and self.current_host.name not in self.impacted_hosts
+        ):
             return False
-        # 
-        elif ((current_host_type == "Server" and self.current_host.name in self.impacted_hosts) or current_host_type == "User") and len(servers) > 0:
+        #
+        elif (
+            (
+                current_host_type == "Server"
+                and self.current_host.name in self.impacted_hosts
+            )
+            or current_host_type == "User"
+        ) and len(servers) > 0:
             # Choose a random server and move to it
             target_host = random.choice(servers)
             if self.history.hosts[target_host.name].services:
@@ -398,9 +411,9 @@ class RecurringImpactAgent(RedAgent):
 
     def get_reward_map(self) -> RewardMap:
         return {
-                "discovery": (-1, 0),
-                "reconnaissance": (-2, 0),
-                "lateral-movement": (-4, 0),
-                "privilege-escalation": (-6, 0),
-                "impact": (-8,-8),
-                }
+            "discovery": (-1, 0),
+            "reconnaissance": (-2, 0),
+            "lateral-movement": (-4, 0),
+            "privilege-escalation": (-6, 0),
+            "impact": (-8, -8),
+        }

@@ -3,7 +3,6 @@ from typing import List
 from cyberwheel.red_actions.red_base import (
     RedAction,
     RedActionResults,
-    validate_attack,
     targets,
 )
 from cyberwheel.red_actions.technique import Technique
@@ -27,8 +26,6 @@ class PingSweep(RedAction):
         # self.action_results.modify_alert(src=self.src_host)
         self.action_results.detector_alert.add_src_host(self.src_host)
         for host in self.target_hosts:
-            if not validate_attack(host, self.target_service):
-                continue
             subnet_hosts = host.subnet.connected_hosts
             self.action_results.modify_alert(dst=host)
             self.action_results.add_metadata(

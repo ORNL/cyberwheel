@@ -1,0 +1,42 @@
+# Network Config Example
+hosts: # Define Hosts in network
+  dmz0: # Host name
+    firewall: # Define firewall rules here
+    routes: # Define routes here
+    subnet: dmz_subnet
+    type: workstation
+subnets: # Define Subnets in network
+  dmz_subnet: # Subnet name
+    firewall: # Define firewall rules here
+    ip_range: 192.168.4.0/24
+    router: core_router
+
+# Host Type Config Example
+host_types:
+  workstation: # Name of host type
+    services: # list of services by name
+      - WindowsDiscoveryExploitableService
+      - WindowsLateralMovementExploitableService
+      - WindowsPrivilegeEscalationExploitableService
+      - WindowsImpactExploitableService
+    decoy: false
+    os: windows
+
+# Service Config Example
+WindowsDiscoveryExploitableService:
+# Defines exploitable Windows service
+  cve:
+    - CVE-2023-28325
+    - CVE-2021-32526
+  port: 8010
+  protocol: tcp
+  version: 1
+  description: exploitable by Discovery
+  decoy: False
+  name: WindowsDiscoveryExploitableService
+
+# Decoy Type Config Example
+server_decoy:
+  type: web_server # host type of decoy
+  reward: -1 # Define initial cost to deploy decoy
+  recurring_reward: -0.1 # Define recurring cost to keep decoy running

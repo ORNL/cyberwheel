@@ -2,7 +2,7 @@ from ipaddress import IPv4Address, IPv6Address
 import networkx as nx
 import numpy as np
 from abc import ABC, abstractmethod
-from typing import Type, List, Tuple
+from typing import Type, List, Tuple, Any
 
 from ray import init
 from cyberwheel.red_actions.red_base import RedAction, ARTAction
@@ -26,15 +26,23 @@ class RedAgent(ABC):
         pass
 
     @abstractmethod
-    def handle_killchain(self, action, success, target_host) -> None:
-        pass
-
-    @abstractmethod
     def select_next_target(self) -> tuple[Host | None, bool]:
         pass
 
     @abstractmethod
     def get_reward_map(self) -> RewardMap:
+        pass
+
+    @abstractmethod
+    def run_action(self) -> None:
+        pass
+
+    @abstractmethod
+    def add_host_info(self) -> None:
+        pass
+
+    @abstractmethod
+    def reset(self) -> None:
         pass
 
 
@@ -54,7 +62,7 @@ class KnownHostInfo:
         self.ping_sweeped = sweeped
         self.ip_address = ip_address
         self.services = services
-        self.vulnerabilities = vulnerabilities  # TODO: Service-level host
+        self.vulnerabilities = vulnerabilities
         self.type = type
         self.routes = None  # TODO: If route not set, defaults to Router and local Subnet-level network
         self.impacted = False
@@ -87,7 +95,11 @@ class KnownSubnetInfo:
 
 class StepInfo:
     def __init__(
-        self, step: int, action: Tuple[Type[RedAction], Host, Host], techniques: List[str], success: bool
+        self,
+        step: int,
+        action: Tuple[Type[RedAction], Host, Host],
+        techniques: dict[str, Any],
+        success: bool,
     ):
         self.step = step
         self.action = action
@@ -117,7 +129,7 @@ class AgentHistory:
             ip_address=initial_host.ip_address,
             type=initial_host.host_type,
             services=initial_host.services,
-            vulnerabilities=initial_host.cves,
+            vulnerabilities=initial_host.host_type.cve_list,
         )
         self.hosts[initial_host.name].ip_address = initial_host.ip_address
         self.subnets[initial_host.subnet.name] = KnownSubnetInfo()
@@ -134,16 +146,26 @@ class AgentHistory:
         action: Tuple[Type[RedAction] | Type[ARTAction], Host, Host],
         success: bool,
         red_action_results: RedActionResults,
-        techniques: List[str]
     ):
         self.step += 1
-        self.history.append(StepInfo(self.step, action=action, techniques=techniques, success=success))
+        # print(action[2].host_type.services)
+        target_host_metadata = red_action_results.metadata[action[2].name]
+        techniques = {
+            "mitre_id": target_host_metadata["mitre_id"],
+            "technique": target_host_metadata["technique"],
+            "commands": target_host_metadata["commands"],
+        }
+        self.history.append(
+            StepInfo(self.step, action=action, techniques=techniques, success=success)
+        )
         self.red_action_history.append(red_action_results)
 
     def recent_history(self) -> RedActionResults:
         return self.red_action_history[-1]
 
+
 import random
+
 
 class HybridSetList:
     def __init__(self):
@@ -165,6 +187,6 @@ class HybridSetList:
 
     def check_membership(self, value):
         return value in self.data_set
-    
+
     def length(self):
         return len(self.data_set)

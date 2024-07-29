@@ -9,12 +9,17 @@ from .cyberwheel import Cyberwheel
 from cyberwheel.blue_agents.dynamic_blue_agent import DynamicBlueAgent
 from cyberwheel.observation import HistoryObservation
 from cyberwheel.detectors.alert import Alert
+
 # from detectors.detector import DecoyDetector, CoinFlipDetector
 from cyberwheel.detectors.detectors.probability_detector import ProbabilityDetector
-from cyberwheel.detectors.detectors.example_detectors import IsolateDetector, DecoyDetector, PerfectDetector
+from cyberwheel.detectors.detectors.example_detectors import (
+    IsolateDetector,
+    DecoyDetector,
+    PerfectDetector,
+)
 from cyberwheel.network.network_base import Network
 from cyberwheel.network.host import Host
-from cyberwheel.red_agents import KillChainAgent, RecurringImpactAgent
+from cyberwheel.red_agents import KillChainAgent, ARTAgent
 from cyberwheel.reward import DecoyReward, StepDetectedReward
 from cyberwheel.reward.new_reward import NewReward
 from cyberwheel.reward.restore_reward import RestoreReward
@@ -58,16 +63,20 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         max_decoys=1,
         blue_reward_scaling=10,
         reward_function="default",
-        red_agent="killchain_agent",
+        red_agent="art_agent",
         evaluation=False,
         blue_config="dynamic_blue_agent.yaml",
         **kwargs,
     ):
-        network_conf_file = files("cyberwheel.network").joinpath(network_config)
-        decoy_conf_file = files("cyberwheel.resources.metadata").joinpath(
+        network_conf_file = files("cyberwheel.resources.configs.network").joinpath(
+            network_config
+        )
+        decoy_conf_file = files("cyberwheel.resources.configs.decoy_hosts").joinpath(
             decoy_host_file
         )
-        host_conf_file = files("cyberwheel.resources.metadata").joinpath(host_def_file)
+        host_conf_file = files(
+            "cyberwheel.resources.configs.host_definitions"
+        ).joinpath(host_def_file)
         super().__init__(config_file_path=network_conf_file)
         self.total = 0
         self.max_steps = kwargs.get("num_steps", 100)
@@ -97,9 +106,10 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
             self.observation_space.shape, host_to_index_mapping(self.network)
         )
         self.red_agent_choice = red_agent
+        # print(red_agent)
 
-        if self.red_agent_choice == "recurring_impact":
-            self.red_agent = RecurringImpactAgent(
+        if self.red_agent_choice == "art_agent":
+            self.red_agent = ARTAgent(
                 self.network.get_random_user_host(), network=self.network
             )
         else:
@@ -107,14 +117,17 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
                 self.network.get_random_user_host(), network=self.network
             )
 
-        self.blue_conf_file = files("cyberwheel.resources.configs").joinpath(blue_config)
+        self.blue_conf_file = files("cyberwheel.resources.configs.blue_agent").joinpath(
+            blue_config
+        )
         self.blue_agent = DynamicBlueAgent(self.blue_conf_file, self.network)
         self.action_space = spaces.Discrete(self.blue_agent.get_action_space_size())
         # self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
-        
-        detector_conf_file = files("cyberwheel.resources.configs").joinpath(detector_config)
+
+        detector_conf_file = files("cyberwheel.resources.configs.detector").joinpath(
+            detector_config
+        )
         self.detectors = [ProbabilityDetector(detector_conf_file), DecoyDetector()]
-        
 
         self.reward_function = reward_function
 
@@ -130,23 +143,26 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
                 self.red_agent.get_reward_map(),
                 self.blue_agent.get_reward_map(),
             )
-        
-        self.evaluation = evaluation
 
+        self.evaluation = evaluation
 
     def step(self, action):
         blue_action_name, rec_id, blue_success, recurring = self.blue_agent.act(action)
-        self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id, blue_success, recurring)
+        self.reward_calculator.handle_blue_action_output(
+            blue_action_name, rec_id, blue_success, recurring
+        )
         red_action_name = (
             self.red_agent.act().get_name()
         )  # red_action includes action, and target of action
         action_metadata = self.red_agent.history.history[-1]
-        
+
         red_action_type, red_action_src, red_action_dst = action_metadata.action
         red_action_success = action_metadata.success
 
         # print(red_action_type, red_action_src.name, red_action_dst.name, red_action_success)
-        self.reward_calculator.handle_red_action_output(red_action_name, red_action_dst.decoy)
+        self.reward_calculator.handle_red_action_output(
+            red_action_name, red_action_dst.decoy
+        )
 
         # print(red_action_success)
         red_action_result = (
@@ -163,8 +179,13 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
                 blue_action_name, blue_success, x, self.current_step
             )
         else:
+            # print(red_action_name)
             reward = self.reward_calculator.calculate_reward(
-                red_action_name, blue_action_name, red_action_success, blue_success, red_action_dst.decoy
+                red_action_name,
+                blue_action_name,
+                red_action_success,
+                blue_success,
+                red_action_dst.decoy,
             )
         self.total += reward
 
@@ -204,11 +225,11 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         self.current_step = 0
         # There's a performance issue here
         self.network.reset()
-        #NOTE: Have we tested the deepcopy instead of removing decoys?
-        #self.network = deepcopy(self.network_copy)    
-         
-        if self.red_agent_choice == "recurring_impact":
-            self.red_agent = RecurringImpactAgent(
+        # NOTE: Have we tested the deepcopy instead of removing decoys?
+        # self.network = deepcopy(self.network_copy)
+
+        if self.red_agent_choice == "art_agent":
+            self.red_agent = ARTAgent(
                 self.network.get_random_user_host(), network=self.network
             )
         else:
@@ -217,7 +238,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
             )
 
         self.blue_agent.reset()
-        
+
         self.alert_converter = HistoryObservation(
             self.observation_space.shape, host_to_index_mapping(self.network)
         )

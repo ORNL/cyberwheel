@@ -1,12 +1,14 @@
 import json
 from typing import List
+from importlib.resources import files
 
 def generate_art_techniques():
 
     scripts = """from cyberwheel.red_actions.technique import Technique
 """
     preamble = "\ntechnique_mapping = {"
-    path_to_combined_art_techniques = "../metadata/combined_art_techniques.json"
+    metadata_path = files("cyberwheel.resources.metadata")
+    path_to_combined_art_techniques = metadata_path.joinpath("combined_art_techniques.json")
     art_techniques = {}
     mapping = {}
     temp_list = []
@@ -30,9 +32,9 @@ def generate_art_techniques():
         cve_list = []
         mitre_to_cwe = {}
         cwe_to_cve = {}
-        with open('../metadata/attack_to_cwe.json', 'r') as f:
+        with open(metadata_path.joinpath('attack_to_cwe.json'), 'r') as f:
             mitre_to_cwe = json.load(f)
-        with open('../metadata/cwe_to_cve.json', 'r') as f:
+        with open(metadata_path.joinpath('cwe_to_cve.json'), 'r') as f:
             cwe_to_cve = json.load(f)
 
         mid = mitre_id.replace("T", "")
@@ -69,16 +71,14 @@ class {name_trunc}(Technique):
             mitigations={mitigations},
             description=b"{"".join(c for c in description if ord(c)<128)}",
             atomic_tests={atomic_tests},
-            cve_list={cve_list},
+            cve_list={set(cve_list)},
             cwe_list={cwe_list}
         )
 """
         preamble += f"'{mitre_id}': {name_trunc}, "
-        #with open('temp_techniques_list.json', 'w') as f:
-        #   json.dump(list(set(temp_list)), f)
     preamble = preamble[:-2] + "}\n"
     scripts = scripts + preamble
-    with open('temp_techniques.py', 'w') as f:
+    with open(metadata_path.joinpath('temp_techniques.py'), 'w') as f:
         f.write(scripts)
 
 if __name__ == "__main__":

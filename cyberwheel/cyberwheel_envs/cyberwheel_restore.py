@@ -1,4 +1,3 @@
-import copy
 from importlib.resources import files
 import gymnasium as gym
 from gymnasium import spaces
@@ -8,15 +7,13 @@ import yaml
 from .cyberwheel import Cyberwheel
 from cyberwheel.blue_agents.restore_agent import RestoreBlueAgent
 from cyberwheel.observation import HistoryObservation
-from detectors.alert import Alert
-# from detectors.detector import DecoyDetector, CoinFlipDetector
-from detectors.detectors.probability_detector import ProbabilityDetector
-from detectors.detectors.example_detectors import PerfectDetector, CoinFlipDetector
-from network.network_base import Network
-from network.host import Host
-from red_agents.restore_agent import RestoreAgent
+from cyberwheel.detectors.alert import Alert
+from cyberwheel.detectors.detectors.probability_detector import ProbabilityDetector
+from cyberwheel.network.network_base import Network
+from cyberwheel.network.host import Host
+from cyberwheel.red_agents.restore_agent import RestoreAgent
 from cyberwheel.reward.restore_reward import RestoreReward
-from red_agents.killchain_agent import KillChainAgent
+
 
 def host_to_index_mapping(network: Network) -> Dict[Host, int]:
     """
@@ -52,8 +49,12 @@ class RestoreCyberwheel(gym.Env, Cyberwheel):
         evaluation=False,
         **kwargs,
     ):
-        network_conf_file = files("cyberwheel.network").joinpath(network_config)
-        host_conf_file = files("cyberwheel.resources.metadata").joinpath(host_def_file)
+        network_conf_file = files("cyberwheel.resources.configs.network").joinpath(
+            network_config
+        )
+        host_conf_file = files("cyberwheel.resources.configs.decoy_hosts").joinpath(
+            host_def_file
+        )
         super().__init__(config_file_path=network_conf_file)
         self.total = 0
         self.max_steps = 100
@@ -81,19 +82,21 @@ class RestoreCyberwheel(gym.Env, Cyberwheel):
             self.network.get_random_user_host(), network=self.network
         )
         self.blue_agent = RestoreBlueAgent(self.network, self.host_defs)
-        
-        self.detector = ProbabilityDetector("/home/70d/cyberwheel/cyberwheel/resources/configs/hids.yaml") #PerfectDetector()
-        self.detector2 = ProbabilityDetector("/home/70d/cyberwheel/cyberwheel/resources/configs/nids.yaml")
+
+        self.detector = ProbabilityDetector(
+            files("cyberwheel.resources.configs.detector").joinpath("hids.yaml")
+        )  # PerfectDetector()
+        self.detector2 = ProbabilityDetector(
+            files("cyberwheel.resources.configs.detector").joinpath("nids.yaml")
+        )
         self.reward_function = reward_function
 
-        #TODO define new reward function for restore
+        # TODO define new reward function for restore
         self.reward_calculator = RestoreReward(
-                self.red_agent.get_reward_map(),
-                self.blue_agent.get_reward_map()
+            self.red_agent.get_reward_map(), self.blue_agent.get_reward_map()
         )
-        
-        self.evaluation = evaluation
 
+        self.evaluation = evaluation
 
     def step(self, action):
         blue_action_name, rec_id, blue_success = self.blue_agent.act(action)
@@ -108,13 +111,14 @@ class RestoreCyberwheel(gym.Env, Cyberwheel):
         red_action_result = (
             self.red_agent.history.recent_history()
         )  # red action results
-        alerts = self.detector.obs(red_action_result.detector_alert) + self.detector2.obs(red_action_result.detector_alert)
+        alerts = self.detector.obs(
+            red_action_result.detector_alert
+        ) + self.detector2.obs(red_action_result.detector_alert)
         obs_vec = self._get_obs(alerts)
 
-        reward = self.reward_calculator.calculate_reward(red_action_name, 
-                                                         blue_action_name, 
-                                                         red_action_success, 
-                                                         blue_success)
+        reward = self.reward_calculator.calculate_reward(
+            red_action_name, blue_action_name, red_action_success, blue_success
+        )
 
         self.total += reward
 
@@ -158,12 +162,12 @@ class RestoreCyberwheel(gym.Env, Cyberwheel):
 
         self.network.reset()
 
-        #NOTE: Have we tested the deepcopy instead of removing decoys?
-        #self.network = deepcopy(self.network_copy)    
-         
+        # NOTE: Have we tested the deepcopy instead of removing decoys?
+        self.network = deepcopy(self.network_copy)
+
         self.red_agent = RestoreAgent(
-                self.network.get_random_user_host(), network=self.network
-            )
+            self.network.get_random_user_host(), network=self.network
+        )
 
         self.blue_agent = RestoreBlueAgent(self.network, self.host_defs)
 

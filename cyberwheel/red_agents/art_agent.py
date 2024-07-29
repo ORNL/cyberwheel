@@ -6,10 +6,9 @@ from cyberwheel.red_agents.red_agent_base import (
     AgentHistory,
     KnownHostInfo,
     RedActionResults,
-    HybridSetList
+    HybridSetList,
 )
-from cyberwheel.red_agents.red_strategies import impact_all_servers, dfs_impact
-from cyberwheel.red_agents.red_rewards import STATIC_IMPACT, RECURRING_IMPACT
+from cyberwheel.red_agents.red_strategies import RedStrategy, ServerDowntime
 from cyberwheel.red_actions.actions.art_killchain_phases import ARTKillChainPhase
 from cyberwheel.network.network_base import Network
 
@@ -17,6 +16,7 @@ from copy import deepcopy
 import networkx as nx
 
 from cyberwheel.reward import RewardMap
+
 
 class ARTAgent(RedAgent):
     def __init__(
@@ -31,23 +31,24 @@ class ARTAgent(RedAgent):
             ARTImpact,  # Perform big attack
         ],
         network: Network = Network(),
-        red_strategy: Callable = impact_all_servers,
-        reward_map: RewardMap = RECURRING_IMPACT
+        red_strategy: RedStrategy = ServerDowntime,
     ):
         """
         An Atomic Red Team (ART) Red Agent that uses a defined Killchain to attack hosts in a particular order.
 
         The KillChain in this case:
         1. Discovery - PortScan and PingSweep a Host (two separate actions)
-        2. Reconnaissance - Get List of CVEs associated with a host, and a host's type (user/server)
         3. PrivilegeEscalation - When an agent is physically on a Host, it can escalate it's privileges to 'root'
         4. Impact - When its privileges are escalated, it can compromise the Host
 
-        Logic:
+        Logic with Default Killchain:
         - The agent will start on a given Host, with its CVEs, ports, subnet, and vulnerabilities already scanned.
-        - After it has retrieved a list of vulnerabilties associated with a Host with Reconnaissance, it can use LateralMovement to get onto a Host.
-        - From there, it will search for Hosts that haven't been portscanned and hosts with the type 'Server'
-        - Its goal is to explore the netowrk to find, move to, and Impact Servers if reachable. If no servers are found, it will Impact any given Host.
+        - At each step the agent will
+            - Determine which Host is its target_host with its given red strategy
+            - Run a Pingsweep on the target_host's subnet if not already scanned
+            - Run a Portscan on target_host, revealing services and vulnerabilities, if not already scanned
+            - Run LateralMovement to hack into target_host if not already on target_host
+            - On target_host, the agent will run the next step of the Killchain (for example, if it has already run Discovery, it will run PrivilegeEscalation)
 
         Important member variables:
 
@@ -62,8 +63,8 @@ class ARTAgent(RedAgent):
 
         * `killchain`: optional
             - The sequence of Actions the Red Agent will take on a given Host.
-            - Default: [Discovery, Reconnaissance, PrivilegeEscalation, Impact]
-            - NOTE: This is currently only functional with the default Killchain.
+            - Default: [Discovery, PrivilegeEscalation, Impact]
+            - NOTE: This is currently only tested with the default Killchain.
         """
         self.name: str = name
         self.killchain: List[Type[ARTKillChainPhase]] = (
@@ -76,7 +77,6 @@ class ARTAgent(RedAgent):
         self.unimpacted_servers = HybridSetList()
         self.unknowns = HybridSetList()
         self.strategy = red_strategy
-        self.reward_map = reward_map
         self.all_kcps = killchain + [ARTLateralMovement]
         self.services_map = {}
         self.tracked_hosts = set()
@@ -96,13 +96,15 @@ class ARTAgent(RedAgent):
         for kcp in all_kcps:
             valid_techniques[kcp] = []
             kcp_valid_techniques = kcp.validity_mapping[host.os][kcp.get_name()]
+            # print(kcp_valid_techniques)
             for mid in kcp_valid_techniques:
                 technique = art_techniques.technique_mapping[mid]
+                # print(f"{kcp.get_name()} - {mid} technique can exploit: {technique.cve_list}\nhost has {host.host_type.cve_list}")
+                # print(host.host_type)
                 if len(host.host_type.cve_list & technique.cve_list) > 0:
                     valid_techniques[kcp].append(mid)
         return valid_techniques
 
-    
     def handle_network_change(self):
         """
         TODO: Add network handling info
@@ -115,7 +117,10 @@ class ARTAgent(RedAgent):
         network_change = False
         for host_name in new_hosts:
             h: Host = self.network.get_node_from_name(host_name)
-            self.services_map[h.name] = self.get_valid_techniques_by_host(h, self.all_kcps)
+            self.services_map[h.name] = self.get_valid_techniques_by_host(
+                h, self.all_kcps
+            )
+            # print(self.services_map[h.name])
             scanned_subnets = [
                 self.history.mapping[s]
                 for s, v in self.history.subnets.items()
@@ -132,20 +137,11 @@ class ARTAgent(RedAgent):
             self.history.hosts[new_host.name] = KnownHostInfo()
             self.unknowns.add(new_host.name)
 
-    def handle_killchain(self, action, success, target_host) -> None:
-        pass
-
     def select_next_target(self) -> Host:
         """
         Should select next target to be itself until impacted.
         """
-        return self.strategy(self)
-
-    def move_to_host(self) -> bool:
-        """
-        This agent should move to another Host once it has impacted its current host, for now.
-        """
-        return False
+        return self.strategy.select_target(self)
 
     def run_action(
         self, target_host: Host
@@ -158,10 +154,12 @@ class ARTAgent(RedAgent):
         * `target_host`: required
             - The target Host of the attack
         """
+        # print(target_host.name)
         step = self.history.hosts[target_host.name].get_next_step()
         if step > len(self.killchain) - 1:
             step = len(self.killchain) - 1
         if not self.history.hosts[target_host.name].ping_sweeped:
+            # print("Time to Ping Sweep")
             action_results = ARTPingSweep(self.current_host, target_host).sim_execute()
             if target_host in action_results.attack_success:
                 for h in target_host.subnet.connected_hosts:
@@ -175,24 +173,34 @@ class ARTAgent(RedAgent):
                         self.history.mapping[h.name] = h
             return action_results, ARTPingSweep
         elif not self.history.hosts[target_host.name].ports_scanned:
+            # print("Time to Port Scan")
             action_results = ARTPortScan(self.current_host, target_host).sim_execute()
             if target_host in action_results.attack_success:
                 self.history.hosts[target_host.name].ports_scanned = True
             return action_results, ARTPortScan
         elif self.current_host.name != target_host.name:
             # do lateral movement to target host
+            # print("Time to Lateral Move")
             action_results = ARTLateralMovement(
-                self.current_host, target_host, self.services_map[target_host.name][ARTLateralMovement]
+                self.current_host,
+                target_host,
+                self.services_map[target_host.name][ARTLateralMovement],
             ).sim_execute()
             success = target_host in action_results.attack_success
-            if (
-                success
-            ):
+            if success:
                 self.current_host = target_host
             return action_results, ARTLateralMovement
 
         action = self.killchain[step]
-        return (action(self.current_host, target_host, self.services_map[target_host.name][action]).sim_execute(), action)
+        # print(f"Time to {action}")
+        return (
+            action(
+                self.current_host,
+                target_host,
+                self.services_map[target_host.name][action],
+            ).sim_execute(),
+            action,
+        )
 
     def act(self) -> type[ARTKillChainPhase]:
         self.handle_network_change()
@@ -201,7 +209,7 @@ class ARTAgent(RedAgent):
         source_host = self.current_host
         action_results, action = self.run_action(target_host)
         success = target_host in action_results.attack_success
-        
+
         no_update = [ARTLateralMovement, ARTPingSweep, ARTPortScan]
         if success:
             if action not in no_update:
@@ -212,6 +220,7 @@ class ARTAgent(RedAgent):
                 self.history.hosts[target_host.name].impacted = True
                 if self.history.hosts[target_host.name].type == "Server":
                     self.unimpacted_servers.remove(target_host.name)
+        print(f"{action.get_name()} - from {source_host.name} to {target_host.name}")
         self.history.update_step(
             (action, source_host, target_host), success, action_results
         )
@@ -222,10 +231,6 @@ class ARTAgent(RedAgent):
         Helper function to add metadata to the Red Agent's history/knowledge. Metadata is in JSON object representation, with key-value pairs.
 
         Metadata Keys Supported:
-
-        * `vulnerabilities` : List[str]
-            - Adds CVEs of Host to history.hosts[Host].vulnerabilities
-
         * `services` : List[Service]
             - Adds available services on Host to history.hosts[Host].services
 
@@ -266,13 +271,15 @@ class ARTAgent(RedAgent):
                         self.unknowns.add(h.name)
             elif k == "ip_address":
                 if host_name not in self.history.hosts.keys():
-                    self.history.hosts[host_name] = KnownHostInfo(ip_address=v.ip_address)
+                    self.history.hosts[host_name] = KnownHostInfo(
+                        ip_address=v.ip_address
+                    )
                     self.unknowns.add(host_name)
                     self.history.mapping[host_name] = v
 
     def get_reward_map(self) -> RewardMap:
-        return self.reward_map
-    
+        return self.strategy.get_reward_map()
+
     def reset(self, entry_host: Host, network: Network):
         self.network = network
         self.current_host = entry_host

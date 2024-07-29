@@ -50,19 +50,12 @@ class Host(NetworkObject):
         self.routes = set()
         self.decoy = False
         self.os = "windows"  # 'windows', 'macos', or 'linux'
-        self.isolated = False # For isolate action
+        self.isolated = False  # For isolate action
         self.interfaces = []
-        self.cves = []
         self.restored = False
         # apply any HostType details
         if self.host_type:
             self._apply_host_type(self.host_type)
-
-        # all_vulnerabilities = []
-        # for s in self.services:
-        #    temp_vulns = [v.name for v in s.vulns]
-        #    all_vulnerabilities.extend(temp_vulns)
-        # self.vulnerabilities = list(set(all_vulnerabilities))
         self.vulnerabilities = []
         self.processes = []
 
@@ -151,29 +144,6 @@ class Host(NetworkObject):
     def define_services(self, services: List[Service]):
         self.services = services
 
-    def define_services_from_host_type(self, host_types_file=None):
-        # TODO: not sure the best way to handle relative files here...
-        if host_types_file is None:
-            host_types_file = "resources/metadata/host_definitions.json"
-        # load host type definitions
-        with open(host_types_file) as f:
-            data = json.load(f)
-
-        # create instace of each Service()
-        for host_type in data.get("host_types"):
-            defined_type = host_type.get("type")
-            if self.type == defined_type.lower():
-                for service in defined_type.get("services"):
-                    self.services.append(
-                        Service(
-                            service.get("name"),
-                            service.get("port"),
-                            service.get("protocol"),
-                            service.get("version"),
-                            service.get("vulnerabilities"),
-                        )
-                    )
-
     def get_services(self) -> Union[List[Service], list]:
         return self.services
 
@@ -233,3 +203,6 @@ class Host(NetworkObject):
     def remove_process(self, process_name: str):
         new_processes = [p for p in self.processes if p.name != process_name]
         self.processes = new_processes
+
+    def kill_malicious_processes(self):
+        self.processes = []

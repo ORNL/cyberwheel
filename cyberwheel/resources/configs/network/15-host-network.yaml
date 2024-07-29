@@ -1,4 +1,3 @@
-host_type_config: resources/metadata/host_defs_services.yaml
 hosts:
   dmz0:
     firewall:

@@ -13,6 +13,7 @@ from copy import deepcopy
 
 from cyberwheel.reward import RewardMap
 
+
 class RestoreAgent(RedAgent):
     def __init__(
         self,
@@ -52,7 +53,9 @@ class RestoreAgent(RedAgent):
     def check_network(self) -> Tuple[bool, Host]:
         # initial_host_names = [h.name for h in self.initial_network.get_hosts()]
         current_hosts = set(self.network.get_host_names())
-        new_hosts = current_hosts - (self.initial_host_names | set(self.history.hosts.keys()))
+        new_hosts = current_hosts - (
+            self.initial_host_names | set(self.history.hosts.keys())
+        )
         # print(len(new_hosts), len(current_hosts), len(self.initial_host_names), len(self.history.hosts.keys()))
         for host_name in new_hosts:
             h = self.network.get_node_from_name(host_name)
@@ -114,7 +117,7 @@ class RestoreAgent(RedAgent):
         if current_host_type == "Server" or current_host_type == "Unknown":
             target_host = self.current_host
             target_host_name = target_host.name
-        elif len(unknown_host_types) > 0:  
+        elif len(unknown_host_types) > 0:
             # Else If the current Host is a 'Printer' or 'Workstation', and there are 'Unknown' Hosts available to scan, target those.
             target_host = random.choice(unknown_host_types)
             target_host_name = target_host.name
@@ -129,7 +132,9 @@ class RestoreAgent(RedAgent):
             self.current_host = target_host
             success = target_host in action_results.attack_success
             self.history.update_step(
-                (LateralMovement, self.current_host, target_host), success=success, techniques=LateralMovement.get_techniques()
+                (LateralMovement, self.current_host, target_host),
+                success=success,
+                techniques=LateralMovement.get_techniques(),
             )
             return LateralMovement
 
@@ -143,7 +148,10 @@ class RestoreAgent(RedAgent):
         # print(success)
         # Update the Overall Step History, regardless of action success
         self.history.update_step(
-            (action, self.current_host, target_host), success, action_results, action.get_techniques()
+            (action, self.current_host, target_host),
+            success,
+            action_results,
+            action.get_techniques(),
         )
 
         # If the agent has scanned the Host AND the Subnet it's a part of, advance from the Discover Step
@@ -165,7 +173,7 @@ class RestoreAgent(RedAgent):
         elif success and action != Discovery:
             self.history.hosts[target_host_name].update_killchain_step()
 
-        if success and action == PrivilegeEscalation:    
+        if success and action == PrivilegeEscalation:
             target_host.restored = False
 
         # Store any new information of Hosts/Subnets as metadata in its History
@@ -255,9 +263,6 @@ class RestoreAgent(RedAgent):
 
         Metadata Keys Supported:
 
-        * `vulnerabilities` : List[str]
-            - Adds CVEs of Host to history.hosts[Host].vulnerabilities
-
         * `services` : List[Service]
             - Adds available services on Host to history.hosts[Host].services
 
@@ -269,9 +274,7 @@ class RestoreAgent(RedAgent):
             and the available IPS of a Subnet to history.subnets[Subnet].available_ips
         """
         for k, v in metadata.items():
-            if k == "vulnerabilities":
-                self.history.hosts[host_name].vulnerabilites = v
-            elif k == "services":
+            if k == "services":
                 self.history.hosts[host_name].services = v
             elif k == "type":
                 host_type = v
@@ -354,7 +357,7 @@ class RestoreAgent(RedAgent):
                 (LateralMovement, self.current_host, target_host),
                 success,
                 action_results,
-                LateralMovement.get_techniques()
+                LateralMovement.get_techniques(),
             )
             if (
                 success
@@ -366,9 +369,9 @@ class RestoreAgent(RedAgent):
 
     def get_reward_map(self) -> RewardMap:
         return {
-                "discovery": (-1, 0),
-                "reconnaissance": (-2, 0),
-                "lateral-movement": (-4, 0),
-                "privilege-escalation": (-6, 0),
-                "impact": (-8,0),
-                }
+            "discovery": (-1, 0),
+            "reconnaissance": (-2, 0),
+            "lateral-movement": (-4, 0),
+            "privilege-escalation": (-6, 0),
+            "impact": (-8, 0),
+        }

@@ -9,6 +9,7 @@ from .cyberwheel import Cyberwheel
 from blue_agents.isolate_blue import IsolateBlueAgent
 from blue_agents.observation import HistoryObservation
 from detectors.alert import Alert
+
 # from detectors.detector import DecoyDetector, CoinFlipDetector
 from detectors.detectors.isolate_detector import IsolateDetector
 from detectors.detectors.probability_detector import ProbabilityDetector
@@ -19,7 +20,6 @@ from red_agents import KillChainAgent, RecurringImpactAgent
 from reward.reward import StepDetectedReward
 from reward.isolate_reward import IsolateReward
 from copy import deepcopy
-
 
 
 def host_to_index_mapping(network: Network) -> Dict[Host, int]:
@@ -48,6 +48,7 @@ def decoy_alerted(alerts: List[Alert]) -> bool:
             return True
     return False
 
+
 class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
     metadata = {"render.modes": ["human"]}
 
@@ -64,11 +65,15 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
         red_agent="killchain_agent",
         **kwargs,
     ):
-        network_conf_file = files("cyberwheel.network").joinpath(network_config)
-        decoy_conf_file = files("cyberwheel.resources.metadata").joinpath(
+        network_conf_file = files("cyberwheel.resources.configs.network").joinpath(
+            network_config
+        )
+        decoy_conf_file = files("cyberwheel.resources.configs.decoy_hosts").joinpath(
             decoy_host_file
         )
-        host_conf_file = files("cyberwheel.resources.metadata").joinpath(host_def_file)
+        host_conf_file = files(
+            "cyberwheel.resources.configs.host_definitions"
+        ).joinpath(host_def_file)
         super().__init__(config_file_path=network_conf_file)
         self.total = 0
         self.max_steps = 100
@@ -109,11 +114,13 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
                 self.network.get_random_user_host(), network=self.network
             )
 
-        
+        self.blue_agent = IsolateBlueAgent(
+            self.network, self.decoy_info, self.host_defs, self.max_decoys
+        )
 
-        self.blue_agent = IsolateBlueAgent(self.network, self.decoy_info, self.host_defs, self.max_decoys)
-        
-        detector_conf_file = files("cyberwheel.resources.configs").joinpath(detector_config)
+        detector_conf_file = files("cyberwheel.resources.configs.detector").joinpath(
+            detector_config
+        )
         self.detector = ProbabilityDetector(detector_conf_file)
         # self.detector = IsolateDetector()
         # self.detector2 = DecoyDetector()
@@ -133,7 +140,6 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
                 # scaling_factor=blue_reward_scaling,
             )
 
-
     def step(self, action):
         # print(action)
         blue_action_name, rec_id, successful = self.blue_agent.act(action)
@@ -142,7 +148,7 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
         red_action_name = (
             self.red_agent.act().get_name()
         )  # red_action includes action, and target of action
-        
+
         action_metadata = self.red_agent.history.history[-1]
 
         red_action_type, red_action_src, red_action_dst = action_metadata.action
@@ -155,7 +161,9 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
         red_action_result = (
             self.red_agent.history.recent_history()
         )  # red action results
-        alerts = self.detector.obs(red_action_result.detector_alert) #+ self.detector2.obs(red_action_result.detector_alert)   
+        alerts = self.detector.obs(
+            red_action_result.detector_alert
+        )  # + self.detector2.obs(red_action_result.detector_alert)
         obs_vec = self._get_obs(alerts)
         alerted = decoy_alerted(alerts)
         if self.reward_function == "step_detected":
@@ -189,7 +197,6 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
                 # "history": self.red_agent.history,
                 # "killchain": self.red_agent.killchain,
             },
-
         )
 
     def _get_obs(self, alerts: List[Alert]) -> Iterable:
@@ -208,9 +215,9 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
         # There's a performance issue here
         self.network.reset()
 
-        #NOTE: Have we tested the deepcopy instead of removing decoys?
-        #self.network = deepcopy(self.network_copy)    
-         
+        # NOTE: Have we tested the deepcopy instead of removing decoys?
+        # self.network = deepcopy(self.network_copy)
+
         if self.red_agent_choice == "recurring_impact":
             self.red_agent = RecurringImpactAgent(
                 self.network.get_random_user_host(), network=self.network
@@ -220,7 +227,9 @@ class IsolateAgentCyberwheel(gym.Env, Cyberwheel):
                 self.network.get_random_user_host(), network=self.network
             )
 
-        self.blue_agent = IsolateBlueAgent(self.network, self.decoy_info, self.host_defs, self.max_decoys)
+        self.blue_agent = IsolateBlueAgent(
+            self.network, self.decoy_info, self.host_defs, self.max_decoys
+        )
 
         self.alert_converter = HistoryObservation(
             self.observation_space.shape, host_to_index_mapping(self.network)

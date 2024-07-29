@@ -90,7 +90,7 @@ def parse_args():
     parser.add_argument('--eval-episodes', type=int, default=50,
         help='Number of evaluation episodes to run')
     parser.add_argument("--eval-red-strategy", type=str,
-        help="the red agent strategies to evaluate against. Current options: 'killchain_agent' | 'red_recurring' | 'human_teaming'", default="killchain_agent",)
+        help="the red agent strategies to evaluate against. Current options: 'killchain_agent' | 'red_recurring' | 'human_teaming'", default="art_agent",)
     parser.add_argument("--eval-scenarios", type=str, default="example_config.yaml",
         help="Cyberwheel network to train on.")
 
@@ -142,7 +142,7 @@ def evaluate(
     episodes=20,
     steps=100,
     reward_function="default",
-    red_agent="killchain_agent",
+    red_agent="art_agent",
     blue_config="dynamic_blue_agent.yaml",
     num_steps=100,
 ):
@@ -350,7 +350,7 @@ def make_env(
     max_decoys=1,
     blue_reward_scaling=10,
     reward_function="default",
-    red_agent="killchain_agent",
+    red_agent="art_agent",
     blue_config="dynamic_blue_agent.yaml",
     num_steps=100,
 ):

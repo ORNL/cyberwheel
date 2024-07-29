@@ -1,44 +1,14 @@
 from __future__ import annotations
 from abc import abstractmethod
 from typing import Union, List, Dict, Any
-from cyberwheel.network.network_object import NetworkObject
 from cyberwheel.detectors.alert import Alert
-from cyberwheel.network.network_base import Network
 from cyberwheel.network.host import Host
 from cyberwheel.network.service import Service
 from cyberwheel.network.subnet import Subnet
-from .technique import Technique
 
 targets = Union[List[Host], List[Subnet]]
 destination = Union[Host, Service]
 source = Union[Host, None]
-
-
-def check_vulnerability(service: Service, techniques: List[Technique]) -> bool:
-    """
-    Checks to see if the action can be used with the given service. This is accomplished by checking the techniques' cves against the service's cves.
-
-    - `service`: the target service
-
-    - `techniques`: list of techniques the red agent can use with this action
-    """
-    for technique in techniques:
-        for vulnerability in service.vulnerabilities:
-            if vulnerability in technique.cve_list:
-                return True
-    return False
-
-
-def validate_attack(host: Host, service: Service) -> bool:
-    """
-    Checks if the action can be taken against the given host. This is done by checking if the given service is in the host's set of services.
-
-    - `host`: a target host
-
-    - `service`: a target service
-    """
-    return True
-    # return True if service in host.services else False
 
 
 class RedActionResults:
@@ -128,6 +98,7 @@ class RedAction:
     """
     Base class for defining red actions. New actions should inherit from this class and define sim_execute().
     """
+
     def __init__(
         self, src_host: Host, target_service, target_hosts, techniques
     ) -> None:

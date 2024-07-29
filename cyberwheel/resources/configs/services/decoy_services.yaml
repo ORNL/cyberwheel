@@ -1,6 +1,0 @@
-service_name:
-  port: 22
-  protocol: tcp
-  version: "OpenSSH_8.9p1 Ubuntu-3ubuntu0.6, OpenSSL 3.0.2"
-  reward: -2
-  recurring_reward: -1

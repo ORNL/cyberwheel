@@ -14,7 +14,7 @@ from cyberwheel.detectors.alert import Alert
 from cyberwheel.detectors.detectors.probability_detector import ProbabilityDetector
 from cyberwheel.network.network_base import Network
 from cyberwheel.network.host import Host
-from cyberwheel.red_agents import KillChainAgent, RecurringImpactAgent, ARTAgent
+from cyberwheel.red_agents import KillChainAgent, ARTAgent
 from cyberwheel.reward import DecoyReward, StepDetectedReward
 
 
@@ -92,18 +92,16 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         action_space[1] == which subnet to deploy it on
         """
 
-        self.action_space = spaces.Discrete(2 * num_decoys * num_subnets + 1 + num_hosts)
+        self.action_space = spaces.Discrete(
+            2 * num_decoys * num_subnets + 1 + num_hosts
+        )
         self.observation_space = spaces.Box(0, 1, shape=(2 * num_hosts,))
         self.alert_converter = HistoryObservation(
             self.observation_space.shape, host_to_index_mapping(self.network)
         )
         self.red_agent_choice = red_agent
 
-        if self.red_agent_choice == "recurring_impact":
-            self.red_agent = RecurringImpactAgent(
-                self.network.get_random_user_host(), network=self.network
-            )
-        elif self.red_agent_choice == "art_agent":
+        if self.red_agent_choice == "art_agent":
             self.red_agent = ARTAgent(
                 self.network.get_random_user_host(), network=self.network
             )
@@ -114,7 +112,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
         self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
 
-        detector_conf_file = files("cyberwheel.resources.configs").joinpath(
+        detector_conf_file = files("cyberwheel.resources.configs.detector").joinpath(
             detector_config
         )
         self.detector = ProbabilityDetector(config=detector_conf_file)
@@ -140,7 +138,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
 
     def step(self, action):
         blue_action_name, rec_id, blue_success = self.blue_agent.act(action)
-        #print(blue_action_name + " - ")
+        # print(blue_action_name + " - ")
         self.reward_calculator.handle_blue_action_output(blue_action_name, rec_id)
         red_action_name = (
             self.red_agent.act().get_name()
@@ -149,9 +147,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         action_metadata = self.red_agent.history.history[-1]
         red_action_type, red_action_src, red_action_dst = action_metadata.action
 
-        #print(
+        # print(
         #    f"{self.current_step} - {red_action_name} : {red_action_src.name} --> {red_action_dst.name}"
-        #)
+        # )
 
         red_action_success = action_metadata.success
 
@@ -208,7 +206,7 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
         pass
 
     def reset(self, seed=None, options=None):
-        #print("------------------------------------------------------------")
+        # print("------------------------------------------------------------")
         self.total = 0
         self.current_step = 0
 
@@ -223,7 +221,9 @@ class DecoyAgentCyberwheel(gym.Env, Cyberwheel):
                 self.network.get_random_user_host(), network=self.network
             )
         elif self.red_agent_choice == "art_agent":
-            self.red_agent.reset(self.network.get_random_user_host(), network=self.network)
+            self.red_agent.reset(
+                self.network.get_random_user_host(), network=self.network
+            )
         else:
             self.red_agent = KillChainAgent(
                 self.network.get_random_user_host(), network=self.network

@@ -205,7 +205,10 @@ class KillChainAgent(RedAgent):
 
         # Update the Overall Step History, regardless of action success
         self.history.update_step(
-            (action, self.current_host, target_host), success, action_results, action.get_techniques()
+            (action, self.current_host, target_host),
+            success,
+            action_results,
+            action.get_techniques(),
         )
 
         # Handle whether killchain advances depending on network state
@@ -298,9 +301,6 @@ class KillChainAgent(RedAgent):
 
         Metadata Keys Supported:
 
-        * `vulnerabilities` : List[str]
-            - Adds CVEs of Host to history.hosts[Host].vulnerabilities
-
         * `services` : List[Service]
             - Adds available services on Host to history.hosts[Host].services
 
@@ -312,9 +312,7 @@ class KillChainAgent(RedAgent):
             and the available IPS of a Subnet to history.subnets[Subnet].available_ips
         """
         for k, v in metadata.items():
-            if k == "vulnerabilities":
-                self.history.hosts[host_name].vulnerabilites = v
-            elif k == "services":
+            if k == "services":
                 self.history.hosts[host_name].services = v
             elif k == "type":
                 host_type = v
@@ -395,7 +393,7 @@ class KillChainAgent(RedAgent):
                 (LateralMovement, self.current_host, target_host),
                 success,
                 action_results,
-                LateralMovement.get_techniques()
+                LateralMovement.get_techniques(),
             )
             if (
                 success
@@ -413,3 +411,6 @@ class KillChainAgent(RedAgent):
             "privilege-escalation": (-6, 0),
             "impact": (-8, 0),
         }
+
+    def reset(self) -> None:
+        return

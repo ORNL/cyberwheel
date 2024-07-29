@@ -1,16 +1,16 @@
 from abc import abstractmethod
 from typing import Iterable
-# from pathlib import Path
-import random
 import yaml
 
 from cyberwheel.network.network_base import Network
 from .alert import Alert
 
+
 def technique_probabilities(filename: str):
-    with open(filename, 'r') as yaml_file:
+    with open(filename, "r") as yaml_file:
         probabilites = yaml.safe_load(yaml_file)
     return probabilites
+
 
 class Detector:
     @abstractmethod

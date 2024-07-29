@@ -27,7 +27,8 @@ actions:
     class: DeployDecoyHost
     configs:
       decoy_hosts: decoy_server_hosts.yaml
-      host_definitions: host_definitions.yaml
+      host_definitions: host_defs_services.yaml
+      services: windows_exploitable_services.yaml
     reward:
       immediate: -20
       recurring: -0.2
@@ -79,7 +80,7 @@ actions:
 shared_data:
   decoy_list: list
   isolate_data:
-    module: blue_actions.shared_data.IsolateData
+    module: cyberwheel.blue_actions.shared_data.IsolateData
     class: IsolateData
     # OPTIONAL. Parameters for initializing the class.
     args:

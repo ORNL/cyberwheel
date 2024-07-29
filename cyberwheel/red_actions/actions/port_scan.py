@@ -3,8 +3,6 @@ from typing import List
 from cyberwheel.red_actions.red_base import (
     RedAction,
     RedActionResults,
-    validate_attack,
-    check_vulnerability,
     targets,
 )
 from cyberwheel.red_actions.technique import Technique
@@ -28,8 +26,6 @@ class PortScan(RedAction):
         self.action_results.detector_alert.add_src_host(self.src_host)
         for host in self.target_hosts:
             # Check if the attack is valid against this specific host
-            if not validate_attack(host, self.target_service):
-                continue
             self.action_results.modify_alert(dst=host)
             self.action_results.add_metadata(host.name, {"services": host.services})
             if self.target_service not in self.action_results.detector_alert.services:

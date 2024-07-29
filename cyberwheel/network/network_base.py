@@ -296,10 +296,7 @@ class Network:
         # Create an instance of the Network class
         network = cls(name=config["network"].get("name"))
 
-        conf_dir = files("cyberwheel.resources.configs.host_types")
-        # TODO: use create_host_type_from_yaml() instead?
-        # conf_file = conf_dir.joinpath('host_definitions.json')
-        # type = network.create_host_type_from_json(type_str, conf_file) #type: ignore
+        conf_dir = files("cyberwheel.resources.configs.host_definitions")
         conf_file = conf_dir.joinpath(host_config)
         with open(conf_file) as f:
             type_config = yaml.safe_load(f)

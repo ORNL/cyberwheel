@@ -12,18 +12,18 @@ adjacency_list:
   - end
 init_info:
   d1:
-    class: CoinFlipDetector
+    class: PerfectDetector
     config: null
     module: example_detectors
   d2:
-    class: CoinFlipDetector
+    class: PerfectDetector
     config: null
     module: example_detectors
   d3:
-    class: CoinFlipDetector
+    class: PerfectDetector
     config: null
     module: example_detectors
   d4:
-    class: CoinFlipDetector
+    class: PerfectDetector
     config: null
     module: example_detectors

@@ -5,10 +5,10 @@ from gym.core import ActType
 
 from .action_space import ActionSpace, ASReturn
 from cyberwheel.network.network_base import Network
-from cyberwheel.blue_actions.blue_action import DynamicBlueAction
+from cyberwheel.blue_actions.blue_action import BlueAction
 
 class _ActionRangeChecker():
-    def __init__(self, name: str, action: DynamicBlueAction, type: str, lower_bound: int, upper_bound: int):
+    def __init__(self, name: str, action: BlueAction, type: str, lower_bound: int, upper_bound: int):
         self.name = name
         self.action = action
         self.type = type
@@ -48,7 +48,7 @@ class DiscreteActionSpace(ActionSpace):
                 else:
                     raise TypeError(f"Unknown action type: {ac.type}.")
 
-    def add_action(self, name: str, action: DynamicBlueAction, **kwargs):
+    def add_action(self, name: str, action: BlueAction, **kwargs):
         action_type = kwargs.get("type", "")
 
         lower_bound = self._action_space_size

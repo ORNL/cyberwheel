@@ -134,10 +134,8 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         self.evaluation = evaluation
 
     def step(self, action):
-        blue_action_name, rec_id, blue_success, recurring = self.blue_agent.act(action)
-        self.reward_calculator.handle_blue_action_output(
-            blue_action_name, rec_id, blue_success, recurring
-        )
+        blue_agent_result = self.blue_agent.act(action)
+        self.reward_calculator.handle_blue_action_output(blue_agent_result.name, blue_agent_result.id, blue_agent_result.success, blue_agent_result.recurring)
         red_action_name = (
             self.red_agent.act().get_name()
         )  # red_action includes action, and target of action
@@ -150,21 +148,19 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
         red_action_result = (
             self.red_agent.history.recent_history()
-        )  # red action results
+        )
+
         alerts = self.detector.obs([red_action_result.detector_alert])
         obs_vec = self._get_obs(alerts)
+        
         if self.reward_function == "step_detected":
             reward = self.reward_calculator.calculate_reward(
-                blue_action_name, blue_success, x, self.current_step
+                blue_agent_result.name, blue_agent_result.success, x, self.current_step
             )
         else:
             # print(red_action_name)
             reward = self.reward_calculator.calculate_reward(
-                red_action_name,
-                blue_action_name,
-                red_action_success,
-                blue_success,
-                red_action_dst.decoy,
+                red_action_name, blue_agent_result.name, red_action_success, blue_agent_result.success, red_action_dst.decoy
             )
         self.total += reward
 
@@ -179,7 +175,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
             red_action_str = "Success - " if red_action_success else "Failed - "
             red_action_str += f"{red_action_type.__name__} from {red_action_src.name} to {red_action_dst.name}"
             info = {
-                "action": {"Blue": blue_action_name, "Red": red_action_str},
+                "action": {"Blue": blue_agent_result.name, "Red": red_action_str},
                 "network": self.blue_agent.network,
                 "history": self.red_agent.history,
                 "killchain": self.red_agent.killchain,

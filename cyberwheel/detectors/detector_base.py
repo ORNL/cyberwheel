@@ -1,7 +1,6 @@
 from abc import abstractmethod
 from typing import Iterable
-import yaml
-from .alert import Alert
+from cyberwheel.detectors.alert import Alert
 
 class Detector:
     name = "Detector"

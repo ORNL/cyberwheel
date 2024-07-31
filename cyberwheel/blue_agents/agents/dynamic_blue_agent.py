@@ -6,7 +6,7 @@ from importlib.resources import files
 from typing import Dict, List
 from gym import Space
 
-from cyberwheel.blue_agents.blue_agent_base import BlueAgent, BlueAgentResult
+from cyberwheel.blue_agents.blue_agent import BlueAgent, BlueAgentResult
 from cyberwheel.reward.reward_base import RewardMap
 from cyberwheel.network.network_base import Network
 from cyberwheel.blue_agents.action_space.action_space import ActionSpace
@@ -170,7 +170,7 @@ class DynamicBlueAgent(BlueAgent):
         id = result.id
         success = result.success
         recurring = result.recurring
-        return asc_return.name, id, success, recurring
+        return BlueAgentResult(asc_return.name, id, success, recurring)
     
     def get_reward_map(self) -> RewardMap:
         return self.reward_map

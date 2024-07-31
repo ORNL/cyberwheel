@@ -1,19 +1,13 @@
-import bigtree
-import yaml
 import importlib
+import matplotlib.pyplot as plt
+import networkx as nx
+import yaml
 from typing import Iterator
 
 from cyberwheel.detectors.detector_base import Detector
 from cyberwheel.detectors.alert import Alert
-from cyberwheel.network.host import Host
-from cyberwheel.network.subnet import Subnet
-import networkx as nx
-import matplotlib.pyplot as plt
 
 class DetectorHandler:
-    """
-    
-    """
     def __init__(self, config: str) -> None:
         """
         - `config`: file name of the detector handler config file. Currently only YAML is supported.

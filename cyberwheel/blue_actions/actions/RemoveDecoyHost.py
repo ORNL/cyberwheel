@@ -1,8 +1,7 @@
 from typing import Dict
 
-from cyberwheel.blue_actions.blue_action import SubnetAction, generate_id, BlueActionReturn
+from cyberwheel.blue_actions.blue_action import SubnetAction, BlueActionReturn
 from cyberwheel.network.network_base import Network
-from cyberwheel.network.host import Host, HostType
 from cyberwheel.network.subnet import Subnet
 
 

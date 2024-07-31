@@ -1,4 +1,4 @@
-from ..blue_action import CustomSharedData
+from cyberwheel.blue_actions.shared_data import CustomSharedData
 from cyberwheel.network.host import Host
 from cyberwheel.network.subnet import Subnet
 

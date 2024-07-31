@@ -2,8 +2,8 @@ import random
 import yaml
 from typing import Iterable
 
-from ..detector_base import Detector
-from ..alert import Alert
+from cyberwheel.detectors.alert import Alert
+from cyberwheel.detectors.detector_base import Detector
 
 def _read_detector_yaml(filename: str):
     with open(filename, "r") as yaml_file:

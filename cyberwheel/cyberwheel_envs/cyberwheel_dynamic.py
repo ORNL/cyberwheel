@@ -14,7 +14,7 @@ from cyberwheel.network.network_base import Network
 from cyberwheel.network.host import Host
 from cyberwheel.red_agents import KillChainAgent, ARTAgent
 from cyberwheel.reward import DecoyReward, StepDetectedReward
-from cyberwheel.reward.new_reward import NewReward
+from cyberwheel.reward.recurring_reward import RecurringReward
 from cyberwheel.reward.restore_reward import RestoreReward
 
 
@@ -113,9 +113,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         self.action_space = self.blue_agent.create_action_space()
         # self.blue_agent = DecoyBlueAgent(self.network, self.decoy_info, self.host_defs)
 
-        detector_conf_file = files("cyberwheel.resources.configs.detector").joinpath(
-            detector_config
-        )
+        detector_conf_file = files("cyberwheel.resources.configs.detector").joinpath(detector_config)
         self.detector = DetectorHandler(detector_conf_file)
 
         self.reward_function = reward_function
@@ -128,7 +126,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
                 max_steps=self.max_steps,
             )
         else:
-            self.reward_calculator = NewReward(
+            self.reward_calculator = RecurringReward(
                 self.red_agent.get_reward_map(),
                 self.blue_agent.get_reward_map(),
             )
@@ -155,7 +153,6 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         )  # red action results
         alerts = self.detector.obs([red_action_result.detector_alert])
         obs_vec = self._get_obs(alerts)
-        # x = decoy_alerted(alerts)
         if self.reward_function == "step_detected":
             reward = self.reward_calculator.calculate_reward(
                 blue_action_name, blue_success, x, self.current_step
@@ -204,7 +201,6 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
     def reset(self, seed=None, options=None):
         self.total = 0
         self.current_step = 0
-        # There's a performance issue here
         self.network.reset()
         # NOTE: Have we tested the deepcopy instead of removing decoys?
         # self.network = deepcopy(self.network_copy)
@@ -218,7 +214,6 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         self.alert_converter = HistoryObservation(
             self.observation_space.shape, host_to_index_mapping(self.network)
         )
-        # self.detector = NIDSDetector()
         self.reward_calculator.reset()
         return self._reset_obs(), {}
 

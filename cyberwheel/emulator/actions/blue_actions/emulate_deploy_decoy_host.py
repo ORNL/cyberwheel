@@ -5,15 +5,15 @@ Module defines the class to deploy a decoy in the emulator.
 from __future__ import annotations
 import subprocess
 from cyberwheel.emulator.actions import stdout_to_list
-from cyberwheel.blue_actions.dynamic_blue_base import (DynamicBlueAction,
-                                                       DynamicBlueActionReturn,
+from cyberwheel.blue_actions.blue_action import (BlueAction,
+                                                       BlueActionReturn,
                                                        generate_id)
 
-class EmulateDeployDecoyHost(DynamicBlueAction): #pylint: disable=too-few-public-methods
+class EmulateDeployDecoyHost(BlueAction): #pylint: disable=too-few-public-methods
     """
     Class deploy decoy in the emulator.
     """
-    def execute(self) -> DynamicBlueActionReturn:
+    def execute(self) -> BlueActionReturn:
         """
         Exeucute deploying a decoy in the emulator.
         Current implementation connects a virtual machine to the router.
@@ -41,4 +41,4 @@ class EmulateDeployDecoyHost(DynamicBlueAction): #pylint: disable=too-few-public
             values = stdout_to_list(output)
             print("values: ", values)
 
-        return DynamicBlueActionReturn(name, True, 1)
+        return BlueActionReturn(name, True, 1)

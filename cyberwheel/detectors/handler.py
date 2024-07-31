@@ -11,7 +11,13 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 class DetectorHandler:
+    """
+    
+    """
     def __init__(self, config: str) -> None:
+        """
+        - `config`: file name of the detector handler config file. Currently only YAML is supported.
+        """
         self.config = config
         self._from_config()
 
@@ -55,6 +61,11 @@ class DetectorHandler:
         return self.DG
 
     def obs(self, perfect_alerts: Iterator[Alert]) -> Iterator[Alert]:
+        """
+        Traverses the detector graph and executing each detector's `obs()` method.
+
+        - `perfect_alerts`: an iterable of Alerts produced by the red agent. Used as input to the detector graph.
+        """
         for edge in self.DG.edges:
             node_data_view = self.DG.nodes.data("detector_output", default=[])
             next_node_input = node_data_view[edge[1]]
@@ -71,6 +82,10 @@ class DetectorHandler:
         return self.DG.nodes.data("detector_output", default=[])['end']
 
     def draw(self, filename="detector.png"):
+        """
+        Draws the detector graph.
+        - `filename`: file to save the drawing of the detector graph to
+        """
         plt.clf()  # clear
         colors = []
         for node in list(self.DG):
@@ -94,29 +109,16 @@ class DetectorHandler:
 
 
 def import_detector(module: str, class_: str, config: str | None) -> Detector:
+    """
+    Imports the specifed detector.
+    
+    - `module`: The module this detector is located in.
+
+    - `class_`: The detector's class name.
+
+    - `config`: Name of a config file to initialize this detector with.
+    """
     import_path = ".".join(["cyberwheel.detectors.detectors", module])
     m = importlib.import_module(import_path)
     detector_type = getattr(m, class_)  
     return detector_type(config) if config else detector_type()
-      
-
-def main():
-    handler = DetectorHandler("/home/70d/cyberwheel/cyberwheel/resources/configs/parallel_detector_handler.yaml")
-    handler.draw("parallel.png")
-    s = Subnet("subnet", "192.168.0.0/24", None)
-    src_host = Host("Host1", None, None)
-    src_host2 = Host("Host2", None, None)
-    src_host3= Host("Host3", None, None)
-    dst_hosts = [
-        Host("Host2", s, None),
-        Host("Host3", s, None),
-        Host("Host4", s, None),
-    ]
-    alert = Alert(src_host, dst_hosts=dst_hosts, services=[])
-    alert2 = Alert(src_host2, dst_hosts=dst_hosts[:2], services=[])
-    alert3 = Alert(src_host3, dst_hosts=[dst_hosts[2]], services=[])
-    perfect_alerts = [alert, alert2, alert3]
-    print(handler.obs(perfect_alerts))
-
-if __name__ == "__main__":
-    main()

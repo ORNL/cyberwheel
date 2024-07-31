@@ -5,7 +5,7 @@ from gym.core import ActType
 
 from .action_space import ActionSpace, ASReturn
 from cyberwheel.network.network_base import Network
-from cyberwheel.blue_actions.dynamic_blue_base import DynamicBlueAction
+from cyberwheel.blue_actions.blue_action import DynamicBlueAction
 
 class _ActionRangeChecker():
     def __init__(self, name: str, action: DynamicBlueAction, type: str, lower_bound: int, upper_bound: int):

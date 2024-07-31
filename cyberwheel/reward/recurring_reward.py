@@ -2,26 +2,12 @@ from typing import List, Tuple
 
 from cyberwheel.reward.reward_base import Reward, RewardMap, RecurringAction, calc_quadratic
 
-class NewReward(Reward):
+class RecurringReward(Reward):
     def __init__(
         self,
         red_rewards: RewardMap,
         blue_rewards: RewardMap,
     ) -> None:
-        """
-        Increases the negative reward if the number of recurring actions is less than `r[0]` or greater than `r[1]`.
-        If this number falls within the range, the sum of the recurring rewards is calculated normally. Otherwise,
-        the cost of these actions increases scaling based on how far it is from the range. This is meant to prevent two things:
-
-        1. the agent always choosing to do nothing instead of deploying hosts.
-        2. the agent spamming decoys (20 decoys on a network of a dozen or so hosts is a bit absurd)
-
-        It is important to note that the number of recurring actions is not strictly bound to `range`. The agent could
-        create fewer or more recurring actions.
-
-        `scaling_factor` impacts how much being outside `r` affects the reward
-        """
-
         super().__init__(red_rewards, blue_rewards)
         self.blue_recurring_actions: List[RecurringAction] = []
         self.red_recurring_actions: List[RecurringAction] = []
@@ -36,7 +22,6 @@ class NewReward(Reward):
     ) -> int | float:
         if red_success and not decoy:
             r = self.red_rewards[red_action][0]
-            # self.handle_red_action_output(red_action)
         else:
             r = 50
 

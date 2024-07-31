@@ -32,7 +32,7 @@ class _ActionConfigInfo():
 
 class DynamicBlueAgent(BlueAgent):
     """
-    The purpose of this blue agent is to prevent having to create new blue agents everytime a new
+    The purpose of this blue agent is to prevent having to create new blue agents everytime a new 
     blue action is introduced. The idea is to have a config file specify what blue actions this instance
     has and import them dynamically.
 
@@ -44,7 +44,6 @@ class DynamicBlueAgent(BlueAgent):
 
     This agent should also keep track of blue action config files. The config for decoys is an example.
     """
-
     def __init__(self, config: str, network: Network) -> None:
         super().__init__()
         self.config = config
@@ -183,6 +182,5 @@ class DynamicBlueAgent(BlueAgent):
         return self.action_space.create_action_space()
     
     def reset(self):
-        # I think all this needs to do is set all shared_data values to their default values
         for v in self.shared_data.values():
             v.clear()

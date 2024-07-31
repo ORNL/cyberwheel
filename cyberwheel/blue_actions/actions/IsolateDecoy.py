@@ -1,7 +1,7 @@
 from typing import Dict
 
-from cyberwheel.blue_actions.dynamic_blue_base import StandaloneAction
-from cyberwheel.blue_actions.dynamic_blue_base import DynamicBlueActionReturn
+from cyberwheel.blue_actions.blue_action import StandaloneAction
+from cyberwheel.blue_actions.blue_action import BlueActionReturn
 from cyberwheel.network.network_base import Network
 
 
@@ -13,12 +13,12 @@ class IsolateDecoy(StandaloneAction):
 
     def execute(self, i, **kwargs) -> None:
         if i >= len(self.isolate_data):
-            return DynamicBlueActionReturn("", False)
+            return BlueActionReturn("", False)
         host, subnet = self.isolate_data[i]
 
         if host.isolated:
-            return DynamicBlueActionReturn("", False)
+            return BlueActionReturn("", False)
 
         self.network.isolate_host(host, subnet)
-        return DynamicBlueActionReturn("", True)
+        return BlueActionReturn("", True)
 

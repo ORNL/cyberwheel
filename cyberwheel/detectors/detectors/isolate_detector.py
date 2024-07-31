@@ -2,7 +2,6 @@ from typing import Iterable
 from cyberwheel.detectors.detector_base import Detector
 from cyberwheel.detectors.alert import Alert
 
-
 class IsolateDetector(Detector):
     """A detector that only gives alerts for hosts that access decoys"""
 

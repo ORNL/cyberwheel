@@ -5,11 +5,7 @@ import uuid
 
 from typing import Dict, List, Tuple
 
-from cyberwheel.blue_actions.dynamic_blue_base import (
-    SubnetAction,
-    generate_id,
-    DynamicBlueActionReturn,
-)
+from cyberwheel.blue_actions.blue_action import SubnetAction, generate_id, BlueActionReturn
 from cyberwheel.network.network_base import Network
 from cyberwheel.network.host import Host, HostType
 from cyberwheel.network.service import Service
@@ -29,7 +25,7 @@ class DeployDecoyHost(SubnetAction):
         self.define_services()
         self.decoy_list = kwargs.get("decoy_list", [])
 
-    def execute(self, subnet: Subnet, **kwargs) -> DynamicBlueActionReturn:
+    def execute(self, subnet: Subnet, **kwargs) ->  BlueActionReturn:
         name = generate_id()
         if "server" in self.type.lower():
             host_type = HostType(
@@ -45,8 +41,7 @@ class DeployDecoyHost(SubnetAction):
 
         self.host = self.network.create_decoy_host(name, subnet, host_type)
         self.decoy_list.append(name)
-        return DynamicBlueActionReturn(name, True, 1)
-
+        return BlueActionReturn(name, True, 1)
 
 class IsolateDecoyHost(SubnetAction):
     def __init__(self, network: Network, configs: Dict[str, any], **kwargs) -> None:
@@ -55,12 +50,10 @@ class IsolateDecoyHost(SubnetAction):
         self.define_services()
         self.isolate_data = kwargs.get("isolate_data", [])
 
-    def execute(self, subnet: Subnet, **kwargs) -> DynamicBlueActionReturn:
+    def execute(self, subnet: Subnet, **kwargs) ->  BlueActionReturn:
         name = generate_id()
         host_type = HostType(
             name=name, services=self.services, decoy=True, cve_list=self.cves
         )
         self.host = self.network.create_decoy_host(name, subnet, host_type)
-        return DynamicBlueActionReturn(
-            name, self.isolate_data.append_decoy(self.host, subnet), 1
-        )
+        return BlueActionReturn(name, self.isolate_data.append_decoy(self.host, subnet), 1)

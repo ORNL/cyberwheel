@@ -2,11 +2,11 @@ from abc import abstractmethod, ABC
 from gym.core import ActType
 from gym import Space
 
-from cyberwheel.blue_actions.dynamic_blue_base import DynamicBlueAction
+from cyberwheel.blue_actions.blue_action import BlueAction
 from cyberwheel.network.network_base import Network
 
 class ASReturn:
-    def __init__(self, name: str, action: DynamicBlueAction, args=(), kwargs={}) -> None:
+    def __init__(self, name: str, action: BlueAction, args=(), kwargs={}) -> None:
         self.name = name
         self.action = action
         self.args = args
@@ -21,9 +21,8 @@ class ActionSpace(ABC):
       action is to be executed by the blue agent. 
     - `add_actions()`: Method for adding an action. Used while parsing the dynamic blue agent's config file to
       add mappings from `ActType` to a blue action. 
-    - `get_shape()`: Method for getting the shape of the action space. NOTE: Might be replaced
-      by an actual implementation of the action space. I.e. this class also sets up the action space for the env.
-
+    - `get_shape()`: Method for getting the shape of the action space. 
+    - `create_action_space()`: Creates a gym.Space representation of the action space.
     """
     def __init__(self, network: Network) -> None:
         self.network = network
@@ -41,9 +40,9 @@ class ActionSpace(ABC):
         pass
     
     @abstractmethod
-    def add_action(self, name: str, action: DynamicBlueAction, **kwargs) -> None:
+    def add_action(self, name: str, action: BlueAction, **kwargs) -> None:
         """
-        Adds an action to this `ActionSpaceConverter`. If using the dynamic blue agent, then the action's
+        Adds an action to this `ActionSpace`. If using the dynamic blue agent, then the action's
         `action_space_args` from the config file will be passed as `**kwargs`. 
         """
         pass
@@ -57,6 +56,7 @@ class ActionSpace(ABC):
     
     @abstractmethod
     def create_action_space(self) -> Space:
+        """Creates a gym.Space representation of the action space. This is used by the cyberwheel environment."""
         pass
 
     def finalize(self):

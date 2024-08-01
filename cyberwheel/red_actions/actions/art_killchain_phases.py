@@ -249,7 +249,8 @@ class ARTKillChainPhase(ARTAction):
             if chosen_test.executor != None:
                 processes.extend(chosen_test.executor.command)
                 processes.extend(chosen_test.executor.cleanup_command)
-
+            for p in processes:
+                host.run_command(chosen_test.executor, p, 'root')
             self.action_results.add_metadata(
                 host.name,
                 {

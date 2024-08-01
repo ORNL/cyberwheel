@@ -9,6 +9,7 @@ from .network_object import NetworkObject
 from .service import Service
 from .subnet import Subnet
 from .process import Process
+from .command import Command
 
 
 class HostType(BaseModel):
@@ -58,6 +59,7 @@ class Host(NetworkObject):
             self._apply_host_type(self.host_type)
         self.vulnerabilities = []
         self.processes = []
+        self.command_history = []
 
     def __str__(self) -> str:
         str = f'Host(name="{self.name}", subnet="{self.subnet.name}", '
@@ -199,6 +201,9 @@ class Host(NetworkObject):
         self.processes.append(
             Process(name=process_name, privilege=process_privilege_level)
         )
+    
+    def run_command(self, command_executor, command_content, privilege):
+        self.command_history.append(Command(command_executor, command_content, privilege))
 
     def remove_process(self, process_name: str):
         new_processes = [p for p in self.processes if p.name != process_name]

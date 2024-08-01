@@ -1,3 +1,10 @@
 # Server decoy hosts
 server_decoy:
   type: web_server
+  reward: -1
+  recurring_reward: -0.1
+  services:
+  - WindowsDiscoveryExploitableService
+  - WindowsLateralMovementExploitableService
+  - WindowsPrivilegeEscalationExploitableService
+  - WindowsImpactExploitableService

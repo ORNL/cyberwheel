@@ -3,20 +3,18 @@ import plotly.graph_objects as go
 import dash
 import os
 import pandas as pd
-from PIL import Image
 import pickle
 import sys
-
+from importlib.resources import files
 
 def main_page_layout():
     graph_list = []
-    basepath = "graphs/"
+    basepath = files("cyberwheel").joinpath("graphs")
     for path in os.scandir(basepath):
         if os.path.isdir(path.path) and any(
             ".pickle" in g for g in os.listdir(path.path)
         ):
             graph_list.append(path.name)
-    # print(plugin_list)
     graph_dict = {"name": []}
     for graph in graph_list:
         graph_dict["name"].append(
@@ -36,11 +34,20 @@ def main_page_layout():
         markdown_options={"link_target": "_self", "html": False},
     )
 
+app = Dash(__name__, suppress_callback_exceptions=True)
+app.layout = html.Div(
+    [
+        dcc.Location(id="url", refresh=False),
+        html.H1("Cyberwheel"),
+        html.Br(),
+        html.Div(id="page-content", children=main_page_layout()),
+    ]
+)
 
 def graph_page_layout(graph_name: str):
     num_episodes = set()
     num_steps = set()
-    for filename in os.listdir(f"graphs/{graph_name}"):
+    for filename in os.listdir(files("cyberwheel.graphs").joinpath(graph_name)):
         if ".pickle" not in filename:
             continue
         episode = int(filename.split("_")[0])
@@ -75,7 +82,10 @@ def graph_page_layout(graph_name: str):
     )
 
 
-@callback(Output("page-content", "children"), Input("url", "pathname"))
+@callback(
+    Output("page-content", "children"), 
+    Input("url", "pathname")
+)
 def display_page(pathname):
     if pathname == "/":
         return html.Div([main_page_layout()])
@@ -91,7 +101,7 @@ def display_page(pathname):
     State("state-graph-name", "children"),
 )
 def update_datatable(episode, graph_name):
-    df = pd.read_csv(f"action_logs/{graph_name}.csv")
+    df = pd.read_csv(files("cyberwheel.action_logs").joinpath(f"{graph_name}.csv"))
     df = df.drop(df.columns[df.columns.str.contains("Unnamed", case=False)], axis=1)
     df = df[df["episode"] == episode]
     return dash_table.DataTable(
@@ -107,7 +117,7 @@ def update_datatable(episode, graph_name):
 )
 def update_graph(episode, step, graph_name):
     G = None
-    with open(f"graphs/{graph_name}/{episode}_{step}.pickle", "rb") as f:
+    with open(files(f"cyberwheel.graphs.{graph_name}").joinpath(f"{episode}_{step}.pickle"), "rb") as f:
         G = pickle.load(f)
 
     # Create Edges
@@ -144,7 +154,9 @@ def update_graph(episode, step, graph_name):
         node_x.append(x)
         node_y.append(y)
         node_colors.append(G.nodes[node]["color"])
-        node_states.append(f"{node}:\n{G.nodes[node]['state']}")
+        node_states.append(f"{node}:\n{G.nodes[node]['state']}\nCommands:\n")
+        for c in G.nodes[node]['commands']:
+            node_states[-1] += c.content + "<br>"
         line_colors.append(G.nodes[node]["outline_color"])
         line_widths.append(G.nodes[node]["outline_width"])
 
@@ -185,21 +197,6 @@ def update_graph(episode, step, graph_name):
     )
     return dcc.Graph(figure=fig)
 
-
-def run_visualization_server(port: int, debug: bool):
-    app = Dash(__name__, suppress_callback_exceptions=True)
-    app.layout = html.Div(
-        [
-            dcc.Location(id="url", refresh=False),
-            html.H1("Cyberwheel"),
-            html.Br(),
-            html.Div(id="page-content", children=main_page_layout()),
-        ]
-    )
-    app.run(debug=debug, port=port)
-
-
-if __name__ == "__main__":
-    port = sys.argv[1]
-    debug = True
-    run_visualization_server(port, debug)
+port = sys.argv[1]
+debug = True
+app.run(debug=debug, port=port)

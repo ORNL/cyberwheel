@@ -1,19 +1,9 @@
-from typing import Type, Any, Dict, Tuple, List, Callable
-from cyberwheel.red_actions.actions.art_killchain_phases import *
-from cyberwheel.red_agents.red_agent_base import (
-    KnownSubnetInfo,
-    RedAgent,
-    AgentHistory,
-    KnownHostInfo,
-    RedActionResults,
-    HybridSetList,
-)
-from cyberwheel.red_agents.red_strategies import RedStrategy, ServerDowntime
-from cyberwheel.red_actions.actions.art_killchain_phases import ARTKillChainPhase
-from cyberwheel.network.network_base import Network
-
-from copy import deepcopy
-import networkx as nx
+from typing import Type, Any, Dict, Tuple, List
+from cyberwheel.red_actions.actions.art_killchain_phases import ARTDiscovery, ARTImpact, ARTKillChainPhase, ARTLateralMovement, ARTPingSweep, ARTPortScan, ARTPrivilegeEscalation
+from cyberwheel.red_agents.red_agent_base import KnownSubnetInfo, RedAgent, AgentHistory, KnownHostInfo, RedActionResults, HybridSetList
+from cyberwheel.red_agents.strategies import RedStrategy, ServerDowntime
+from cyberwheel.network.network_base import Network, Host
+from cyberwheel.red_actions import art_techniques
 
 from cyberwheel.reward import RewardMap
 
@@ -25,13 +15,14 @@ class ARTAgent(RedAgent):
         name: str = "ARTAgent",
         killchain: List[
             Type[ARTKillChainPhase]
-        ] = [  # Need to fill this out more accurately, currently defined as an example
+        ] = [
             ARTDiscovery,  # Count reconnaissance techniques (only 1) under Discovery
             ARTPrivilegeEscalation,  # Use previous exploit to elevate privilege level
             ARTImpact,  # Perform big attack
         ],
         network: Network = Network(),
         red_strategy: RedStrategy = ServerDowntime,
+        service_mapping: dict = {}
     ):
         """
         An Atomic Red Team (ART) Red Agent that uses a defined Killchain to attack hosts in a particular order.
@@ -78,29 +69,45 @@ class ARTAgent(RedAgent):
         self.unknowns = HybridSetList()
         self.strategy = red_strategy
         self.all_kcps = killchain + [ARTLateralMovement]
-        self.services_map = {}
-        self.tracked_hosts = set()
-        for host in self.network.get_all_hosts():
-            self.tracked_hosts.add(host.name)
-            self.services_map[host.name] = {}
-            for kcp in self.all_kcps:
-                self.services_map[host.name][kcp] = []
+        if service_mapping == {}:
+            self.services_map = {}
+            self.tracked_hosts = set()
+            for host in self.network.get_all_hosts():
+                self.tracked_hosts.add(host.name)
+                self.services_map[host.name] = {}
+                for kcp in self.all_kcps:
+                    self.services_map[host.name][kcp] = []
+                    kcp_valid_techniques = kcp.validity_mapping[host.os][kcp.get_name()]
+                    for mid in kcp_valid_techniques:
+                        technique = art_techniques.technique_mapping[mid]
+                        if len(host.host_type.cve_list & technique.cve_list) > 0:
+                            self.services_map[host.name][kcp].append(mid)
+        else:
+            self.services_map = service_mapping
+            self.tracked_hosts = set(service_mapping.keys())
+    
+    @classmethod
+    def get_service_map(cls, network: Network):
+        killchain = [ARTDiscovery, ARTPrivilegeEscalation, ARTImpact, ARTLateralMovement]
+        service_mapping = {}
+        for host in network.get_all_hosts():
+            service_mapping[host.name] = {}
+            for kcp in killchain:
+                service_mapping[host.name][kcp] = []
                 kcp_valid_techniques = kcp.validity_mapping[host.os][kcp.get_name()]
                 for mid in kcp_valid_techniques:
                     technique = art_techniques.technique_mapping[mid]
                     if len(host.host_type.cve_list & technique.cve_list) > 0:
-                        self.services_map[host.name][kcp].append(mid)
+                        service_mapping[host.name][kcp].append(mid)
+        return service_mapping
 
     def get_valid_techniques_by_host(self, host, all_kcps):
         valid_techniques = {}
         for kcp in all_kcps:
             valid_techniques[kcp] = []
             kcp_valid_techniques = kcp.validity_mapping[host.os][kcp.get_name()]
-            # print(kcp_valid_techniques)
             for mid in kcp_valid_techniques:
                 technique = art_techniques.technique_mapping[mid]
-                # print(f"{kcp.get_name()} - {mid} technique can exploit: {technique.cve_list}\nhost has {host.host_type.cve_list}")
-                # print(host.host_type)
                 if len(host.host_type.cve_list & technique.cve_list) > 0:
                     valid_techniques[kcp].append(mid)
         return valid_techniques
@@ -120,7 +127,6 @@ class ARTAgent(RedAgent):
             self.services_map[h.name] = self.get_valid_techniques_by_host(
                 h, self.all_kcps
             )
-            # print(self.services_map[h.name])
             scanned_subnets = [
                 self.history.mapping[s]
                 for s, v in self.history.subnets.items()
@@ -192,7 +198,6 @@ class ARTAgent(RedAgent):
             return action_results, ARTLateralMovement
 
         action = self.killchain[step]
-        # print(f"Time to {action}")
         return (
             action(
                 self.current_host,
@@ -209,7 +214,6 @@ class ARTAgent(RedAgent):
         source_host = self.current_host
         action_results, action = self.run_action(target_host)
         success = target_host in action_results.attack_success
-
         no_update = [ARTLateralMovement, ARTPingSweep, ARTPortScan]
         if success:
             if action not in no_update:
@@ -220,7 +224,10 @@ class ARTAgent(RedAgent):
                 self.history.hosts[target_host.name].impacted = True
                 if self.history.hosts[target_host.name].type == "Server":
                     self.unimpacted_servers.remove(target_host.name)
-        print(f"{action.get_name()} - from {source_host.name} to {target_host.name}")
+            #elif action == ARTPrivilegeEscalation:
+            #    target_host.restored = False
+
+        #print(f"{action.get_name()} - from {source_host.name} to {target_host.name}")
         self.history.update_step(
             (action, source_host, target_host), success, action_results
         )

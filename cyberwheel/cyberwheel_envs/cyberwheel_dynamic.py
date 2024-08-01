@@ -66,6 +66,8 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         red_agent="art_agent",
         evaluation=False,
         blue_config="dynamic_blue_agent.yaml",
+        network=None,
+        service_mapping={},
         **kwargs,
     ):
         network_conf_file = files("cyberwheel.resources.configs.network").joinpath(
@@ -77,7 +79,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         host_conf_file = files(
             "cyberwheel.resources.configs.host_definitions"
         ).joinpath(host_def_file)
-        super().__init__(config_file_path=network_conf_file)
+        super().__init__(config_file_path=network_conf_file, network=network)
         self.total = 0
         self.max_steps = kwargs.get("num_steps", 100)
         self.current_step = 0
@@ -92,8 +94,8 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
         self.decoy_types = list(self.decoy_info.keys())
 
-        num_decoys = len(self.decoy_types)
-        num_subnets = len(self.network.get_all_subnets())
+        #num_decoys = len(self.decoy_types)
+        #num_subnets = len(self.network.get_all_subnets())
         num_hosts = len(self.network.get_hosts())
         """
         There needs to be an action for deploying each host on each subnet.
@@ -106,11 +108,12 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
             self.observation_space.shape, host_to_index_mapping(self.network)
         )
         self.red_agent_choice = red_agent
+        self.service_mapping = service_mapping
         # print(red_agent)
 
         if self.red_agent_choice == "art_agent":
             self.red_agent = ARTAgent(
-                self.network.get_random_user_host(), network=self.network
+                self.network.get_random_user_host(), network=self.network, service_mapping=self.service_mapping
             )
         else:
             self.red_agent = KillChainAgent(
@@ -205,7 +208,6 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
                 "history": self.red_agent.history,
                 "killchain": self.red_agent.killchain,
             }
-
         return (
             obs_vec,
             reward,
@@ -228,14 +230,9 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         # NOTE: Have we tested the deepcopy instead of removing decoys?
         # self.network = deepcopy(self.network_copy)
 
-        if self.red_agent_choice == "art_agent":
-            self.red_agent = ARTAgent(
-                self.network.get_random_user_host(), network=self.network
-            )
-        else:
-            self.red_agent = KillChainAgent(
-                self.network.get_random_user_host(), network=self.network
-            )
+        self.red_agent.reset(
+            self.network.get_random_user_host(), network=self.network
+        )
 
         self.blue_agent.reset()
 

@@ -1,3 +1,10 @@
 # User decoy hosts
 user_decoy:
   type: workstation
+  reward: -1
+  recurring_reward: -0.1
+  services:
+  - WindowsDiscoveryExploitableService
+  - WindowsLateralMovementExploitableService
+  - WindowsPrivilegeEscalationExploitableService
+  - WindowsImpactExploitableService

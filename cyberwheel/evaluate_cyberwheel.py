@@ -7,17 +7,19 @@ from typing import List
 import gym
 import wandb
 import torch
+import sys
 import torch.nn as nn
 import numpy as np
 import pandas as pd
+from copy import deepcopy
 
 from torch.distributions.categorical import Categorical
 
-from cyberwheel.cyberwheel_envs.cyberwheel_restore import RestoreCyberwheel
 from cyberwheel.cyberwheel_envs.cyberwheel_dynamic import DynamicCyberwheel
-from cyberwheel.blue_agents.decoy_blue import DecoyBlueAgent
-from cyberwheel.red_agents import KillChainAgent, ARTAgent
-from cyberwheel.cyberwheel_envs.cyberwheel_decoyagent import *
+#from cyberwheel.cyberwheel_envs.cyberwheel_decoyagent import *
+from cyberwheel.red_agents import ARTAgent
+from importlib.resources import files
+from cyberwheel.network.network_base import Network
 
 from cyberwheel.visualize import visualize
 
@@ -40,7 +42,6 @@ class Agent(nn.Module):
         # Actor network has an input layer, 2 hidden layers with 64 nodes, and an output layer.
         # Input layer is the size of the observation space and output layer is the size of the action space.
         # Predicts the best action to take at the current state.
-        print(envs.single_observation_space.shape)
         self.actor = nn.Sequential(
             layer_init(
                 nn.Linear(int(np.array(envs.single_observation_space.shape).prod()), 64)
@@ -89,11 +90,14 @@ def make_env(
     detector_config: str,
     seed: int = 0,
     min_decoys=1,
-    max_decoys=1,
-    blue_reward_scaling=10,
+    max_decoys=3,
+    blue_reward_scaling=10.0,
     reward_function="default",
-    red_agent="killchain_agent",
-    max_steps=50,
+    red_agent="art_agent",
+    blue_config="dynamic_blue_agent.yaml",
+    num_steps=50,
+    network=None,
+    service_mapping={}
 ):
     """
     Utility function for multiprocessed env.
@@ -115,10 +119,16 @@ def make_env(
             blue_reward_scaling=blue_reward_scaling,
             reward_function=reward_function,
             red_agent=red_agent,
+            blue_config=blue_config,
+            num_steps=num_steps,
+            network=network,
+            service_mapping=service_mapping,
             evaluation=True,
-            max_steps=max_steps,
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
+        env = gym.wrappers.RecordEpisodeStatistics(
+            env
+        )  # This tracks the rewards of the environment that it wraps. Used for logging
         return env
 
     return _init
@@ -126,19 +136,25 @@ def make_env(
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--visualize', help='generate the graphs with matplotlib, displayed in WandB', action='store_true')
+
     parser.add_argument(
         "--download-model",
         help="Download agent model from WandB. If present, requires --run flag.",
         action="store_true",
     )
     parser.add_argument(
-        "--agent",
+        "--red-agent",
         help="Red agent strategy to evaluate against",
-        default="killchain_agent",
+        default="art_agent",
     )
     parser.add_argument(
-        "--run", help="Run ID from WandB for pretrained blue agent to use", default=None
+        "--blue-config", 
+        help="Input the blue agent config filename", 
+        type=str, 
+        default='dynamic_blue_agent.yaml'
+    )
+    parser.add_argument(
+        "--run", help="Run ID from WandB for pretrained blue agent to use", required = "--download-model" in sys.argv
     )
     parser.add_argument(
         "--experiment",
@@ -161,7 +177,7 @@ def parse_args():
         "--network-config",
         help="Input the network config filename",
         type=str,
-        default="example_config.yaml",
+        default="15-host-network.yaml",
     )
     parser.add_argument(
         "--decoy-config",
@@ -173,7 +189,7 @@ def parse_args():
         "--host-config",
         help="Input the host config filename",
         type=str,
-        default="host_definitions.yaml",
+        default="host_defs_services.yaml",
     )
 
     parser.add_argument(
@@ -200,7 +216,7 @@ def parse_args():
         "--reward-scaling",
         help="Variable used to increase rewards",
         type=float,
-        default=5.0,
+        default=10.0,
     )
     parser.add_argument(
         "--reward-function",
@@ -213,21 +229,29 @@ def parse_args():
         "--num-steps",
         help="Number of steps per episode for evaluation",
         type=int,
-        default=50,
+        default=100,
     )
 
     parser.add_argument(
         "--num-episodes", help="Number of episodes to evaluate", type=int, default=10
     )
 
+    parser.add_argument(
+        "--wandb-entity", help="Username where W&B model is stored. Required if downloading a model from W&B", type=str, required = "--download-model" in sys.argv
+    )
+
+    parser.add_argument(
+        "--wandb-project-name", help="Project name where W&B model is stored", type=str, required = "--download-model" in sys.argv
+    )
+
     args = parser.parse_args()
 
     # print(args)
 
-    bool_run = args.run != None  # true if run given, false if run not given
+    #bool_run = args.run != None  # true if run given, false if run not given
 
-    if args.download_model != bool_run:
-        parser.error("--run and --download-model flag required when downloading model")
+    #if args.download_model != bool_run:
+    #    parser.error("--run and --download-model flags both required when downloading a model from W&B")
 
     return args
 
@@ -236,6 +260,18 @@ def evaluate_cyberwheel():
     args = parse_args()
     device = torch.device("cpu")
     print(f"Using device {device}")
+
+    network_config = files("cyberwheel.resources.configs.network").joinpath(args.network_config)
+    network = Network.create_network_from_yaml(network_config)
+
+    service_mapping = {}
+    if args.red_agent == "art_agent":
+        service_mapping = ARTAgent.get_service_map(network)
+
+    #random.seed(1)
+    #np.random.seed(1)
+    #torch.manual_seed(1)
+    #torch.backends.cudnn.deterministic = True
 
     env_funcs = [
         make_env(
@@ -249,10 +285,15 @@ def evaluate_cyberwheel():
             max_decoys=args.max_decoys,
             blue_reward_scaling=args.reward_scaling,
             reward_function=args.reward_function,
-            red_agent=args.agent,
-            max_steps=args.num_steps,
+            red_agent=args.red_agent,
+            blue_config=args.blue_config,
+            num_steps=args.num_steps,
+            network=deepcopy(network),
+            service_mapping=service_mapping
         )
+        for i in range(1)
     ]
+    print(env_funcs)
     envs = gym.vector.SyncVectorEnv(env_funcs)
 
     agent = Agent(envs).to(device)
@@ -260,12 +301,12 @@ def evaluate_cyberwheel():
     experiment_name = args.experiment
     if args.download_model:
         api = wandb.Api()
-        run = api.run(f"oeschsec/Cyberwheel/runs/{args.run}")
+        run = api.run(f"{args.wandb_entity}/{args.wandb_project_name}/runs/{args.run}")
         model = run.file("agent.pt")
-        model.download(f"models/{experiment_name}/", exist_ok=True)
+        model.download(files("cyberwheel.models").joinpath(experiment_name), exist_ok=True)
 
     agent.load_state_dict(
-        torch.load(f"models/{experiment_name}/agent.pt", map_location=device)
+        torch.load(files(f"cyberwheel.models.{experiment_name}").joinpath("agent.pt"), map_location=device)
     )
     agent.eval()
 
@@ -277,15 +318,13 @@ def evaluate_cyberwheel():
     steps = 0
     obs = envs.reset()
 
-    logging = True
-
-    print("Playing environment with random actions...")
+    print("Playing environment...")
 
     if args.graph_name != None:
         now_str = args.graph_name
     else:
-        now_str = f"{experiment_name}_evaluate_{args.network_config.split('.')[0]}_killchainagent_{args.min_decoys}-{args.max_decoys}_scaling{args.reward_scaling}_{args.reward_function}reward"
-    log_file = f"action_logs/{now_str}.csv"
+        now_str = f"{experiment_name}_evaluate_{args.network_config.split('.')[0]}_{args.red_agent}_{args.min_decoys}-{args.max_decoys}_scaling{int(args.reward_scaling)}_{args.reward_function}reward"
+    log_file = files("cyberwheel.action_logs").joinpath(f"{now_str}.csv")
 
     actions_df = pd.DataFrame()
     full_episodes = []
@@ -298,13 +337,11 @@ def evaluate_cyberwheel():
     full_rewards = []
 
     for episode in tqdm(range(args.num_episodes)):
-        blue_actions = []
-        red_actions = []
         for step in range(args.num_steps):
             if step == 0:
                 obs = obs[0]
             obs = torch.Tensor(obs).to(device)
-            action, logprob, _, value = agent.get_action_and_value(obs)
+            action, _, _, _ = agent.get_action_and_value(obs)
 
             all_action = None
             blue_action = None
@@ -324,8 +361,7 @@ def evaluate_cyberwheel():
                 net = info["network"][0]
                 history = info["history"][0]
                 killchain = info["killchain"][0]
-            # print(all_action)
-            # print(rew)
+
             blue_action = all_action["Blue"]
             red_action = all_action["Red"]
             red_action_parts = red_action.split(" ")

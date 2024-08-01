@@ -304,110 +304,100 @@ class Network:
 
         ## parse topology
         # parse routers
-        for key, val in config["routers"].items():
+        for r in config["routers"]:
             router = Router(
-                key,
+                r,
                 # val.get('routes', []),
-                val.get("firewall", []),
+                config["routers"][r].get("firewall", []),
             )
             # add router to network graph
             network.add_router(router)
+        for s in config["subnets"]:
+            router = network.get_node_from_name(config["subnets"][s]["router"])
+            subnet = Subnet(
+                s,
+                config["subnets"][s].get("ip_range", ""),
+                router,
+                config["subnets"][s].get("firewall", []),
+                dns_server=config["subnets"][s].get("dns_server"),
+            )
+            # add subnet to network graph
+            network.add_subnet(subnet)
+            network.connect_nodes(subnet.name, router.name)
 
-            # instantiate subnets for this router
-            for key, val in config["subnets"].items():
-                if not val.get("router") == router.name:
-                    continue
-                subnet = Subnet(
-                    key,
-                    val.get("ip_range", ""),
-                    router,
-                    val.get("firewall", []),
-                    dns_server=val.get("dns_server"),
-                )
-                # add subnet to network graph
-                network.add_subnet(subnet)
-                network.connect_nodes(subnet.name, router.name)
+            # add subnet interface to router
+            router.add_subnet_interface(subnet)
 
-                # add subnet interface to router
-                router.add_subnet_interface(subnet)
+            # set default route to router interface for this subnet
+            subnet.set_default_route()
 
-                # set default route to router interface for this subnet
-                subnet.set_default_route()
+            # assign router first available IP on each subnet
+            # routers have one interface for each connected subnet
+            router.set_interface_ip(subnet.name, subnet.available_ips.pop(0))
 
-                # assign router first available IP on each subnet
-                # routers have one interface for each connected subnet
-                router.set_interface_ip(subnet.name, subnet.available_ips.pop(0))
-
-                # ensure subnet.dns_server is defined
-                # default to router IP if it's still None
-                router_interface_ip = router.get_interface_ip(subnet.name)
-                if subnet.dns_server is None and router_interface_ip is not None:
-                    subnet.set_dns_server(router_interface_ip)
-
-                # instantiate hosts for this subnet
-                for key, val in config["hosts"].items():
-
-                    # is host attached to this subnet?
-                    if val["subnet"] != subnet.name:
-                        continue
-
-                    # instantiate firewall rules, if defined
-                    fw_rules = []
-                    if rules := val.get("firewall_rules"):
-                        for rule in rules:
-                            fw_rules.append(
-                                FirewallRule(
-                                    rule("name"),  # type: ignore
-                                    rule.get("src"),
-                                    rule.get("port"),
-                                    rule.get("proto"),
-                                    rule.get("desc"),
-                                )
-                            )
-                    else:
-                        # if not fw_rules defined insert 'allow all' rule
-                        fw_rules.append(FirewallRule())
-
-                    # TODO: wip
-                    # instantiate HostType if defined
-                    if type_str := val.get("type"):
-                        type = network.create_host_type_from_yaml(type_str, conf_file, types)  # type: ignore
-                    else:
-                        type = None
-
-                    # instantiate Services in network config file
-                    if services_dict := val.get("services"):
-                        services = [service for service in services_dict]
-                        for service in services_dict.items():
-                            services.append(
-                                Service(
-                                    name=service["name"],
-                                    port=service["port"],
-                                    protocol=service.get("protocol"),
-                                    version=service.get("version"),
-                                    vulns=service.get("vulns"),
-                                    description=service.get("descscription"),
-                                    decoy=service.get("decoy"),
-                                )
-                            )
-                    else:
-                        services = []
-                    # TODO: Maybe integrate with routers instead
-                    interfaces = []
-                    if key in config["interfaces"]:
-                        interfaces = config["interfaces"][key]
-                    # instantiate host
-                    host = network.add_host_to_subnet(
-                        name=key,
-                        subnet=subnet,
-                        host_type=type,
-                        firewall_rules=fw_rules,
-                        services=services,
-                        interfaces=interfaces,
+            # ensure subnet.dns_server is defined
+            # default to router IP if it's still None
+            router_interface_ip = router.get_interface_ip(subnet.name)
+            if subnet.dns_server is None and router_interface_ip is not None:
+                subnet.set_dns_server(router_interface_ip)
+        for h in config["hosts"]:
+            # instantiate firewall rules, if defined
+            val = config["hosts"][h]
+            fw_rules = []
+            if rules := val.get("firewall_rules"):
+                for rule in rules:
+                    fw_rules.append(
+                        FirewallRule(
+                            rule("name"),  # type: ignore
+                            rule.get("src"),
+                            rule.get("port"),
+                            rule.get("proto"),
+                            rule.get("desc"),
+                        )
                     )
+            else:
+                # if not fw_rules defined insert 'allow all' rule
+                fw_rules.append(FirewallRule())
 
-                    if routes := val.get("routes"):
-                        host.add_routes_from_dict(routes)
+            # instantiate HostType if defined
+            if type_str := val.get("type"):
+                type = network.create_host_type_from_yaml(type_str, conf_file, types)  # type: ignore
+            else:
+                type = None
+
+            # instantiate Services in network config file
+            services = []
+            if services_dict := val.get("services"):
+                for service in services_dict:
+                    service = services_dict[service]
+                    services.append(
+                        Service(
+                            name=service["name"],
+                            port=service["port"],
+                            protocol=service.get("protocol"),
+                            version=service.get("version"),
+                            vulns=service.get("vulns"),
+                            description=service.get("descscription"),
+                            decoy=service.get("decoy"),
+                        )
+                    )
+            # TODO: Maybe integrate with routers instead
+            interfaces = []
+            if h in config["interfaces"]:
+                interfaces = config["interfaces"][h]
+            # instantiate host
+            host = network.add_host_to_subnet(
+                name=h,
+                subnet=network.get_node_from_name(val["subnet"]),
+                host_type=type,
+                firewall_rules=fw_rules,
+                services=services,
+                interfaces=interfaces,
+            )
+            #print(host.name)
+
+            if routes := val.get("routes"):
+                host.add_routes_from_dict(routes)
         network.initialize_interfacing()
         return network
 

@@ -9,6 +9,7 @@ from distutils.util import strtobool
 from pprint import pprint
 from pydoc import locate
 from typing import List
+from importlib.resources import files
 
 import gym
 import numpy as np
@@ -22,6 +23,12 @@ from tqdm import tqdm
 import sys
 
 from cyberwheel.cyberwheel_envs.cyberwheel_dynamic import DynamicCyberwheel
+from cyberwheel.network.network_base import Network
+from cyberwheel.red_actions.actions.art_killchain_phases import ARTDiscovery, ARTPrivilegeEscalation, ARTImpact, ARTLateralMovement
+from cyberwheel.red_actions import art_techniques
+from cyberwheel.red_agents import ARTAgent
+
+from copy import deepcopy
 
 
 def parse_args():
@@ -37,16 +44,12 @@ def parse_args():
         help="Choose the device used for optimization. Choose 'cuda', 'cpu', or specify a gpu with 'cuda:0'")
     parser.add_argument("--async-env", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
         help="if toggled, uses AsyncVectorEnv instead of SyncVectorEnv")
-    parser.add_argument('--prod-mode', type=lambda x: bool(strtobool(x)), default=False, nargs='?', const=True,
-        help='run the script in production mode and use wandb to log outputs')
     parser.add_argument("--track", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
         help="if toggled, this experiment will be tracked with Weights and Biases")
-    parser.add_argument("--wandb-project-name", type=str, default="Cyberwheel",
+    parser.add_argument("--wandb-project-name", type=str, required = "--track" in sys.argv,
         help="the wandb's project name")
-    parser.add_argument("--wandb-entity", type=str, default="oeschsec",
+    parser.add_argument("--wandb-entity", type=str, required = "--track" in sys.argv,
         help="the entity (team) of wandb's project")
-    parser.add_argument("--capture-video", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
-        help="whether to capture videos of the agent performances (check out `videos` folder)")
 
     # Algorithm specific arguments
     parser.add_argument("--env-id", type=str, default="cyberwheel",
@@ -83,24 +86,23 @@ def parse_args():
         help="the maximum norm for the gradient clipping")
     parser.add_argument("--target-kl", type=float, default=None,
         help="the target KL divergence threshold")
+    parser.add_argument("--num-saves", type=int, default=10,
+        help="the number of model saves and evaluations to run throughout training")
 
     # Evaluation Aguments
     parser.add_argument('--max-eval-workers', type=int, default=5,
         help='the maximum number of eval workers (skips evaluation when set to 0)')
-    parser.add_argument('--eval-episodes', type=int, default=50,
+    parser.add_argument('--eval-episodes', type=int, default=10,
         help='Number of evaluation episodes to run')
-    parser.add_argument("--eval-red-strategy", type=str,
-        help="the red agent strategies to evaluate against. Current options: 'killchain_agent' | 'red_recurring' | 'human_teaming'", default="art_agent",)
-    parser.add_argument("--eval-scenarios", type=str, default="example_config.yaml",
-        help="Cyberwheel network to train on.")
 
+    # Red agent args
     parser.add_argument("--red-agent", type=str, default="art_agent",
-        help="the red agent strategies to train against. Current options: 'killchain_agent' | 'red_recurring' | 'art_agent'")
+        help="the red agent strategies to train against. Current options: 'art_agent' | 'killchain_agent'")
 
     # network generation args
-    parser.add_argument("--network-config", help="Input the network config filename", type=str, default='example_config.yaml')
+    parser.add_argument("--network-config", help="Input the network config filename", type=str, default='15-host-network.yaml')
     parser.add_argument("--decoy-config", help="Input the decoy config filename", type=str, default='decoy_hosts.yaml')
-    parser.add_argument("--host-config", help="Input the host config filename", type=str, default='host_definitions.yaml')
+    parser.add_argument("--host-config", help="Input the host config filename", type=str, default='host_defs_services.yaml')
 
     # blue agent args
     parser.add_argument("--blue-config", help="Input the blue agent config filename", type=str, default='dynamic_blue_agent.yaml')
@@ -114,13 +116,10 @@ def parse_args():
     # detector args
     parser.add_argument("--detector-config", help="Location of detector config file.", type=str, default="decoys_only.yaml")
 
-    parser.add_argument("--num-hosts", help="num hosts", type=int, default=10)
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)   # Number of environment steps to performa backprop with
-    # args.total_timesteps *= args.num_steps // args.num_hosts
     args.minibatch_size = int(args.batch_size // args.num_minibatches)  # Number of environments steps to perform backprop with in each epoch
     args.num_updates = args.total_timesteps // args.batch_size  # Total number of policy update phases
-    args.num_saves = 10    # Number of model saves and evaluations to run throughout training
     args.save_frequency = int(args.num_updates / args.num_saves)    # Number of policy updates between each model save and evaluation
     if args.save_frequency == 0:
         args.save_frequency = 1
@@ -145,6 +144,8 @@ def evaluate(
     red_agent="art_agent",
     blue_config="dynamic_blue_agent.yaml",
     num_steps=100,
+    network=None,
+    service_mapping={}
 ):
     """Evaluate 'blue_agent' in the 'scenario' task against the 'red_agent' strategy"""
     # We evaluate on CPU because learning is already happening on GPUs.
@@ -163,6 +164,8 @@ def evaluate(
         red_agent=red_agent,
         blue_config=blue_config,
         num_steps=num_steps,
+        network=network,
+        service_mapping=service_mapping
     )
     episode_rewards = []
     total_reward = 0
@@ -181,7 +184,7 @@ def evaluate(
     return episodic_return
 
 
-def run_evals(eval_queue, model, args, globalstep):
+def run_evals(eval_queue, model, args, globalstep, network, service_mapping):
     """Evaluate 'model' on tasks listed in 'eval_queue' in a separate process"""
     # TRY NOT TO MODIFY: seeding
     eval_device = torch.device("cpu")
@@ -202,7 +205,12 @@ def run_evals(eval_queue, model, args, globalstep):
             min_decoys=args.min_decoys,
             max_decoys=args.max_decoys,
             blue_reward_scaling=args.reward_scaling,
+            reward_function=args.reward_function,
+            red_agent=args.red_agent,
             blue_config=args.blue_config,
+            num_steps=args.num_steps,
+            network=network,
+            service_mapping=service_mapping
         )
         for i in range(1)
     ]
@@ -234,6 +242,8 @@ def run_evals(eval_queue, model, args, globalstep):
                 args.red_agent,
                 args.blue_config,
                 args.num_steps,
+                network,
+                service_mapping
             )
         ]
         # Map the evaluate_helper function to the argument list using the pool
@@ -254,6 +264,8 @@ def run_evals(eval_queue, model, args, globalstep):
                 red_agent,
                 blue_config,
                 num_steps,
+                network,
+                service_mapping
             ) = args
             # Place evaluation results in eval_queue to be read by the main training process.
             # We need to pass these to the main process where wandb is running for logging.
@@ -276,7 +288,7 @@ def evaluate_helper(args):
     """Unpack arguments for evaluation"""
     (
         agent,
-        network,
+        network_config,
         decoy,
         host,
         detector,
@@ -289,10 +301,12 @@ def evaluate_helper(args):
         red_agent,
         blue_config,
         num_steps,
+        network,
+        service_mapping
     ) = args
     return evaluate(
         agent,
-        network,
+        network_config,
         decoy,
         host,
         detector,
@@ -305,6 +319,8 @@ def evaluate_helper(args):
         red_agent=red_agent,
         blue_config=blue_config,
         num_steps=num_steps,
+        network=network,
+        service_mapping=service_mapping
     )
 
 
@@ -320,6 +336,8 @@ def create_cyberwheel_env(
     red_agent: str,
     blue_config: str,
     num_steps: int,
+    network: Network,
+    service_mapping : dict
 ):
     """Create a Cyberwheel environment"""
     env = DynamicCyberwheel(
@@ -334,6 +352,8 @@ def create_cyberwheel_env(
         red_agent=red_agent,
         blue_config=blue_config,
         num_steps=num_steps,
+        network=network,
+        service_mapping=service_mapping
     )
     return env
 
@@ -346,13 +366,15 @@ def make_env(
     host_def_file: str,
     detector_config: str,
     seed: int = 0,
-    min_decoys=0,
-    max_decoys=1,
-    blue_reward_scaling=10,
+    min_decoys=1,
+    max_decoys=3,
+    blue_reward_scaling=10.0,
     reward_function="default",
     red_agent="art_agent",
     blue_config="dynamic_blue_agent.yaml",
-    num_steps=100,
+    num_steps=50,
+    network=None,
+    service_mapping={}
 ):
     """
     Utility function for multiprocessed env.
@@ -376,6 +398,8 @@ def make_env(
             red_agent=red_agent,
             blue_config=blue_config,
             num_steps=num_steps,
+            network=network,
+            service_mapping=service_mapping
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(
@@ -445,19 +469,21 @@ class Agent(nn.Module):
 
 def train_cyberwheel():
     args = parse_args()
-    run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
+    run_name = f"{args.exp_name}"
+
+    #run_name = f"{args.exp_name}"
     if args.track:
         # Initialize Weights and Biases tracking
         import wandb
 
         wandb.init(
             project=args.wandb_project_name,  # Can be whatever you want
-            entity=args.wandb_entity,  # Should be oeschsec or a subgroup of that account
+            entity=args.wandb_entity,
             sync_tensorboard=True,  # Data logged to the tensorboard SummaryWriter will be sent to W&B
             config=vars(args),  # Saves args as the run's configuration
             name=run_name,  # Unique run name
-            monitor_gym=False,  # Does not attempt to render any episodes (CAGE doesn't support it)
-            save_code=False,  # Don't save any FOUO code
+            monitor_gym=False,  # Does not attempt to render any episodes
+            save_code=False,
         )
     writer = SummaryWriter(f"runs/{run_name}")  # Logs data to tensorboard and W&B
     writer.add_text(
@@ -468,14 +494,13 @@ def train_cyberwheel():
 
     # TRY NOT TO MODIFY: seeding
     # We need to seed all sources of randomness for reproducibility. If you run the same seed you should get the same results.
-    # This of course requires the environment to be seeded, which we don't do for CAGE, so it won't work for us.
+    # This of course requires the environment to be seeded, which we don't do for Cyberwheel, so it won't work for us.
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     torch.backends.cudnn.deterministic = args.torch_deterministic
 
-    # Use a GPU if it's available. You can choose a specific GPU (for example, our 3rd GPU) by setting --device to "cuda:2"
-    # device = torch.device(args.device if torch.cuda.is_available() else "cpu")
+    # Use a GPU if it's available. You can choose a specific GPU (for example, the 3rd GPU) by setting --device to "cuda:2"
     device = args.device
     print(f"Using device {device}")
 
@@ -484,9 +509,16 @@ def train_cyberwheel():
     # The more environments you use, the faster you can train, though there are diminishing returns. We set num_envs to 128.
     # However this also increases batch size and as a result, VRAM usage.
     # For large neural networks you may need to use fewer environments.
-    # NOTE: For debugging, you can change AsyncVectorENv to SyncVectorEnv (and reduce num_envs) to get more helpful stack traces.
+    # NOTE: For debugging, you can change AsyncVectorEnv to SyncVectorEnv (and reduce num_envs) to get more helpful stack traces.
 
-    # TODO Load network from yaml here?
+    # Load network from yaml here
+    network_config = files("cyberwheel.resources.configs.network").joinpath(args.network_config)
+    network = Network.create_network_from_yaml(network_config)
+
+    service_mapping = {}
+    if args.red_agent == "art_agent":
+        service_mapping = ARTAgent.get_service_map(network)
+
     env_funcs = [
         make_env(
             args.seed,
@@ -500,7 +532,10 @@ def train_cyberwheel():
             blue_reward_scaling=args.reward_scaling,
             reward_function=args.reward_function,
             red_agent=args.red_agent,
+            blue_config=args.blue_config,
             num_steps=args.num_steps,
+            network=deepcopy(network),
+            service_mapping=service_mapping
         )
         for i in range(args.num_envs)
     ]
@@ -701,21 +736,24 @@ def train_cyberwheel():
             start_eval = time.time()
 
             # Save the model
-            if not os.path.exists(f"models/{run_name}"):
-                os.makedirs(f"models/{run_name}")
-            torch.save(agent.state_dict(), f"models/{run_name}/agent.pt")
-            torch.save(agent.state_dict(), f"models/{run_name}/{global_step}.pt")
+            run_path = files("cyberwheel.models").joinpath(run_name)
+            if not os.path.exists(run_path):
+                os.makedirs(run_path)
+            agent_path = run_path.joinpath("agent.pt")
+            globalstep_path = run_path.joinpath(f"{global_step}.pt")
+            torch.save(agent.state_dict(), agent_path)
+            torch.save(agent.state_dict(), globalstep_path)
             if args.track:
                 wandb.save(
-                    f"models/{run_name}/agent.pt",
-                    base_path=f"models/{run_name}",
+                    agent_path,
+                    base_path=run_path,
                     policy="now",
                 )
 
             # Run evaluation
             print("Evaluating Agent")
             run_evals(
-                eval_queue, f"models/{run_name}/{global_step}.pt", args, global_step
+                eval_queue, globalstep_path, args, global_step, deepcopy(network), service_mapping
             )
 
             # Log eval results

@@ -412,5 +412,8 @@ class KillChainAgent(RedAgent):
             "impact": (-8, 0),
         }
 
-    def reset(self) -> None:
-        return
+    def reset(self, network: Network, entry_host: Host) -> None:
+        self.network = network
+        self.current_host = entry_host
+        self.history: AgentHistory = AgentHistory(initial_host=entry_host)
+        self.initial_host_names = set(self.network.get_host_names())

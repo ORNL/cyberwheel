@@ -3,7 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pickle
 
-from cyberwheel.network.network_base import Network
+from cyberwheel.network.network_base import Network, Host
 from cyberwheel.red_agents.red_agent_base import AgentHistory
 from typing import Any
 from importlib.resources import files
@@ -91,6 +91,9 @@ def visualize(
     for node_name in list(G.nodes):
         color = "gray"
         state = "Safe"
+        commands = []
+        if isinstance(G.nodes[node_name]["data"], Host):
+            commands = G.nodes[node_name]["data"].command_history
         edgecolor = "black"
         linewidth = 2
         if "subnet" in node_name and node_name in subnet_color:
@@ -120,6 +123,7 @@ def visualize(
             state += "<br>Red Agent Position"
         G.nodes[node_name]["color"] = color
         G.nodes[node_name]["state"] = state
+        G.nodes[node_name]["commands"] = commands
         G.nodes[node_name]["outline_color"] = edgecolor
         G.nodes[node_name]["outline_width"] = linewidth
 

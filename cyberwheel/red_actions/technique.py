@@ -1,6 +1,5 @@
 from typing import List
 from cyberwheel.red_actions.atomic_test import AtomicTest
-from pprint import pformat
 import jsonpickle
 import json
 

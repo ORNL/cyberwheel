@@ -692,9 +692,13 @@ class Network:
             self.connect_nodes(edge[0], edge[1])
         self.disconnected_nodes = []
 
-        for host in self.isolated_hosts:
-            host.isolated = False
         self.isolated_hosts = []
+
+        for host in self.get_all_hosts():
+            host.command_history = []
+            host.is_compromised = False
+            host.isolated = False  # For isolate action
+            host.restored = False
 
     @staticmethod
     def create_host_type_from_json(name: str, config_file: PathLike) -> HostType:

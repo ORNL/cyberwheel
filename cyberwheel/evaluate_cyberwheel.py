@@ -196,7 +196,7 @@ def parse_args():
         "--detector-config",
         help="Path to detector config file",
         type=str,
-        default="decoys_only.yaml",
+        default="detector_handler.yaml",
     )
 
     # reward calculator args

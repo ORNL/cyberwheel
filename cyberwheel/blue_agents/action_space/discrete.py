@@ -25,28 +25,28 @@ class DiscreteActionSpace(ActionSpace):
         self._action_checkers: List[_ActionRangeChecker] = []
     
     def select_action(self, action: ActType) -> ASReturn:
-            try:
-               action = int(action)
-            except:
-               raise TypeError(f"provided action is of type {type(action)} and is unsupported by the chosen ActionSpaceConverter")
-           
-            for ac in self._action_checkers:
-                if not ac.check_range(action):
-                    continue
-                name = ac.name
-                if ac.type == "standalone":
-                    return ASReturn(name, ac.action)
-                elif ac.type == "host":
-                    index = (action - ac.lower_bound) % self.num_hosts
-                    return ASReturn(name, ac.action, args=[self.hosts[index]])
-                elif ac.type == "subnet":
-                    index = (action - ac.lower_bound) % self.num_subnets
-                    return ASReturn(name, ac.action, args=[self.subnets[index]])
-                elif ac.type == "range":
-                    index = (action - ac.lower_bound) % (ac.upper_bound - ac.lower_bound)
-                    return ASReturn(name, ac.action, args=[index])
-                else:
-                    raise TypeError(f"Unknown action type: {ac.type}.")
+        try:
+            action = int(action)
+        except:
+            raise TypeError(f"provided action is of type {type(action)} and is unsupported by the chosen ActionSpaceConverter")
+        
+        for ac in self._action_checkers:
+            if not ac.check_range(action):
+                continue
+            name = ac.name
+            if ac.type == "standalone":
+                return ASReturn(name, ac.action)
+            elif ac.type == "host":
+                index = (action - ac.lower_bound) % self.num_hosts
+                return ASReturn(name, ac.action, args=[self.hosts[index]])
+            elif ac.type == "subnet":
+                index = (action - ac.lower_bound) % self.num_subnets
+                return ASReturn(name, ac.action, args=[self.subnets[index]])
+            elif ac.type == "range":
+                index = (action - ac.lower_bound) % (ac.upper_bound - ac.lower_bound)
+                return ASReturn(name, ac.action, args=[index])
+            else:
+                raise TypeError(f"Unknown action type: {ac.type}.")
 
     def add_action(self, name: str, action: BlueAction, **kwargs):
         action_type = kwargs.get("type", "")

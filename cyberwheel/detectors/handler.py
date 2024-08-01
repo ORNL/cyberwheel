@@ -75,6 +75,10 @@ class DetectorHandler:
             self.DG.add_node(edge[1], detector_output=next_node_input)
         return self.DG.nodes.data("detector_output", default=[])['end']
 
+    def reset(self) -> None:
+        for node in self.DG.nodes:
+            self.DG.add_node(node, detector_output=[])
+
     def draw(self, filename="detector.png"):
         """
         Draws the detector graph.

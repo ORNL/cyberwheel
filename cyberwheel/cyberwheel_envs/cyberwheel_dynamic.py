@@ -206,6 +206,8 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         )
 
         self.blue_agent.reset()
+        
+        self.detector.reset()
 
         self.alert_converter = HistoryObservation(
             self.observation_space.shape, host_to_index_mapping(self.network)

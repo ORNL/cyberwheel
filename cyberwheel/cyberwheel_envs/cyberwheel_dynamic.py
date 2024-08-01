@@ -180,6 +180,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
                 "history": self.red_agent.history,
                 "killchain": self.red_agent.killchain,
             }
+        self.detector.reset()
         return (
             obs_vec,
             reward,
@@ -198,8 +199,6 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         self.total = 0
         self.current_step = 0
         self.network.reset()
-        # NOTE: Have we tested the deepcopy instead of removing decoys?
-        # self.network = deepcopy(self.network_copy)
 
         self.red_agent.reset(
             self.network.get_random_user_host(), network=self.network
@@ -207,8 +206,6 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
         self.blue_agent.reset()
         
-        self.detector.reset()
-
         self.alert_converter = HistoryObservation(
             self.observation_space.shape, host_to_index_mapping(self.network)
         )

@@ -73,6 +73,11 @@ class Host(NetworkObject):
         str += f"services={self.services!r}, dns_server={self.dns_server!r}"
         return str
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Host):
+            return False
+        return self.name == other.name
+
     def _apply_host_type(self, host_type: HostType) -> None:
         """
         Override/update Host attributes from defined HostType

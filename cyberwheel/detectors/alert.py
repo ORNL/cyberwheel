@@ -101,7 +101,6 @@ class Alert():
             return False
         # return True # DELETE 
         src_host = self.src_host == __value.src_host
-        return src_host
         dst_hosts = len(self.dst_hosts) == len(__value.dst_hosts)
         if dst_hosts:
             for host in self.dst_hosts:

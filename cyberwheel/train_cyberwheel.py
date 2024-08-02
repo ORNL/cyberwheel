@@ -21,12 +21,16 @@ from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import sys
-import dill
 import networkx as nx
 
 from cyberwheel.cyberwheel_envs.cyberwheel_dynamic import DynamicCyberwheel
 from cyberwheel.network.network_base import Network
-from cyberwheel.red_actions.actions.art_killchain_phases import ARTDiscovery, ARTPrivilegeEscalation, ARTImpact, ARTLateralMovement
+from cyberwheel.red_actions.actions.art_killchain_phases import (
+    ARTDiscovery,
+    ARTPrivilegeEscalation,
+    ARTImpact,
+    ARTLateralMovement,
+)
 from cyberwheel.red_actions import art_techniques
 from cyberwheel.red_agents import ARTAgent
 from cyberwheel.red_agents.strategies import RedStrategy, DFSImpact, ServerDowntime
@@ -38,89 +42,53 @@ import pickle
 def parse_args():
     # fmt: off
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exp-name", type=str, default=os.path.basename(__file__).rstrip(".py"),
-        help="the name of this experiment")
-    parser.add_argument("--seed", type=int, default=1,
-        help="seed of the experiment")
-    parser.add_argument("--torch-deterministic", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
-        help="if toggled, `torch.backends.cudnn.deterministic=False`")
-    parser.add_argument("--device", type=str, default="cuda",
-        help="Choose the device used for optimization. Choose 'cuda', 'cpu', or specify a gpu with 'cuda:0'")
-    parser.add_argument("--async-env", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
-        help="if toggled, uses AsyncVectorEnv instead of SyncVectorEnv")
-    parser.add_argument("--track", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
-        help="if toggled, this experiment will be tracked with Weights and Biases")
-    parser.add_argument("--wandb-project-name", type=str, required = "--track" in sys.argv,
-        help="the wandb's project name")
-    parser.add_argument("--wandb-entity", type=str, required = "--track" in sys.argv,
-        help="the entity (team) of wandb's project")
+    training_group = parser.add_argument_group("Training Parameters", description="parameters to handle training options")
+    env_group = parser.add_argument_group("Environment Parameters", description="parameters to handle Cyberwheel environment options")
+    rl_group = parser.add_argument_group("Reinforcement Learning Parameters", description="parameters to handle various RL options")
 
-    # Algorithm specific arguments
-    parser.add_argument("--env-id", type=str, default="cyberwheel",
-        help="the id of the environment")
-    parser.add_argument("--total-timesteps", type=int, default=500000,
-        help="total timesteps of the experiments")
-    parser.add_argument("--learning-rate", type=float, default=2.5e-4,
-        help="the learning rate of the optimizer")
-    parser.add_argument("--num-envs", type=int, default=1,
-        help="the number of parallel game environments")
-    parser.add_argument("--num-steps", type=int, default=100,
-        help="the number of steps to run in each environment per policy rollout")
-    parser.add_argument("--anneal-lr", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
-        help="Toggle learning rate annealing for policy and value networks")
-    parser.add_argument("--gamma", type=float, default=0.99,
-        help="the discount factor gamma")
-    parser.add_argument("--gae-lambda", type=float, default=0.95,
-        help="the lambda for the general advantage estimation")
-    parser.add_argument("--num-minibatches", type=int, default=4,
-        help="the number of mini-batches")
-    parser.add_argument("--update-epochs", type=int, default=4,
-        help="the K epochs to update the policy")
-    parser.add_argument("--norm-adv", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
-        help="Toggles advantages normalization")
-    parser.add_argument("--clip-coef", type=float, default=0.2,
-        help="the surrogate clipping coefficient")
-    parser.add_argument("--clip-vloss", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
-        help="Toggles whether or not to use a clipped loss for the value function, as per the paper.")
-    parser.add_argument("--ent-coef", type=float, default=0.01,
-        help="coefficient of the entropy")
-    parser.add_argument("--vf-coef", type=float, default=0.5,
-        help="coefficient of the value function")
-    parser.add_argument("--max-grad-norm", type=float, default=0.5,
-        help="the maximum norm for the gradient clipping")
-    parser.add_argument("--target-kl", type=float, default=None,
-        help="the target KL divergence threshold")
-    parser.add_argument("--num-saves", type=int, default=10,
-        help="the number of model saves and evaluations to run throughout training")
+    # Training Parameters
+    training_group.add_argument("--exp-name", type=str, default="", help="the name of this experiment")
+    training_group.add_argument("--seed", type=int, default=1, help="seed of the experiment")
+    training_group.add_argument("--torch-not-deterministic", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True, help="if toggled, `torch.backends.cudnn.deterministic=False`")
+    training_group.add_argument("--device", type=str, default="cpu", help="Choose the device used for optimization. Choose 'cuda', 'cpu', or specify a gpu with 'cuda:0'")
+    training_group.add_argument("--async-env", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True, help="if toggled, uses AsyncVectorEnv instead of SyncVectorEnv")
+    training_group.add_argument("--track", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True, help="if toggled, this experiment will be tracked with Weights and Biases")
+    training_group.add_argument("--wandb-project-name", type=str, required = "--track" in sys.argv, help="the wandb's project name")
+    training_group.add_argument("--wandb-entity", type=str, required = "--track" in sys.argv, help="the entity (team) of wandb's project")
+    training_group.add_argument("--total-timesteps", type=int, default=500000, help="total timesteps of the experiments")
+    training_group.add_argument("--num-saves", type=int, default=10, help="the number of model saves and evaluations to run throughout training")
+    training_group.add_argument("--num-envs", type=int, default=1, help="the number of parallel game environments")
+    training_group.add_argument("--num-steps", type=int, default=100, help="the number of steps to run in each environment per policy rollout")
+    training_group.add_argument('--eval-episodes', type=int, default=10, help='Number of evaluation episodes to run')
 
-    # Evaluation Aguments
-    parser.add_argument('--max-eval-workers', type=int, default=5,
-        help='the maximum number of eval workers (skips evaluation when set to 0)')
-    parser.add_argument('--eval-episodes', type=int, default=10,
-        help='Number of evaluation episodes to run')
+    # Cyberwheel Environment Parameters
+    env_group.add_argument("--red-agent", type=str, default="art_agent", help="the red agent to train against. Current option: 'art_agent' | 'killchain_agent' (deprecated)")
+    env_group.add_argument("--red-strategy", type=str, default="server_downtime", help="the red agent strategies to train against. Current options: 'server_downtime' | 'dfs_impact'")
+    env_group.add_argument("--network-config", help="Input the network config filename", type=str, default='15-host-network.yaml')
+    env_group.add_argument("--decoy-config", help="Input the decoy config filename", type=str, default='decoy_hosts.yaml')
+    env_group.add_argument("--host-config", help="Input the host config filename", type=str, default='host_defs_services.yaml')
+    env_group.add_argument("--blue-config", help="Input the blue agent config filename", type=str, default='dynamic_blue_agent.yaml')
+    env_group.add_argument("--min-decoys", help="Minimum number of decoys that should be used", type=int, default=2)
+    env_group.add_argument("--max-decoys", help="Maximum number of decoys that should be used", type=int, default=3)
+    env_group.add_argument("--reward-function", help="Which reward function to use. Current options: default | step_detected", type=str, default="default")
+    env_group.add_argument("--reward-scaling", help="Variable used to increase rewards", type=float, default=10.0)
+    env_group.add_argument("--detector-config", help="Location of detector config file.", type=str, default="detector_handler.yaml")
 
-    # Red agent args
-    parser.add_argument("--red-agent", type=str, default="art_agent",
-        help="the red agent to train against. Current option: 'art_agent' | 'killchain_agent' (deprecated)")
-    parser.add_argument("--red-strategy", type=str, default="server_downtime",
-        help="the red agent strategies to train against. Current options: 'server_downtime' | 'dfs_impact'")
-
-    # network generation args
-    parser.add_argument("--network-config", help="Input the network config filename", type=str, default='15-host-network.yaml')
-    parser.add_argument("--decoy-config", help="Input the decoy config filename", type=str, default='decoy_hosts.yaml')
-    parser.add_argument("--host-config", help="Input the host config filename", type=str, default='host_defs_services.yaml')
-
-    # blue agent args
-    parser.add_argument("--blue-config", help="Input the blue agent config filename", type=str, default='dynamic_blue_agent.yaml')
-
-    # reward calculator args
-    parser.add_argument("--min-decoys", help="Minimum number of decoys that should be used", type=int, default=2)
-    parser.add_argument("--max-decoys", help="Maximum number of decoys that should be used", type=int, default=3)
-    parser.add_argument("--reward-function", help="Which reward function to use. Current options: default | step_detected", type=str, default="default")
-    parser.add_argument("--reward-scaling", help="Variable used to increase rewards", type=float, default=10.0)
-
-    # detector args
-    parser.add_argument("--detector-config", help="Location of detector config file.", type=str, default="detector_handler.yaml")
+    # RL Algorithm Parameters
+    rl_group.add_argument("--env-id", type=str, default="cyberwheel", help="the id of the environment")
+    rl_group.add_argument("--learning-rate", type=float, default=2.5e-4, help="the learning rate of the optimizer")
+    rl_group.add_argument("--anneal-lr", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True, help="Toggle learning rate annealing for policy and value networks")
+    rl_group.add_argument("--gamma", type=float, default=0.99, help="the discount factor gamma")
+    rl_group.add_argument("--gae-lambda", type=float, default=0.95, help="the lambda for the general advantage estimation")
+    rl_group.add_argument("--num-minibatches", type=int, default=4, help="the number of mini-batches")
+    rl_group.add_argument("--update-epochs", type=int, default=4, help="the K epochs to update the policy")
+    rl_group.add_argument("--norm-adv", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True, help="Toggles advantages normalization")
+    rl_group.add_argument("--clip-coef", type=float, default=0.2, help="the surrogate clipping coefficient")
+    rl_group.add_argument("--clip-vloss", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True, help="Toggles whether or not to use a clipped loss for the value function, as per the paper.")
+    rl_group.add_argument("--ent-coef", type=float, default=0.01, help="coefficient of the entropy")
+    rl_group.add_argument("--vf-coef", type=float, default=0.5, help="coefficient of the value function")
+    rl_group.add_argument("--max-grad-norm", type=float, default=0.5, help="the maximum norm for the gradient clipping")
+    rl_group.add_argument("--target-kl", type=float, default=None, help="the target KL divergence threshold")
 
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)   # Number of environment steps to performa backprop with
@@ -130,56 +98,22 @@ def parse_args():
     if args.save_frequency == 0:
         args.save_frequency = 1
 
-    print(f"Running on network: {args.network_config}")
-
     return args
 
 
-def evaluate(
-    blue_agent,
-    network_config: str,
-    decoy_host_file: str,
-    host_def_file: str,
-    detector_config: str,
-    min_decoys=0,
-    max_decoys=1,
-    blue_reward_scaling=10,
-    reward_function="default",
-    red_agent="art_agent",
-    blue_config="dynamic_blue_agent.yaml",
-    network=None,
-    service_mapping={},
-    steps=100,
-    episodes=20,
-    red_strategy=ServerDowntime
-):
+def evaluate(blue_agent, args):
     """Evaluate 'blue_agent' in the 'scenario' task against the 'red_agent' strategy"""
     # We evaluate on CPU because learning is already happening on GPUs.
     # You can evaluate small architectures on CPU, but if you increase the neural network size,
     # you may need to do fewer evaluations at a time on GPU.
     eval_device = torch.device("cpu")
-    env = create_cyberwheel_env(
-        network_config,
-        decoy_host_file,
-        host_def_file,
-        detector_config,
-        min_decoys=min_decoys,
-        max_decoys=max_decoys,
-        blue_reward_scaling=blue_reward_scaling,
-        reward_function=reward_function,
-        red_agent=red_agent,
-        blue_config=blue_config,
-        num_steps=steps,
-        network=network,
-        service_mapping=service_mapping,
-        red_strategy=red_strategy
-    )
+    env = create_cyberwheel_env(args)
     episode_rewards = []
     total_reward = 0
     # Standard evaluation loop to estimate mean episodic return
-    for episode in range(episodes):
+    for episode in range(args.eval_episodes):
         obs, _ = env.reset()
-        for step in range(steps):
+        for step in range(args.num_steps):
             obs = torch.Tensor(obs).to(eval_device)
             action, _, _, _ = blue_agent.get_action_and_value(obs)
             obs, rew, done, _, info = env.step(action)
@@ -187,11 +121,11 @@ def evaluate(
         episode_rewards.append(total_reward)
         total_reward = 0
 
-    episodic_return = float(sum(episode_rewards)) / episodes
+    episodic_return = float(sum(episode_rewards)) / args.eval_episodes
     return episodic_return
 
 
-def run_evals(eval_queue, model, args, globalstep, network, service_mapping):
+def run_evals(eval_queue, model, args, globalstep):
     """Evaluate 'model' on tasks listed in 'eval_queue' in a separate process"""
     # TRY NOT TO MODIFY: seeding
     eval_device = torch.device("cpu")
@@ -200,52 +134,18 @@ def run_evals(eval_queue, model, args, globalstep, network, service_mapping):
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
-    torch.backends.cudnn.deterministic = args.torch_deterministic
-    env_funcs = [
-        make_env(
-            args.seed,
-            i,
-            args.network_config,
-            args.decoy_config,
-            args.host_config,
-            args.detector_config,
-            min_decoys=args.min_decoys,
-            max_decoys=args.max_decoys,
-            blue_reward_scaling=args.reward_scaling,
-            reward_function=args.reward_function,
-            red_agent=args.red_agent,
-            blue_config=args.blue_config,
-            num_steps=args.num_steps,
-            network=network,
-            service_mapping=service_mapping,
-            red_strategy=args.red_strategy
-        )
-        for i in range(1)
-    ]
+    torch.backends.cudnn.deterministic = args.torch_not_deterministic
+
+    env_funcs = [make_env(i, args) for i in range(1)]
 
     # Load the agent
     sample_env = gym.vector.SyncVectorEnv(env_funcs)
     eval_agent = Agent(sample_env)
     eval_agent.load_state_dict(torch.load(model, map_location=eval_device))
     eval_agent.eval()
-
-    result = evaluate(eval_agent, 
-                      args.network_config, 
-                      args.decoy_config, 
-                      args.host_config, 
-                      args.detector_config, 
-                      args.min_decoys, 
-                      args.max_decoys, 
-                      args.reward_scaling, 
-                      args.reward_function, 
-                      args.red_agent, 
-                      args.blue_config, 
-                      network=network, 
-                      service_mapping=service_mapping, 
-                      steps=args.num_steps, 
-                      episodes=args.eval_episodes,
-                      red_strategy=args.red_strategy
-                      )
+    # Evaluate the agent
+    result = evaluate(eval_agent, args)
+    # Store evaluation parameters and results
     eval_queue.put(
         (
             args.network_config,
@@ -260,61 +160,29 @@ def run_evals(eval_queue, model, args, globalstep, network, service_mapping):
         )
     )
 
-def create_cyberwheel_env(
-    network_config: str,
-    decoy_host_file: str,
-    host_def_file: str,
-    detector_config: str,
-    min_decoys: int,
-    max_decoys: int,
-    blue_reward_scaling: float,
-    reward_function: str,
-    red_agent: str,
-    blue_config: str,
-    num_steps: int,
-    network: Network,
-    service_mapping : dict,
-    red_strategy: RedStrategy
-):
-    """Create a Cyberwheel environment"""
+
+def create_cyberwheel_env(args):
+    """Creates a DynamicCyberwheel environment"""
     env = DynamicCyberwheel(
-        network_config=network_config,
-        decoy_host_file=decoy_host_file,
-        host_def_file=host_def_file,
-        detector_config=detector_config,
-        min_decoys=min_decoys,
-        max_decoys=max_decoys,
-        blue_reward_scaling=blue_reward_scaling,
-        reward_function=reward_function,
-        red_agent=red_agent,
-        blue_config=blue_config,
-        num_steps=num_steps,
-        network=network,
-        service_mapping=service_mapping,
-        red_strategy=red_strategy
+        network_config=args.network_config,
+        decoy_host_file=args.decoy_config,
+        host_def_file=args.host_config,
+        detector_config=args.detector_config,
+        min_decoys=args.min_decoys,
+        max_decoys=args.max_decoys,
+        blue_reward_scaling=args.reward_scaling,
+        reward_function=args.reward_function,
+        red_agent=args.red_agent,
+        blue_config=args.blue_config,
+        num_steps=args.num_steps,
+        network=deepcopy(args.network),
+        service_mapping=args.service_mapping,
+        red_strategy=args.red_strategy,
     )
     return env
 
 
-def make_env(
-    env_id: str,
-    rank: int,
-    network_config: str,
-    decoy_host_file: str,
-    host_def_file: str,
-    detector_config: str,
-    seed: int = 0,
-    min_decoys=1,
-    max_decoys=3,
-    blue_reward_scaling=10.0,
-    reward_function="default",
-    red_agent="art_agent",
-    blue_config="dynamic_blue_agent.yaml",
-    num_steps=50,
-    network=None,
-    service_mapping={},
-    red_strategy=ServerDowntime
-):
+def make_env(rank, args):
     """
     Utility function for multiprocessed env.
 
@@ -325,23 +193,8 @@ def make_env(
     """
 
     def _init():
-        env = DynamicCyberwheel(
-            network_config=network_config,
-            decoy_host_file=decoy_host_file,
-            host_def_file=host_def_file,
-            detector_config=detector_config,
-            min_decoys=min_decoys,
-            max_decoys=max_decoys,
-            blue_reward_scaling=blue_reward_scaling,
-            reward_function=reward_function,
-            red_agent=red_agent,
-            blue_config=blue_config,
-            num_steps=num_steps,
-            network=network,
-            service_mapping=service_mapping,
-            red_strategy=red_strategy
-        )
-        env.reset(seed=seed + rank)  # Reset the environment with a specific seed
+        env = create_cyberwheel_env(args)
+        env.reset(seed=args.seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(
             env
         )  # This tracks the rewards of the environment that it wraps. Used for logging
@@ -408,10 +261,17 @@ class Agent(nn.Module):
 
 
 def train_cyberwheel():
+    """
+    This function and script define how we train cyberwheel. Using the args given, it will run an Actor-Critic RL algorithm and run training
+    with intermittent evaluations/saves. If tracking to W&B, this will be logged in your W&B project for each training run.
+    """
     args = parse_args()
-    run_name = f"{args.exp_name}"
-    #if args.set_recursion_limit > 0:
-    #    sys.setrecursionlimit(args.set_recursion_limit)
+    run_name = (
+        args.exp_name
+        if args.exp_name != ""
+        else f"{os.path.basename(__file__).rstrip('.py')}_{args.seed}_{int(time.time())}"
+    )
+
     if args.track:
         # Initialize Weights and Biases tracking
         import wandb
@@ -425,7 +285,9 @@ def train_cyberwheel():
             monitor_gym=False,  # Does not attempt to render any episodes
             save_code=False,
         )
-    writer = SummaryWriter(f"runs/{run_name}")  # Logs data to tensorboard and W&B
+    writer = SummaryWriter(
+        files("cyberwheel.runs").joinpath(run_name)
+    )  # Logs data to tensorboard and W&B
     writer.add_text(
         "hyperparameters",
         "|param|value|\n|-|-|\n%s"
@@ -438,9 +300,10 @@ def train_cyberwheel():
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
-    torch.backends.cudnn.deterministic = args.torch_deterministic
+    torch.backends.cudnn.deterministic = args.torch_not_deterministic
 
-    # Use a GPU if it's available. You can choose a specific GPU (for example, the 3rd GPU) by setting --device to "cuda:2"
+    # Use a GPU if available. You can choose a specific GPU (for example, the 1st GPU) by setting --device to "cuda:0"
+    # Defaults to 'cpu'
     device = args.device
     print(f"Using device {device}")
 
@@ -452,7 +315,9 @@ def train_cyberwheel():
     # NOTE: For debugging, you can change AsyncVectorEnv to SyncVectorEnv (and reduce num_envs) to get more helpful stack traces.
 
     # Load network from yaml here
-    network_config = files("cyberwheel.resources.configs.network").joinpath(args.network_config)
+    network_config = files("cyberwheel.resources.configs.network").joinpath(
+        args.network_config
+    )
 
     print(f"Building network: {args.network_config} ...")
 
@@ -465,35 +330,17 @@ def train_cyberwheel():
         service_mapping = ARTAgent.get_service_map(network)
     print("done")
 
+    args.network = network
+    args.service_mapping = service_mapping
+
     if args.red_strategy == "dfs_impact":
         args.red_strategy = DFSImpact
     else:
         args.red_strategy = ServerDowntime
 
-
     print("Defining environment(s) and beginning training:", end="\n\n")
-    
-    env_funcs = [
-        make_env(
-            args.seed,
-            i,
-            args.network_config,
-            args.decoy_config,
-            args.host_config,
-            args.detector_config,
-            min_decoys=args.min_decoys,
-            max_decoys=args.max_decoys,
-            blue_reward_scaling=args.reward_scaling,
-            reward_function=args.reward_function,
-            red_agent=args.red_agent,
-            blue_config=args.blue_config,
-            num_steps=args.num_steps,
-            network=deepcopy(network),
-            service_mapping=service_mapping,
-            red_strategy=args.red_strategy
-        )
-        for i in range(args.num_envs)
-    ]
+
+    env_funcs = [make_env(i, args) for i in range(args.num_envs)]
 
     envs = (
         gym.vector.AsyncVectorEnv(env_funcs)
@@ -537,7 +384,7 @@ def train_cyberwheel():
     num_updates = args.total_timesteps // args.batch_size
 
     for update in range(1, num_updates + 1):
-        # We need to manually reset the environment for CAGE. Most environments don't require this.
+        # We manually reset the environment for cyberwheel
         # NOTE: When a curriculum is being used, this will automatically change the environment task.
         resets = np.array(envs.reset()[0])
         next_obs = torch.Tensor(resets).to(device)
@@ -710,10 +557,8 @@ def train_cyberwheel():
             # Run evaluation
             print("Evaluating Agent...")
 
-            run_evals(
-                eval_queue, globalstep_path, args, global_step, deepcopy(network), service_mapping
-            )
-            
+            run_evals(eval_queue, globalstep_path, args, global_step)
+
             # Log eval results
             while not eval_queue.empty():
                 (

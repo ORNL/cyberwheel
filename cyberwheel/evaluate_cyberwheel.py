@@ -94,7 +94,7 @@ def make_env(
     num_steps=50,
     network=None,
     service_mapping={},
-    red_strategy=ServerDowntime
+    red_strategy=ServerDowntime,
 ):
     """
     Utility function for multiprocessed env.
@@ -121,7 +121,7 @@ def make_env(
             network=network,
             service_mapping=service_mapping,
             evaluation=True,
-            red_strategy=red_strategy
+            red_strategy=red_strategy,
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(
@@ -141,6 +141,11 @@ def parse_args():
         action="store_true",
     )
     parser.add_argument(
+        "--checkpoint",
+        help="Which checkpoint of the model to evaluate. Defaults to latest.",
+        default="agent",
+    )
+    parser.add_argument(
         "--red-agent",
         help="Red agent to evaluate against",
         default="art_agent",
@@ -151,13 +156,15 @@ def parse_args():
         default="server_downtime",
     )
     parser.add_argument(
-        "--blue-config", 
-        help="Input the blue agent config filename", 
-        type=str, 
-        default='dynamic_blue_agent.yaml'
+        "--blue-config",
+        help="Input the blue agent config filename",
+        type=str,
+        default="dynamic_blue_agent.yaml",
     )
     parser.add_argument(
-        "--run", help="Run ID from WandB for pretrained blue agent to use. Required when downloading model from W&B", required = "--download-model" in sys.argv
+        "--run",
+        help="Run ID from WandB for pretrained blue agent to use. Required when downloading model from W&B",
+        required="--download-model" in sys.argv,
     )
     parser.add_argument(
         "--experiment",
@@ -239,14 +246,21 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--wandb-entity", help="Username where W&B model is stored. Required when downloading model from W&B", type=str, required = "--download-model" in sys.argv
+        "--wandb-entity",
+        help="Username where W&B model is stored. Required when downloading model from W&B",
+        type=str,
+        required="--download-model" in sys.argv,
     )
 
     parser.add_argument(
-        "--wandb-project-name", help="Project name where W&B model is stored. Required when downloading model from W&B", type=str, required = "--download-model" in sys.argv
+        "--wandb-project-name",
+        help="Project name where W&B model is stored. Required when downloading model from W&B",
+        type=str,
+        required="--download-model" in sys.argv,
     )
 
     return parser.parse_args()
+
 
 def evaluate_cyberwheel():
     """
@@ -261,7 +275,9 @@ def evaluate_cyberwheel():
 
     # Set up network and Host-Technique mapping outside of environment.
     # This keeps the time-consuming processes from running for each environment.
-    network_config = files("cyberwheel.resources.configs.network").joinpath(args.network_config)
+    network_config = files("cyberwheel.resources.configs.network").joinpath(
+        args.network_config
+    )
     network = Network.create_network_from_yaml(network_config)
 
     service_mapping = {}
@@ -289,7 +305,7 @@ def evaluate_cyberwheel():
             num_steps=args.num_steps,
             network=deepcopy(network),
             service_mapping=service_mapping,
-            red_strategy=args.red_strategy
+            red_strategy=args.red_strategy,
         )
         for i in range(1)
     ]
@@ -298,17 +314,24 @@ def evaluate_cyberwheel():
     agent = Agent(envs).to(device)
 
     experiment_name = args.experiment
-    
+
+    agent_filename = f"{args.checkpoint}.pt"
+
     # If download from W&B, use API to get run data.
     if args.download_model:
         api = wandb.Api()
         run = api.run(f"{args.wandb_entity}/{args.wandb_project_name}/runs/{args.run}")
-        model = run.file("agent.pt")
-        model.download(files("cyberwheel.models").joinpath(experiment_name), exist_ok=True)
+        model = run.file(agent_filename)
+        model.download(
+            files("cyberwheel.models").joinpath(experiment_name), exist_ok=True
+        )
 
     # Load model from models/ directory
     agent.load_state_dict(
-        torch.load(files(f"cyberwheel.models.{experiment_name}").joinpath("agent.pt"), map_location=device)
+        torch.load(
+            files(f"cyberwheel.models.{experiment_name}").joinpath(agent_filename),
+            map_location=device,
+        )
     )
     agent.eval()
 

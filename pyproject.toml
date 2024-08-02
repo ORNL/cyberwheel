@@ -2,9 +2,10 @@
 name = "cyberwheel"
 version = "0.1.0"
 description = "A simulation environment for training autonomous cyber defense agents based on the Mitre Att&ck framework."
-authors = ["Sean Oesch <oeschts@ornl.gov>", "Cory Watson <watsoncl1@ornl.gov>", "Amul Chaulagain <chaulagaina@ornl.gov>", "Matthew Dixson <dixsonmk@ornl.gov>", "Brian Weber <weberb@ornl.gov>"]
-license = "TBD"
+authors = ["Sean Oesch <oeschts@ornl.gov>", "Cory Watson <watsoncl1@ornl.gov>", "Amul Chaulagain <chaulagaina@ornl.gov>", "Matthew Dixson <dixsonmk@ornl.gov>", "Brian Weber <weberb@ornl.gov>", "Phillipe Austria <austriaps@ornl.gov>"]
+license = "MIT"
 readme = "README.md"
+repository = "https://github.com/ORNL/cyberwheel/"
 classifiers = ["Private :: Do not Upload"]
 
 [tool.poetry.dependencies]

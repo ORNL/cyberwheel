@@ -38,19 +38,39 @@ class Plugin:
         print()
 
         subnets = self.config.get("subnets")
-        for k, v in subnets.items():
+        for subnet_name, v in subnets.items():
             parent_router = v.get("router")
             subnet_ip = v.get("ip_range")
             subnet_network_lst = subnet_ip.split('/')[0].split('.')[0:3]
             subnet_network = '.'.join(subnet_network_lst)
             subnet_mask = subnet_ip.split('/')[1]
 
+            hosts = self.config.get("hosts")
+            num_hosts = sum(1 for _, hv in hosts.items() if hv.get("subnet") == subnet_name)
+
             print()
-            print("subnet name: ", k)
+            print("subnet name: ", subnet_name)
             print("subnet ip range: ", subnet_ip)
             print("parent router: ", parent_router)
             print("subnet network: ", subnet_network)
             print("subnet mask: ", subnet_mask)
+            print("number of hosts in subnet: ", num_hosts)
+
+
+    def build_host(self):
+        """Print hosts from config file"""
+        hosts = self.config.get("hosts")
+
+        for user, v in hosts.items():
+            host_type = v.get("type")
+            host_subnet = v.get("subnet")
+
+            print()
+            print(f"host name: {user}")
+            print(f"host type: {host_type}")
+            print(f"host subnet: {host_subnet}")
+
 
 plugin = Plugin()
 plugin.build_subnet()
+plugin.build_host()

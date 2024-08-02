@@ -267,7 +267,12 @@ taskkill /F /IM ${process_name} >nul 2>&1​
 ```
 
 ### Detectors and Alerts
-Detector Info
+
+Red actions produce Alerts which contain information such as the actions's source host, target host, exploited services, and techniques. The blue agent has a detector layer set up with Alerts that allow the alerts to detect any red agent action on the network. These detectors can filter out Alerts, add noise, or even create false-positive Alerts. You can use multiple detectors together to capture various different red agent behavior. These alerts are then converted into the observation space which the RL agent uses to train.
+
+### Configurations
+
+All configurations are stored in the `resources/configs` directory. You can use config to define blue agents, decoy types, detectors, host types, networks, and services.
 
 <!-- CONTRIBUTING -->
 ## Contributing

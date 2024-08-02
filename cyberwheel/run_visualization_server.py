@@ -7,6 +7,7 @@ import pickle
 import sys
 from importlib.resources import files
 
+
 def main_page_layout():
     graph_list = []
     basepath = files("cyberwheel").joinpath("graphs")
@@ -34,6 +35,7 @@ def main_page_layout():
         markdown_options={"link_target": "_self", "html": False},
     )
 
+
 app = Dash(__name__, suppress_callback_exceptions=True)
 app.layout = html.Div(
     [
@@ -43,6 +45,7 @@ app.layout = html.Div(
         html.Div(id="page-content", children=main_page_layout()),
     ]
 )
+
 
 def graph_page_layout(graph_name: str):
     num_episodes = set()
@@ -82,10 +85,7 @@ def graph_page_layout(graph_name: str):
     )
 
 
-@callback(
-    Output("page-content", "children"), 
-    Input("url", "pathname")
-)
+@callback(Output("page-content", "children"), Input("url", "pathname"))
 def display_page(pathname):
     if pathname == "/":
         return html.Div([main_page_layout()])
@@ -117,7 +117,10 @@ def update_datatable(episode, graph_name):
 )
 def update_graph(episode, step, graph_name):
     G = None
-    with open(files(f"cyberwheel.graphs.{graph_name}").joinpath(f"{episode}_{step}.pickle"), "rb") as f:
+    with open(
+        files(f"cyberwheel.graphs.{graph_name}").joinpath(f"{episode}_{step}.pickle"),
+        "rb",
+    ) as f:
         G = pickle.load(f)
 
     # Create Edges
@@ -150,13 +153,14 @@ def update_graph(episode, step, graph_name):
     line_colors = []
     line_widths = []
     for node in G.nodes():
+        state = f"{node}:\n{G.nodes[node]['state']}<br>---------<br>Commands:<br>"
+        for c in G.nodes[node]["commands"]:
+            state += f"{c}<br>"
         x, y = G.nodes[node]["pos"]
         node_x.append(x)
         node_y.append(y)
         node_colors.append(G.nodes[node]["color"])
-        node_states.append(f"{node}:\n{G.nodes[node]['state']}\nCommands:\n")
-        for c in G.nodes[node]['commands']:
-            node_states[-1] += c.content + "<br>"
+        node_states.append(state)
         line_colors.append(G.nodes[node]["outline_color"])
         line_widths.append(G.nodes[node]["outline_width"])
 
@@ -179,7 +183,7 @@ def update_graph(episode, step, graph_name):
         data=[edge_trace, node_trace],
         layout=go.Layout(
             showlegend=False,
-            hovermode="closest",
+            hovermode="x unified",
             margin=dict(b=20, l=5, r=5, t=40),
             annotations=[
                 dict(
@@ -196,6 +200,7 @@ def update_graph(episode, step, graph_name):
         ),
     )
     return dcc.Graph(figure=fig)
+
 
 port = sys.argv[1]
 debug = True

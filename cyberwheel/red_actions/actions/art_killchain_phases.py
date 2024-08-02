@@ -250,7 +250,7 @@ class ARTKillChainPhase(ARTAction):
                 processes.extend(chosen_test.executor.command)
                 processes.extend(chosen_test.executor.cleanup_command)
             for p in processes:
-                host.run_command(chosen_test.executor, p, 'root')
+                host.run_command(chosen_test.executor, p, "root")
             self.action_results.add_metadata(
                 host.name,
                 {
@@ -312,6 +312,8 @@ class ARTPingSweep(ARTKillChainPhase):
         if chosen_test.executor != None:
             processes.extend(chosen_test.executor.command)
             processes.extend(chosen_test.executor.cleanup_command)
+        for p in processes:
+            host.run_command(chosen_test.executor, p, "user")
 
         self.action_results.add_successful_action()
         self.action_results.add_metadata(
@@ -386,6 +388,8 @@ class ARTPortScan(ARTKillChainPhase):
         if chosen_test.executor != None:
             processes.extend(chosen_test.executor.command)
             processes.extend(chosen_test.executor.cleanup_command)
+        for p in processes:
+            host.run_command(chosen_test.executor, p, "user")
         self.action_results.add_successful_action()
         self.action_results.add_metadata(
             host.name,

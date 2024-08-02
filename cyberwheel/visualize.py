@@ -20,7 +20,7 @@ def color_map(state) -> str:
     """
     if state == "ARTDiscovery":
         return "yellow"
-    elif state == "ARTPingsweep" or state == "ARTPortScan":
+    elif state == "ARTPingSweep" or state == "ARTPortScan":
         return "green"
     elif state == "ARTPrivilegeEscalation":
         return "orange"
@@ -78,14 +78,22 @@ def visualize(
     # Set colors of hosts and subnets
     host_color = {}
     subnet_color = {}
-    host_color = {
-        k: (
-            color_map(killchain[host_info[k].last_step].__name__)
-            if host_info[k].last_step >= 0 and host_info[k].last_step < len(killchain)
-            else "red" if host_info[k].last_step > len(killchain) else "gray"
-        )
-        for k in host_info
-    }
+    for hostname in host_info:
+        temp_action = "nothing yet"
+        if host_info[hostname].last_step == -1:
+            if host_info[hostname].ports_scanned or host_info[hostname].ping_sweeped:
+                temp_action = (
+                    "ARTPingSweep"
+                    if host_info[hostname].ping_sweeped
+                    else "ARTPortScan"
+                )
+            else:
+                temp_action = "nothing"
+        elif host_info[hostname].last_step >= len(killchain):
+            temp_action = "ARTImpact"
+        else:
+            temp_action = killchain[host_info[hostname].last_step].__name__
+        host_color[hostname] = color_map(temp_action)
     subnet_color = {
         k: "yellow" if subnet_info[k].scanned else "gray" for k in subnet_info
     }
@@ -96,8 +104,12 @@ def visualize(
         color = "gray"
         state = "Safe"
         commands = []
-        if isinstance(G.nodes[node_name]["data"], Host):
-            commands = G.nodes[node_name]["data"].command_history
+        if (
+            isinstance(G.nodes[node_name]["data"], Host)
+            and G.nodes[node_name]["data"].name == target_host
+        ):
+            commands = step_commands
+
         edgecolor = "black"
         linewidth = 2
         if "subnet" in node_name and node_name in subnet_color:
@@ -106,28 +118,28 @@ def visualize(
         else:
             if node_name in host_color:
                 color = host_color[node_name]
-                state = (
-                    "Pingsweep/Portscan"
-                    if color == "green"
-                    else (
-                        "Discovery"
-                        if color == "yellow"
-                        else (
-                            "Privilege Escalation - Process level escalated to 'root'"
-                            if color == "orange"
-                            else "Impact - Host impacted" if color == "red" else "Safe"
-                        )
-                    )
-                )
+                if color == "green":
+                    state = "PingSweep/PortScan"
+                elif color == "yellow":
+                    state = "Discovery"
+                elif color == "orange":
+                    state = "Privilege Escalation - Process level escalated to 'root'"
+                elif color == "red":
+                    state = "Impact"
+                else:
+                    state = "Safe"
             else:
                 color = "gray"
         if node_name == source_host:
             edgecolor = "blue"
             linewidth = 4
-            state += "<br>Red Agent Position"
+            state += "<br>Red Agent Position<br>"
+
+        if "commands" not in G.nodes[node_name]:
+            G.nodes[node_name]["commands"] = []
         G.nodes[node_name]["color"] = color
         G.nodes[node_name]["state"] = state
-        G.nodes[node_name]["commands"] = commands
+        G.nodes[node_name]["commands"].extend(commands)
         G.nodes[node_name]["outline_color"] = edgecolor
         G.nodes[node_name]["outline_width"] = linewidth
 

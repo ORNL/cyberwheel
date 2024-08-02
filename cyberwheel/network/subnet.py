@@ -4,6 +4,7 @@ from .network_object import NetworkObject, Route
 from typing import Union, List
 #from .host import Host  # this is causing circular import issues
 from .router import Router
+from copy import deepcopy
 
 
 class Subnet(NetworkObject):
@@ -40,6 +41,7 @@ class Subnet(NetworkObject):
         except ValueError as e:
             print("ip_range does not represent a valid IPv4 or IPv6 address")
             raise e
+        self.ip_range = ip_range
         self.available_ips = [ip for ip in self.ip_network.hosts()]
         self.connected_hosts = []
         self.router = router
@@ -66,6 +68,13 @@ class Subnet(NetworkObject):
         str += f'firewall_rules={self.firewall_rules!r}, '
         str += f'dns_server={self.dns_server!r}'
         return str
+    
+    def __deepcopy__(self, memo):
+        new_subnet = Subnet(name=self.name, ip_range=self.ip_range, router=self.router)
+        memo[id(self)] = new_subnet
+        # Deep copy hosts
+        new_subnet.connected_hosts = [deepcopy(host, memo) for host in self.connected_hosts]
+        return new_subnet
     
     def set_default_route(self):
         default_route_via = self.router.get_interface_ip(self.name)

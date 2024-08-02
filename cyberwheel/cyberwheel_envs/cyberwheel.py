@@ -12,6 +12,7 @@ class Cyberwheel:
         # print("begin reading")
         net = kwargs.get("network", None)
         if net == None:
+            print("creating from yaml")
             self.network = Network.create_network_from_yaml(self.config_file_path)
         else:
             self.network = net

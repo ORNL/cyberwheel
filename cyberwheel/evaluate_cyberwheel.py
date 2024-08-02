@@ -1,9 +1,5 @@
 import time
-from tqdm import tqdm
 import argparse
-
-from typing import List
-
 import gym
 import wandb
 import torch
@@ -11,16 +7,16 @@ import sys
 import torch.nn as nn
 import numpy as np
 import pandas as pd
-from copy import deepcopy
 
+from copy import deepcopy
+from importlib.resources import files
+from tqdm import tqdm
 from torch.distributions.categorical import Categorical
 
 from cyberwheel.cyberwheel_envs.cyberwheel_dynamic import DynamicCyberwheel
-#from cyberwheel.cyberwheel_envs.cyberwheel_decoyagent import *
 from cyberwheel.red_agents import ARTAgent
-from importlib.resources import files
+from cyberwheel.red_agents.strategies import DFSImpact, ServerDowntime
 from cyberwheel.network.network_base import Network
-
 from cyberwheel.visualize import visualize
 
 
@@ -97,7 +93,8 @@ def make_env(
     blue_config="dynamic_blue_agent.yaml",
     num_steps=50,
     network=None,
-    service_mapping={}
+    service_mapping={},
+    red_strategy=ServerDowntime
 ):
     """
     Utility function for multiprocessed env.
@@ -124,6 +121,7 @@ def make_env(
             network=network,
             service_mapping=service_mapping,
             evaluation=True,
+            red_strategy=red_strategy
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(
@@ -139,13 +137,18 @@ def parse_args():
 
     parser.add_argument(
         "--download-model",
-        help="Download agent model from WandB. If present, requires --run flag.",
+        help="Download agent model from WandB. If present, requires --run, --wandb-entity, --wandb-project-name flags.",
         action="store_true",
     )
     parser.add_argument(
         "--red-agent",
-        help="Red agent strategy to evaluate against",
+        help="Red agent to evaluate against",
         default="art_agent",
+    )
+    parser.add_argument(
+        "--red-strategy",
+        help="Red agent strategy to evaluate against. Current options: server_downtime (default) | dfs_impact",
+        default="server_downtime",
     )
     parser.add_argument(
         "--blue-config", 
@@ -154,7 +157,7 @@ def parse_args():
         default='dynamic_blue_agent.yaml'
     )
     parser.add_argument(
-        "--run", help="Run ID from WandB for pretrained blue agent to use", required = "--download-model" in sys.argv
+        "--run", help="Run ID from WandB for pretrained blue agent to use. Required when downloading model from W&B", required = "--download-model" in sys.argv
     )
     parser.add_argument(
         "--experiment",
@@ -163,10 +166,9 @@ def parse_args():
     )
     parser.add_argument(
         "--visualize",
-        help="Store graphs of network state at each step/episode. Can be viewed in dash server.",
+        help="Stores graphs of network state at each step/episode. Can be viewed in dash server.",
         action="store_true",
     )
-    # parser.add_argument('--baseline', help='Use baseline observation and actions.', action='store_true')
     parser.add_argument(
         "--graph-name",
         help="Override naming convention of graph storage directory.",
@@ -237,41 +239,38 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--wandb-entity", help="Username where W&B model is stored. Required if downloading a model from W&B", type=str, required = "--download-model" in sys.argv
+        "--wandb-entity", help="Username where W&B model is stored. Required when downloading model from W&B", type=str, required = "--download-model" in sys.argv
     )
 
     parser.add_argument(
-        "--wandb-project-name", help="Project name where W&B model is stored", type=str, required = "--download-model" in sys.argv
+        "--wandb-project-name", help="Project name where W&B model is stored. Required when downloading model from W&B", type=str, required = "--download-model" in sys.argv
     )
 
-    args = parser.parse_args()
-
-    # print(args)
-
-    #bool_run = args.run != None  # true if run given, false if run not given
-
-    #if args.download_model != bool_run:
-    #    parser.error("--run and --download-model flags both required when downloading a model from W&B")
-
-    return args
-
+    return parser.parse_args()
 
 def evaluate_cyberwheel():
+    """
+    This function evaluates a trained model in the Cyberwheel environment.
+    At each step of the evaluation, it saves metadata for logging actions.
+    If visualizing, it will also save pickled networkx graphs to the graphs/
+    directory, allowing the dash server to load them.
+    """
     args = parse_args()
     device = torch.device("cpu")
     print(f"Using device {device}")
 
+    # Set up network and Host-Technique mapping outside of environment.
+    # This keeps the time-consuming processes from running for each environment.
     network_config = files("cyberwheel.resources.configs.network").joinpath(args.network_config)
     network = Network.create_network_from_yaml(network_config)
 
     service_mapping = {}
     if args.red_agent == "art_agent":
         service_mapping = ARTAgent.get_service_map(network)
-
-    #random.seed(1)
-    #np.random.seed(1)
-    #torch.manual_seed(1)
-    #torch.backends.cudnn.deterministic = True
+    if args.red_strategy == "dfs_impact":
+        args.red_strategy = DFSImpact
+    else:
+        args.red_strategy = ServerDowntime
 
     env_funcs = [
         make_env(
@@ -289,22 +288,25 @@ def evaluate_cyberwheel():
             blue_config=args.blue_config,
             num_steps=args.num_steps,
             network=deepcopy(network),
-            service_mapping=service_mapping
+            service_mapping=service_mapping,
+            red_strategy=args.red_strategy
         )
         for i in range(1)
     ]
-    print(env_funcs)
     envs = gym.vector.SyncVectorEnv(env_funcs)
 
     agent = Agent(envs).to(device)
 
     experiment_name = args.experiment
+    
+    # If download from W&B, use API to get run data.
     if args.download_model:
         api = wandb.Api()
         run = api.run(f"{args.wandb_entity}/{args.wandb_project_name}/runs/{args.run}")
         model = run.file("agent.pt")
         model.download(files("cyberwheel.models").joinpath(experiment_name), exist_ok=True)
 
+    # Load model from models/ directory
     agent.load_state_dict(
         torch.load(files(f"cyberwheel.models.{experiment_name}").joinpath("agent.pt"), map_location=device)
     )
@@ -320,10 +322,11 @@ def evaluate_cyberwheel():
 
     print("Playing environment...")
 
+    # Set up dirpath to store action logs CSV
     if args.graph_name != None:
         now_str = args.graph_name
     else:
-        now_str = f"{experiment_name}_evaluate_{args.network_config.split('.')[0]}_{args.red_agent}_{args.min_decoys}-{args.max_decoys}_scaling{int(args.reward_scaling)}_{args.reward_function}reward"
+        now_str = f"{experiment_name}_evaluate_{args.network_config.split('.')[0]}_{args.red_agent}_{args.red_strategy.__name__}_{args.min_decoys}-{args.max_decoys}_scaling{int(args.reward_scaling)}_{args.reward_function}reward"
     log_file = files("cyberwheel.action_logs").joinpath(f"{now_str}.csv")
 
     actions_df = pd.DataFrame()
@@ -343,32 +346,28 @@ def evaluate_cyberwheel():
             obs = torch.Tensor(obs).to(device)
             action, _, _, _ = agent.get_action_and_value(obs)
 
-            all_action = None
-            blue_action = None
-            red_action = None
-
             obs, rew, done, _, info = envs.step(action.cpu().numpy())
             rew = rew[0]
             done = done[0]
 
             if "final_observation" in list(info.keys()):
-                all_action = info["final_info"][0]["action"]
+                blue_action = info["final_info"][0]["blue_action"]
+                red_action_type = info["final_info"][0]["red_action"]
+                red_action_src = info["final_info"][0]["red_action_src"]
+                red_action_dest = info["final_info"][0]["red_action_dst"]
+                red_action_success = info["final_info"][0]["red_action_success"]
                 net = info["final_info"][0]["network"]
                 history = info["final_info"][0]["history"]
                 killchain = info["final_info"][0]["killchain"]
             else:
-                all_action = info["action"][0]
+                blue_action = info["blue_action"][0]
+                red_action_type = info["red_action"][0]
+                red_action_src = info["red_action_src"][0]
+                red_action_dest = info["red_action_dst"][0]
+                red_action_success = info["red_action_success"][0]
                 net = info["network"][0]
                 history = info["history"][0]
                 killchain = info["killchain"][0]
-
-            blue_action = all_action["Blue"]
-            red_action = all_action["Red"]
-            red_action_parts = red_action.split(" ")
-            red_action_type = red_action_parts[2]
-            red_action_src = red_action_parts[4]
-            red_action_dest = red_action_parts[6]
-            red_action_success = red_action_parts[0] == "Success"
 
             full_episodes.append(episode)
             full_steps.append(step)
@@ -379,6 +378,7 @@ def evaluate_cyberwheel():
             full_blue_actions.append(blue_action)
             full_rewards.append(rew)
 
+            # If generating graphs for dash server view
             if args.visualize:
                 visualize(net, episode, step, now_str, history, killchain)
 
@@ -402,6 +402,7 @@ def evaluate_cyberwheel():
         }
     )
 
+    # Save action metadata to CSV in action_logs/
     actions_df.to_csv(log_file)
 
     total_time = time.time() - start_time

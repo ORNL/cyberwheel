@@ -210,7 +210,7 @@ class ARTKillChainPhase(ARTAction):
         valid_techniques: list[str] = [],
     ) -> None:
         """
-        Same parameters as defined and described in the RedAction base class.
+        Same parameters as defined and described in the ARTAction base class.
         - `src_host`: Host from which the attack originates.
 
         - `target_service`: The service being targeted.
@@ -229,7 +229,7 @@ class ARTKillChainPhase(ARTAction):
         self.action_results.modify_alert(dst=host)
 
         if len(self.valid_techniques) > 0:
-            self.action_results.add_successful_action(host)
+            self.action_results.add_successful_action()
             mitre_id = random.choice(
                 self.valid_techniques
             )  # Change to look for depending on service
@@ -313,7 +313,7 @@ class ARTPingSweep(ARTKillChainPhase):
             processes.extend(chosen_test.executor.command)
             processes.extend(chosen_test.executor.cleanup_command)
 
-        self.action_results.add_successful_action(host)
+        self.action_results.add_successful_action()
         self.action_results.add_metadata(
             host.name,
             {
@@ -386,7 +386,7 @@ class ARTPortScan(ARTKillChainPhase):
         if chosen_test.executor != None:
             processes.extend(chosen_test.executor.command)
             processes.extend(chosen_test.executor.cleanup_command)
-        self.action_results.add_successful_action(host)
+        self.action_results.add_successful_action()
         self.action_results.add_metadata(
             host.name,
             {
@@ -449,7 +449,7 @@ class ARTDiscovery(ARTKillChainPhase):
 
     def sim_execute(self):
         super().sim_execute()
-        if self.target_host in self.action_results.attack_success:
+        if self.action_results.attack_success:
             self.action_results.add_metadata(
                 self.target_host.name,
                 {"type": self.target_host.host_type.name},

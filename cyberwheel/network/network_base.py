@@ -9,6 +9,7 @@ from pathlib import PosixPath
 import random
 from typing import Union, List, Type
 import yaml
+from copy import deepcopy
 
 from .host import Host, HostType
 from .network_object import NetworkObject, FirewallRule, Route
@@ -19,18 +20,23 @@ from .subnet import Subnet
 
 class Network:
 
-    def __init__(self, name=""):
-        self.graph = nx.Graph(name=name)
+    def __init__(self, name="", graph : nx.Graph = None, decoys = [], disconnected_nodes = [], isolated_hosts = []):
+        self.graph = nx.DiGraph(name=name) if graph == None else graph
         self.name = name
-        self.decoys = []
-        self.disconnected_nodes = []
-        self.isolated_hosts: List[Host] = []
+        self.decoys = decoys
+        self.disconnected_nodes = disconnected_nodes
+        self.isolated_hosts: List[Host] = isolated_hosts
 
     def __iter__(self):
         return iter(self.graph)
 
     def __len__(self):
         return len(self.graph)
+
+    def copy(self):
+        name = self.name
+        graph = self.graph.copy()
+        return Network(name=name, graph=graph)
 
     def get_decoys(self):
         return self.decoys

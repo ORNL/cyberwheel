@@ -5,6 +5,9 @@ import json
 
 
 class Technique:
+    """
+    Defines base class to derive ART Techniques from. Includes all attributes from ART Technique.
+    """
     mitre_id: str
     name: str
     technique_id: str

@@ -12,7 +12,8 @@ from cyberwheel.detectors.alert import Alert
 from cyberwheel.detectors.handler import DetectorHandler
 from cyberwheel.network.network_base import Network
 from cyberwheel.network.host import Host
-from cyberwheel.red_agents import KillChainAgent, ARTAgent
+from cyberwheel.red_agents import ARTAgent
+from cyberwheel.red_agents.strategies import ServerDowntime
 from cyberwheel.reward import DecoyReward, StepDetectedReward
 from cyberwheel.reward.recurring_reward import RecurringReward
 from cyberwheel.reward.restore_reward import RestoreReward
@@ -95,16 +96,12 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         )
         self.red_agent_choice = red_agent
         self.service_mapping = service_mapping
-        # print(red_agent)
 
-        if self.red_agent_choice == "art_agent":
-            self.red_agent = ARTAgent(
-                self.network.get_random_user_host(), network=self.network, service_mapping=self.service_mapping
-            )
-        else:
-            self.red_agent = KillChainAgent(
-                self.network.get_random_user_host(), network=self.network
-            )
+        self.red_strategy = kwargs.get("red_strategy", ServerDowntime)
+
+        self.red_agent = ARTAgent(
+            self.network.get_random_user_host(), network=self.network, service_mapping=self.service_mapping, red_strategy=self.red_strategy
+        )
 
         self.blue_conf_file = files("cyberwheel.resources.configs.blue_agent").joinpath(
             blue_config
@@ -141,10 +138,12 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         )  # red_action includes action, and target of action
         action_metadata = self.red_agent.history.history[-1]
 
-        red_action_type, red_action_src, red_action_dst = action_metadata.action
-        red_action_success = action_metadata.success
+        red_action_type = action_metadata["action"]
+        red_action_src = action_metadata["src_host"]
+        red_action_dst = action_metadata["target_host"]
+        red_action_success = action_metadata["success"]
 
-        self.reward_calculator.handle_red_action_output(red_action_name, red_action_dst.decoy)
+        self.reward_calculator.handle_red_action_output(red_action_name, self.red_agent.history.mapping[red_action_dst].decoy)
 
         red_action_result = (
             self.red_agent.history.recent_history()
@@ -152,6 +151,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
         alerts = self.detector.obs([red_action_result.detector_alert])
         obs_vec = self._get_obs(alerts)
+        #print(obs_vec)
         
         if self.reward_function == "step_detected":
             reward = self.reward_calculator.calculate_reward(
@@ -160,7 +160,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         else:
             # print(red_action_name)
             reward = self.reward_calculator.calculate_reward(
-                red_action_name, blue_agent_result.name, red_action_success, blue_agent_result.success, red_action_dst.decoy
+                red_action_name, blue_agent_result.name, red_action_success, blue_agent_result.success, self.red_agent.history.mapping[red_action_dst].decoy
             )
         self.total += reward
 
@@ -172,14 +172,17 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
         info = {}
         if self.evaluation:
-            red_action_str = "Success - " if red_action_success else "Failed - "
-            red_action_str += f"{red_action_type.__name__} from {red_action_src.name} to {red_action_dst.name}"
             info = {
-                "action": {"Blue": blue_agent_result.name, "Red": red_action_str},
+                "red_action": red_action_type,
+                "red_action_src": red_action_src,
+                "red_action_dst": red_action_dst,
+                "red_action_success": red_action_success,
+                "blue_action": blue_agent_result.name,
                 "network": self.blue_agent.network,
                 "history": self.red_agent.history,
                 "killchain": self.red_agent.killchain,
             }
+        self.detector.reset()
         self.detector.reset()
         return (
             obs_vec,

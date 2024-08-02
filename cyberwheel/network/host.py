@@ -72,6 +72,30 @@ class Host(NetworkObject):
         str += f"host_type={self.host_type!r}, firewall_rules={self.firewall_rules!r}, "
         str += f"services={self.services!r}, dns_server={self.dns_server!r}"
         return str
+    
+    def __deepcopy__(self, memo):
+        new_host = Host(name=self.name, subnet=self.subnet, host_type=self.host_type)
+        memo[id(self)] = new_host
+        # set decoy status
+        new_host.decoy = self.decoy
+        new_host.interfaces = self.interfaces
+
+        new_host.host_type = self.host_type
+        new_host.services = self.services
+        new_host.mac_address = self.mac_address
+        new_host.default_route = self.default_route
+        new_host.routes = self.routes
+        new_host.interfaces = self.interfaces
+        new_host.vulnerabilities = self.vulnerabilities
+        new_host.processes = self.processes
+        new_host.dns_server = self.dns_server
+        new_host.ip_address = self.ip_address
+        return new_host
+    
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Host):
+            return False
+        return self.name == other.name
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Host):

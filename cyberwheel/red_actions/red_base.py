@@ -28,15 +28,19 @@ class RedActionResults:
 
     discovered_hosts: List[Host]
     detector_alert: Alert
-    attack_success: List[Host]
+    attack_success: bool
     metadata: Dict[str, Any]
+    src_host: Host
+    target_host: Host
     cost: int
 
-    def __init__(self):
+    def __init__(self, src_host : Host, target_host : Host):
         self.discovered_hosts = []
         self.detector_alert = Alert(None, [], [])
-        self.attack_success = []
+        self.attack_success = False
         self.metadata = {}
+        self.src_host = src_host
+        self.target_host = target_host
         self.cost = 0
 
     def add_host(self, host: Host) -> None:
@@ -65,13 +69,13 @@ class RedActionResults:
                 f"RedActionResults.modify_alert(): dst needs to be Host or Service not {type(dst)}"
             )
 
-    def add_successful_action(self, host: Host) -> None:
+    def add_successful_action(self) -> None:
         """
         Adds the host to the list of successful actions
 
         - `host`: a Host where this action was successful
         """
-        self.attack_success.append(host)
+        self.attack_success = True
 
     def add_metadata(self, key: str, value: Any) -> None:
         if key in self.metadata:
@@ -93,48 +97,6 @@ class RedActionResults:
             return True
         return False
 
-
-class RedAction:
-    """
-    Base class for defining red actions. New actions should inherit from this class and define sim_execute().
-    """
-
-    def __init__(
-        self, src_host: Host, target_service, target_hosts, techniques
-    ) -> None:
-        """
-        - `src_host`: Host from which the attack originates.
-
-        - `target_service`: The service being targeted.
-
-        - `target_hosts`: The hosts being targeted. Can either be a list of hosts or list of subnets. If it is a list of subnets, then the attack should target all known hosts on that subnet.
-
-        - `techniques`: A list of techniques that can be used to perform this attack.
-        """
-        self.src_host = src_host
-        self.target_service = target_service
-        self.target_hosts = target_hosts
-        self.techniques = techniques
-        self.action_results = RedActionResults()
-        self.decoy = False
-        self.name = ""
-
-    @abstractmethod
-    def sim_execute(self) -> RedActionResults | type[NotImplementedError]:
-        pass
-
-    @abstractmethod
-    def perfect_alert(self):
-        pass
-
-    def get_techniques(self):
-        return self.techniques
-
-    @classmethod
-    def get_name(cls):
-        return cls.name
-
-
 class ARTAction:
     """
     Base class for defining Atomic Red Team actions. New ART actions should inherit from this class and define sim_execute().
@@ -152,15 +114,11 @@ class ARTAction:
         """
         self.src_host = src_host
         self.target_host = target_host
-        self.action_results = RedActionResults()
+        self.action_results = RedActionResults(src_host, target_host)
         self.name = ""
 
     @abstractmethod
     def sim_execute(self) -> RedActionResults | type[NotImplementedError]:
-        pass
-
-    @abstractmethod
-    def perfect_alert(self):
         pass
 
     def get_techniques(self):

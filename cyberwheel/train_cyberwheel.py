@@ -21,14 +21,18 @@ from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import sys
+import dill
+import networkx as nx
 
 from cyberwheel.cyberwheel_envs.cyberwheel_dynamic import DynamicCyberwheel
 from cyberwheel.network.network_base import Network
 from cyberwheel.red_actions.actions.art_killchain_phases import ARTDiscovery, ARTPrivilegeEscalation, ARTImpact, ARTLateralMovement
 from cyberwheel.red_actions import art_techniques
 from cyberwheel.red_agents import ARTAgent
+from cyberwheel.red_agents.strategies import RedStrategy, DFSImpact, ServerDowntime
 
 from copy import deepcopy
+import pickle
 
 
 def parse_args():
@@ -97,7 +101,9 @@ def parse_args():
 
     # Red agent args
     parser.add_argument("--red-agent", type=str, default="art_agent",
-        help="the red agent strategies to train against. Current options: 'art_agent' | 'killchain_agent'")
+        help="the red agent to train against. Current option: 'art_agent' | 'killchain_agent' (deprecated)")
+    parser.add_argument("--red-strategy", type=str, default="server_downtime",
+        help="the red agent strategies to train against. Current options: 'server_downtime' | 'dfs_impact'")
 
     # network generation args
     parser.add_argument("--network-config", help="Input the network config filename", type=str, default='15-host-network.yaml')
@@ -138,14 +144,14 @@ def evaluate(
     min_decoys=0,
     max_decoys=1,
     blue_reward_scaling=10,
-    episodes=20,
-    steps=100,
     reward_function="default",
     red_agent="art_agent",
     blue_config="dynamic_blue_agent.yaml",
-    num_steps=100,
     network=None,
-    service_mapping={}
+    service_mapping={},
+    steps=100,
+    episodes=20,
+    red_strategy=ServerDowntime
 ):
     """Evaluate 'blue_agent' in the 'scenario' task against the 'red_agent' strategy"""
     # We evaluate on CPU because learning is already happening on GPUs.
@@ -163,9 +169,10 @@ def evaluate(
         reward_function=reward_function,
         red_agent=red_agent,
         blue_config=blue_config,
-        num_steps=num_steps,
+        num_steps=steps,
         network=network,
-        service_mapping=service_mapping
+        service_mapping=service_mapping,
+        red_strategy=red_strategy
     )
     episode_rewards = []
     total_reward = 0
@@ -210,7 +217,8 @@ def run_evals(eval_queue, model, args, globalstep, network, service_mapping):
             blue_config=args.blue_config,
             num_steps=args.num_steps,
             network=network,
-            service_mapping=service_mapping
+            service_mapping=service_mapping,
+            red_strategy=args.red_strategy
         )
         for i in range(1)
     ]
@@ -221,108 +229,36 @@ def run_evals(eval_queue, model, args, globalstep, network, service_mapping):
     eval_agent.load_state_dict(torch.load(model, map_location=eval_device))
     eval_agent.eval()
 
-    # Run evaluations in multiprocessing pool
-    with multiprocessing.Pool(processes=args.max_eval_workers) as pool:
-        # Create a list of arguments for the evaluate_helper function.
-
-        # TODO instead of giving network_config, maybe make the network here and give a deep copy of the network to each env?
-        args_list = [
-            (
-                eval_agent,
-                args.network_config,
-                args.decoy_config,
-                args.host_config,
-                args.detector_config,
-                args.eval_episodes,
-                args.num_steps,
-                args.min_decoys,
-                args.max_decoys,
-                args.reward_scaling,
-                args.reward_function,
-                args.red_agent,
-                args.blue_config,
-                args.num_steps,
-                network,
-                service_mapping
-            )
-        ]
-        # Map the evaluate_helper function to the argument list using the pool
-        results = pool.map(evaluate_helper, args_list)
-        for result, args in zip(results, args_list):
-            (
-                _,
-                network_config,
-                decoy_config,
-                _,
-                _,
-                _,
-                _,
-                min_decoys,
-                max_decoys,
-                reward_scaling,
-                reward_function,
-                red_agent,
-                blue_config,
-                num_steps,
-                network,
-                service_mapping
-            ) = args
-            # Place evaluation results in eval_queue to be read by the main training process.
-            # We need to pass these to the main process where wandb is running for logging.
-            eval_queue.put(
-                (
-                    network_config,
-                    decoy_config,
-                    min_decoys,
-                    max_decoys,
-                    reward_scaling,
-                    reward_function,
-                    red_agent,
-                    result,
-                    globalstep,
-                )
-            )
-
-
-def evaluate_helper(args):
-    """Unpack arguments for evaluation"""
-    (
-        agent,
-        network_config,
-        decoy,
-        host,
-        detector,
-        episodes,
-        steps,
-        min,
-        max,
-        scaling,
-        function,
-        red_agent,
-        blue_config,
-        num_steps,
-        network,
-        service_mapping
-    ) = args
-    return evaluate(
-        agent,
-        network_config,
-        decoy,
-        host,
-        detector,
-        episodes=episodes,
-        steps=steps,
-        min_decoys=min,
-        max_decoys=max,
-        blue_reward_scaling=scaling,
-        reward_function=function,
-        red_agent=red_agent,
-        blue_config=blue_config,
-        num_steps=num_steps,
-        network=network,
-        service_mapping=service_mapping
+    result = evaluate(eval_agent, 
+                      args.network_config, 
+                      args.decoy_config, 
+                      args.host_config, 
+                      args.detector_config, 
+                      args.min_decoys, 
+                      args.max_decoys, 
+                      args.reward_scaling, 
+                      args.reward_function, 
+                      args.red_agent, 
+                      args.blue_config, 
+                      network=network, 
+                      service_mapping=service_mapping, 
+                      steps=args.num_steps, 
+                      episodes=args.eval_episodes,
+                      red_strategy=args.red_strategy
+                      )
+    eval_queue.put(
+        (
+            args.network_config,
+            args.decoy_config,
+            args.min_decoys,
+            args.max_decoys,
+            args.reward_scaling,
+            args.reward_function,
+            args.red_agent,
+            result,
+            globalstep,
+        )
     )
-
 
 def create_cyberwheel_env(
     network_config: str,
@@ -337,7 +273,8 @@ def create_cyberwheel_env(
     blue_config: str,
     num_steps: int,
     network: Network,
-    service_mapping : dict
+    service_mapping : dict,
+    red_strategy: RedStrategy
 ):
     """Create a Cyberwheel environment"""
     env = DynamicCyberwheel(
@@ -353,7 +290,8 @@ def create_cyberwheel_env(
         blue_config=blue_config,
         num_steps=num_steps,
         network=network,
-        service_mapping=service_mapping
+        service_mapping=service_mapping,
+        red_strategy=red_strategy
     )
     return env
 
@@ -374,7 +312,8 @@ def make_env(
     blue_config="dynamic_blue_agent.yaml",
     num_steps=50,
     network=None,
-    service_mapping={}
+    service_mapping={},
+    red_strategy=ServerDowntime
 ):
     """
     Utility function for multiprocessed env.
@@ -399,7 +338,8 @@ def make_env(
             blue_config=blue_config,
             num_steps=num_steps,
             network=network,
-            service_mapping=service_mapping
+            service_mapping=service_mapping,
+            red_strategy=red_strategy
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(
@@ -470,8 +410,8 @@ class Agent(nn.Module):
 def train_cyberwheel():
     args = parse_args()
     run_name = f"{args.exp_name}"
-
-    #run_name = f"{args.exp_name}"
+    #if args.set_recursion_limit > 0:
+    #    sys.setrecursionlimit(args.set_recursion_limit)
     if args.track:
         # Initialize Weights and Biases tracking
         import wandb
@@ -513,12 +453,26 @@ def train_cyberwheel():
 
     # Load network from yaml here
     network_config = files("cyberwheel.resources.configs.network").joinpath(args.network_config)
-    network = Network.create_network_from_yaml(network_config)
 
+    print(f"Building network: {args.network_config} ...")
+
+    network = Network.create_network_from_yaml(network_config)
+    print("done")
+
+    print("Mapping attack validity to hosts...", end=" ")
     service_mapping = {}
     if args.red_agent == "art_agent":
         service_mapping = ARTAgent.get_service_map(network)
+    print("done")
 
+    if args.red_strategy == "dfs_impact":
+        args.red_strategy = DFSImpact
+    else:
+        args.red_strategy = ServerDowntime
+
+
+    print("Defining environment(s) and beginning training:", end="\n\n")
+    
     env_funcs = [
         make_env(
             args.seed,
@@ -535,15 +489,18 @@ def train_cyberwheel():
             blue_config=args.blue_config,
             num_steps=args.num_steps,
             network=deepcopy(network),
-            service_mapping=service_mapping
+            service_mapping=service_mapping,
+            red_strategy=args.red_strategy
         )
         for i in range(args.num_envs)
     ]
+
     envs = (
         gym.vector.AsyncVectorEnv(env_funcs)
         if args.async_env
         else gym.vector.SyncVectorEnv(env_funcs)
     )
+
     assert isinstance(
         envs.single_action_space, gym.spaces.Discrete
     ), "only discrete action space is supported"
@@ -617,6 +574,7 @@ def train_cyberwheel():
             ).to(device)
         end_time = time.time_ns()
         episode_time = (end_time - episode_start) / (10**9)
+
         # Calculate and log the mean reward for this episode.
         mean_rew = rewards.sum(axis=0).mean()
         print(f"global_step={global_step}, episodic_return={mean_rew}")
@@ -734,7 +692,6 @@ def train_cyberwheel():
         # Infrequently save the model and evaluate the agent
         if (update - 1) % args.save_frequency == 0:
             start_eval = time.time()
-
             # Save the model
             run_path = files("cyberwheel.models").joinpath(run_name)
             if not os.path.exists(run_path):
@@ -751,11 +708,12 @@ def train_cyberwheel():
                 )
 
             # Run evaluation
-            print("Evaluating Agent")
+            print("Evaluating Agent...")
+
             run_evals(
                 eval_queue, globalstep_path, args, global_step, deepcopy(network), service_mapping
             )
-
+            
             # Log eval results
             while not eval_queue.empty():
                 (

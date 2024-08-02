@@ -62,9 +62,13 @@ def visualize(
 
     host_info = history.hosts
     subnet_info = history.subnets
-    source_host = history.history[-1].action[1].name
-    target_host = history.history[-1].action[2].name
-    current_action = history.history[-1].action[0].__name__
+    last_step_info = history.history[-1]
+    source_host = last_step_info["src_host"]
+    target_host = last_step_info["target_host"]
+    current_action = last_step_info["action"]
+    mitre_id = last_step_info["techniques"]["mitre_id"]
+    technique = last_step_info["techniques"]["technique"]
+    step_commands = last_step_info["techniques"]["commands"]
 
     if (
         current_action == "ARTLateralMovement"

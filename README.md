@@ -79,6 +79,7 @@ This environment contains a training script and evaluation script with a large s
 This project runs on, and has been tested with, Python 3.10. Once installed, poetry should automatically use this version for its virtual environment.
 
 * poetry
+
 Cyberwheel uses poetry to manage and install python packages. For instructions on how to install poetry, visit their [installation page](https://python-poetry.org/docs/#installation).
 
 * graphviz
@@ -235,7 +236,7 @@ Networks in Cyberwheel are comprised of routers, subnets, and hosts represented 
 * Routers manage network traffic between Subnets.
 * Subnets represent the broadcast domain​ and manage network traffic between Hosts.
 * Hosts are machines/devices that belong to a subnet​, and they contain list of running services with ports, CVEs, and other attributes.
-​Cyberwheel builds networks from a config YAML file.
+ ​Cyberwheel builds networks from a config YAML file.
 
 ### Blue Agent Design
 
@@ -243,11 +244,11 @@ The blue agent is largely focused on deploying Decoys to slow and/or stop red ag
 
 ### Red Agent Design
 
-The red agent is a heuristic agent that has a set of defined rules and strategies that it can use to traverse a network, although its behavior to dictate which Hosts it chooses to target is modular. It's actions are mapped from MITRE ATT&CK Killchain Phases (Discovery, Lateral Movement, Privilege Escalation, Impact) to Atomic Red Team (ART) techniques. We've defined these techniques with a set of attributes mapped from existing cyber attack data. This allows our ART Agent to run a higher level killchain phase (i.e. discovery) on a host, and the environment will cross-
-reference the target host's attributes with ART Technique attributes techniques are valid for the attack by checking:
-  - [x] Technique includes the target host's OS in supported platforms
+The red agent is a heuristic agent that has a set of defined rules and strategies that it can use to traverse a network, although its behavior to dictate which Hosts it chooses to target is modular. It's actions are mapped from MITRE ATT&CK Killchain Phases (Discovery, Lateral Movement, Privilege Escalation, Impact) to Atomic Red Team (ART) techniques. We've defined these techniques with a set of attributes mapped from existing cyber attack data. This allows our ART Agent to run a higher level killchain phase (i.e. discovery) on a host, and the environment will cross-reference the target host's attributes with ART Technique attributes. Techniques are valid for the attack by checking:
+  - [x] Technique includes the target host's OS in its supported platforms
   - [x] Technique includes the killchain phase in its supported killchain phases
   - [x] Technique can exploit any CVE that is present on the target host
+
 If all of these conditions are met, the agent can successfully run the killchain attack on the host. These ART Techniques include Atomic Tests, which give tangible commands to run in order to execute the given attack. With this methodology, the simulator is able to transform a general killchain phase into a valid set of commands that could be run in
 the real world.
 
@@ -268,7 +269,7 @@ taskkill /F /IM ${process_name} >nul 2>&1​
 
 ### Detectors and Alerts
 
-Red actions produce Alerts which contain information such as the actions's source host, target host, exploited services, and techniques. The blue agent has a detector layer set up with Alerts that allow the alerts to detect any red agent action on the network. These detectors can filter out Alerts, add noise, or even create false-positive Alerts. You can use multiple detectors together to capture various different red agent behavior. These alerts are then converted into the observation space which the RL agent uses to train.
+Red actions produce Alerts which contain information such as the actions's source host, target host, exploited services, and techniques. The blue agent has a detector layer set up with Alerts that detect any red agent action on the network. These detectors can filter out Alerts, add noise, or even create false-positive Alerts. You can use multiple detectors together to capture various red agent behavior. These alerts are then converted into the observation space which the RL agent uses to train.
 
 ### Configurations
 
@@ -279,7 +280,7 @@ All configurations are stored in the `resources/configs` directory. You can use 
 
 If you are not familiar with SOLID principles, please read this before contributing. Pretty basic, but makes a huge difference down the road --- [Article on SOLID](https://medium.com/@iclub-ideahub/the-solid-principles-a-guide-to-writing-maintainable-and-extensible-code-in-python-ecac4ea8d7ee).
 
-If you need to add dependency, this project is packaged with [poetry](https://python-poetry.org/). Please take a few minutes to read about the [basics](https://python-poetry.org/docs/basic-usage/#specifying-dependencies) before adding any dependencies. Do not use pip, do not use requirements.txt. TLDR: use `poetry add <dependency name>`. After adding your dependency, add and commit the new `poetry.lock` file.
+If you need to add a dependency, this project is packaged with [poetry](https://python-poetry.org/). Please take a few minutes to read about the [basics](https://python-poetry.org/docs/basic-usage/#specifying-dependencies) before adding any dependencies. Do not use pip, do not use requirements.txt. TLDR: use `poetry add <dependency name>`. After adding your dependency, add and commit the new `poetry.lock` file.
 
 This project uses pre-commit to automatically run formatting prior to every commit. Pyright is included in this suite and _will_ block your commit if you commit code with bad type labels. If you'd like to skip this check, run `SKIP=pyright git commit <rest of commit command>`.
 

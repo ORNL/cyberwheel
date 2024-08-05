@@ -16,7 +16,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch import multiprocessing
 from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
@@ -125,7 +124,7 @@ def evaluate(blue_agent, args):
     return episodic_return
 
 
-def run_evals(eval_queue, model, args, globalstep):
+def run_evals(model, args, globalstep):
     """Evaluate 'model' on tasks listed in 'eval_queue' in a separate process"""
     # TRY NOT TO MODIFY: seeding
     eval_device = torch.device("cpu")
@@ -146,18 +145,16 @@ def run_evals(eval_queue, model, args, globalstep):
     # Evaluate the agent
     result = evaluate(eval_agent, args)
     # Store evaluation parameters and results
-    eval_queue.put(
-        (
-            args.network_config,
-            args.decoy_config,
-            args.min_decoys,
-            args.max_decoys,
-            args.reward_scaling,
-            args.reward_function,
-            args.red_agent,
-            result,
-            globalstep,
-        )
+    return (
+        args.network_config,
+        args.decoy_config,
+        args.min_decoys,
+        args.max_decoys,
+        args.reward_scaling,
+        args.reward_function,
+        args.red_agent,
+        result,
+        globalstep,
     )
 
 
@@ -322,7 +319,6 @@ def train_cyberwheel():
     print(f"Building network: {args.network_config} ...")
 
     network = Network.create_network_from_yaml(network_config)
-    print("done")
 
     print("Mapping attack validity to hosts...", end=" ")
     service_mapping = {}
@@ -351,10 +347,6 @@ def train_cyberwheel():
     assert isinstance(
         envs.single_action_space, gym.spaces.Discrete
     ), "only discrete action space is supported"
-
-    # Evaluation setup
-    eval_queue = multiprocessing.SimpleQueue()
-    eval_processes = []
 
     # Create agent and optimizer
     agent = Agent(envs).to(device)
@@ -557,26 +549,25 @@ def train_cyberwheel():
             # Run evaluation
             print("Evaluating Agent...")
 
-            run_evals(eval_queue, globalstep_path, args, global_step)
+            eval_results = run_evals(globalstep_path, args, global_step)
 
             # Log eval results
-            while not eval_queue.empty():
-                (
-                    eval_network_config,
-                    eval_decoy_config,
-                    eval_min_decoys,
-                    eval_max_decoys,
-                    eval_reward_scaling,
-                    eval_reward_function,
-                    eval_red_agent,
-                    eval_return,
-                    eval_step,
-                ) = eval_queue.get()
-                writer.add_scalar(
-                    f"evaluation/{eval_network_config.split('.')[0]}_{eval_decoy_config}_{eval_reward_scaling}|{eval_min_decoys}-{eval_max_decoys}_{eval_reward_function}reward__{eval_red_agent}_episodic_return",
-                    eval_return,
-                    eval_step,
-                )
+            (
+                eval_network_config,
+                eval_decoy_config,
+                eval_min_decoys,
+                eval_max_decoys,
+                eval_reward_scaling,
+                eval_reward_function,
+                eval_red_agent,
+                eval_return,
+                eval_step,
+            ) = eval_results
+            writer.add_scalar(
+                f"evaluation/{eval_network_config.split('.')[0]}_{eval_decoy_config}_{eval_reward_scaling}|{eval_min_decoys}-{eval_max_decoys}_{eval_reward_function}reward__{eval_red_agent}_episodic_return",
+                eval_return,
+                eval_step,
+            )
             writer.add_scalar(
                 "charts/eval_time", int(time.time() - start_eval), global_step
             )
@@ -597,37 +588,9 @@ def train_cyberwheel():
             "charts/SPS", int(global_step / (time.time() - start_time)), global_step
         )
 
-    # Allow final evaluations to finish and record results
-    processes_running = True
-    while processes_running:
-        # Check if any processes are running
-        processes_running = False
-        for process in eval_processes:
-            if process.is_alive():
-                processes_running = True
-
-        # Process evaluation results
-        while not eval_queue.empty():
-            (
-                eval_network_config,
-                eval_decoy_config,
-                eval_min,
-                eval_max,
-                eval_scaling,
-                eval_reward,
-                eval_return,
-                eval_step,
-            ) = eval_queue.get()
-            writer.add_scalar(
-                f"evaluation/{eval_network_config.split('.')[0]}_{eval_decoy_config}_{eval_scaling}|{eval_min}-{eval_max}_{eval_reward}rewardepisodic_return",
-                eval_return,
-                eval_step,
-            )
-
     envs.close()
     writer.close()
 
 
 if __name__ == "__main__":
-    multiprocessing.set_start_method("spawn")
     train_cyberwheel()

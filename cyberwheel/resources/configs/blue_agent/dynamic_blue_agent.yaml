@@ -9,7 +9,7 @@ actions:
     reward:
       immediate: 0.0 # Reward gained for executing this action.
       recurring: 0.0 # Reward gained for on this step and all subsequent steps after taking this action.
-    action_space_args: 
+    action_space_args:
       type: standalone
     shared_data:
 
@@ -22,7 +22,7 @@ actions:
       services: windows_exploitable_services.yaml
     reward:
       immediate: -20.0
-      recurring: 0.0
+      recurring: -2.0
     action_space_args:
       type: subnet
     shared_data:

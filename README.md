@@ -7,7 +7,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/ORNL/cyberwheel">
-    <img src="images/logo.png" alt="Logo" width="100" height="90">
+    <img src="images/logo.png" alt="Logo" width="409" height="351">
   </a>
 
   <h3 align="center">Cyberwheel</h3>
@@ -105,7 +105,7 @@ Once all dependencies are installed:
     poetry install
     ```
 
-*On newer OSX systems running on silicone chips, there may be an error installing the `pygraphviz` package, with poetry not finding the graphviz configuration files. You can work around this by pip installing the pygraphviz package manually, explicitly passing graphviz config paths. [This link](https://stackoverflow.com/questions/69970147/how-do-i-resolve-the-pygraphviz-error-on-mac-os) helped me work through this issue.*
+*On newer OSX systems running on silicone chips, there may be an error installing the `pygraphviz` package, with poetry not finding the graphviz configuration files. You can work around this by pip installing the pygraphviz package manually, explicitly passing graphviz config paths. [This link](https://stackoverflow.com/a/70439868) helped me work through this issue.*
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

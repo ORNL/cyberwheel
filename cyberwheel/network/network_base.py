@@ -17,10 +17,19 @@ from .router import Router
 from .service import Service
 from .subnet import Subnet
 
+from tqdm import tqdm
+
 
 class Network:
 
-    def __init__(self, name="", graph : nx.Graph = None, decoys = [], disconnected_nodes = [], isolated_hosts = []):
+    def __init__(
+        self,
+        name="",
+        graph: nx.Graph = None,
+        decoys=[],
+        disconnected_nodes=[],
+        isolated_hosts=[],
+    ):
         self.graph = nx.DiGraph(name=name) if graph == None else graph
         self.name = name
         self.decoys = decoys
@@ -310,7 +319,10 @@ class Network:
 
         ## parse topology
         # parse routers
-        for r in config["routers"]:
+        routers = tqdm(config["routers"])
+        routers.set_description("Building Routers")
+        for r in routers:
+            routers.set_description(f"Building Routers: {r}", refresh=True)
             router = Router(
                 r,
                 # val.get('routes', []),
@@ -318,7 +330,10 @@ class Network:
             )
             # add router to network graph
             network.add_router(router)
-        for s in config["subnets"]:
+        subnets = tqdm(config["subnets"])
+        subnets.set_description("Building Subnets")
+        for s in subnets:
+            subnets.set_description(f"Building Subnets: {s}", refresh=True)
             router = network.get_node_from_name(config["subnets"][s]["router"])
             subnet = Subnet(
                 s,
@@ -346,7 +361,10 @@ class Network:
             router_interface_ip = router.get_interface_ip(subnet.name)
             if subnet.dns_server is None and router_interface_ip is not None:
                 subnet.set_dns_server(router_interface_ip)
-        for h in config["hosts"]:
+        hosts = tqdm(config["hosts"])
+        hosts.set_description("Building Hosts")
+        for h in hosts:
+            # hosts.set_description(f"Building Hosts: {h}", refresh=True)
             # instantiate firewall rules, if defined
             val = config["hosts"][h]
             fw_rules = []
@@ -400,7 +418,7 @@ class Network:
                 services=services,
                 interfaces=interfaces,
             )
-            #print(host.name)
+            # print(host.name)
 
             if routes := val.get("routes"):
                 host.add_routes_from_dict(routes)

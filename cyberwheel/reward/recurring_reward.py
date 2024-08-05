@@ -1,6 +1,12 @@
 from typing import List, Tuple
 
-from cyberwheel.reward.reward_base import Reward, RewardMap, RecurringAction, calc_quadratic
+from cyberwheel.reward.reward_base import (
+    Reward,
+    RewardMap,
+    RecurringAction,
+    calc_quadratic,
+)
+
 
 class RecurringReward(Reward):
     def __init__(
@@ -18,18 +24,18 @@ class RecurringReward(Reward):
         blue_action: str,
         red_success: str,
         blue_success: bool,
-        decoy: bool
+        decoy: bool,
     ) -> int | float:
-        if red_success and not decoy:
+        if red_success and not decoy:  # If red action succeeded on a real Host
             r = self.red_rewards[red_action][0]
-        else:
+        else:  # If red action did not succeed, or red action was on a decoy
             r = 50
 
         if blue_success:
             b = self.blue_rewards[blue_action][0]
         else:
             b = -100
-        
+
         if len(self.blue_recurring_actions) < 1:
             b -= 100
 
@@ -40,7 +46,6 @@ class RecurringReward(Reward):
         for ra in self.blue_recurring_actions:
             sum += self.blue_rewards[ra.action][1]
         return sum
-
 
     def add_recurring_blue_action(self, id: str, action: str) -> None:
         self.blue_recurring_actions.append(RecurringAction(id, action))
@@ -63,17 +68,19 @@ class RecurringReward(Reward):
     def add_recurring_red_impact(self, red_action, is_decoy) -> None:
         self.red_recurring_actions.append((RecurringAction("", red_action), is_decoy))
 
-    def handle_blue_action_output(self, blue_action: str, rec_id: str, success: bool, recurring: int):
+    def handle_blue_action_output(
+        self, blue_action: str, rec_id: str, success: bool, recurring: int
+    ):
         if not success:
             return
-        
+
         if recurring == -1:
             self.remove_recurring_blue_action(rec_id)
         elif recurring == 1:
             self.add_recurring_blue_action(rec_id, blue_action)
         elif recurring:
             raise ValueError("recurring must be either -1, 0, or 1")
-    
+
     def handle_red_action_output(self, red_action: str, is_decoy):
         if "impact" in red_action.lower():
             self.add_recurring_red_impact(red_action.lower(), is_decoy)

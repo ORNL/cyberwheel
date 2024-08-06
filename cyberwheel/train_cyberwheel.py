@@ -545,6 +545,12 @@ def train_cyberwheel():
                     base_path=run_path,
                     policy="now",
                 )
+                wandb.save(
+                    globalstep_path,
+                    base_path=run_path,
+                    policy="now",
+                )
+
 
             # Run evaluation
             print("Evaluating Agent...")

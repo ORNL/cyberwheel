@@ -5,7 +5,7 @@ actions:
   nothing: # Unique name for this action
     module: Nothing # Module this action's class is located in
     class: Nothing # The action class's name
-    configs: # List of config file names this action needs. Must be in cyberwheel/resources/metadata
+    configs: # List of config file names this action needs. Must be in cyberwheel/resources/configs
     reward:
       immediate: 0.0 # Reward gained for executing this action.
       recurring: 0.0 # Reward gained for on this step and all subsequent steps after taking this action.

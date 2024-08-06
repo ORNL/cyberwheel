@@ -40,22 +40,13 @@ class Router(NetworkObject):
         str += f'routes="{self.routes}"'
         return str
 
-
     def __repr__(self) -> str:
         str = f'Router(name={self.name!r}, default_route={self.default_route!r}, '
         str += f'routes={self.routes!r}, firewall_rules={self.firewall_rules!r}'
         return str
-
 
     def get_default_route(self):
         return self.default_route
-
-
-    def __repr__(self) -> str:
-        str = f'Router(name={self.name!r}, default_route={self.default_route!r}, '
-        str += f'routes={self.routes!r}, firewall_rules={self.firewall_rules!r}'
-        return str
-
     
     def set_interface_ip(self, interface_name: str, ip: ipa.IPv4Address |ipa.IPv6Address):
         self.interfaces.update({interface_name: ip})

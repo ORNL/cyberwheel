@@ -49,10 +49,10 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
     def __init__(
         self,
-        network_config="example_config.yaml",
+        network_config="15-host-network.yaml",
         decoy_host_file="decoy_hosts.yaml",
         host_def_file="host_definitions.yaml",
-        detector_config="",
+        detector_config="example_detector_handler.yaml",
         min_decoys=0,
         max_decoys=1,
         blue_reward_scaling=10,
@@ -64,6 +64,67 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         service_mapping={},
         **kwargs,
     ):
+        """
+        The DynamicCyberwheel class is used to define the Cyberwheel environment. It allows you to use a YAML
+        file to configure the actions, rewards, and logic of the blue agent. Given various configurations, it
+        will initiate the environment with the red agent, blue agent, reward functions, and network state.
+        Important member variables:
+
+        * `network_config`: optional
+            - The name (not filepath) of the network configuration file.
+            - Default: 15-host-network.yaml
+
+        * `decoy_host_file`: optional
+            - The name (not filepath) of the decoy configuration file.
+            - Default: decoy_hosts.yaml
+
+        * `host_def_file`: optional
+            - The name (not filepath) of the host configuration file.
+            - Default: host_definitions.yaml
+        
+        * `detector_config`: optional
+            - The name (not filepath) of the detector configuration file.
+            - Default: detector.yaml
+
+        * `min_decoys`: optional
+            - The minimum number of decoys the blue agent should deploy. This range is not used for the default reward function.
+            - Default: 0
+
+        * `max_decoys`: optional
+            - The maximum number of decoys the blue agent should deploy. This range is not used for the default reward function.
+            - Default: 1      
+            
+        * `blue_reward_scaling`: optional
+            - The scaling factor for the blue agent's rewards.
+            - Default: 10
+
+        * `reward_function`: optional
+            - The reward function used in the environment. Options: 'default' | 'step_detected'
+            - The default reward function uses the RecurringReward class.
+            - Default: default
+        
+        * `red_agent`: optional
+            - The red agent used in the environment. Currently only using the ART Agent
+            - Default: 'art_agent'
+        
+        * `evaluation`: optional
+            - boolean for if the environment should log information for evaluation script or not.
+            - Default: False
+
+        * `blue_config`: optional
+            - The name (not filepath) of the blue agent configuration file.
+            - Default: blue_agent_config.yaml
+
+        * `network`: optional
+            - The Network object to use throughout the environment. This prevents long start-up times when training with multiple environments.
+            - If not passed, it will build the network with the config file passed.
+            - Default: None
+
+        * `service_mapping`: optional
+            - The host -> valid_action mapping from the exploitable services on the Network.
+            - If not passed, it will build the mapping when defining the red agent.
+            - Default: {}
+        """
         network_conf_file = files("cyberwheel.resources.configs.network").joinpath(
             network_config
         )
@@ -116,21 +177,21 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         self.reward_function = reward_function
 
         if reward_function == "step_detected":
-            self.reward_calculator = StepDetectedReward(
-                blue_rewards=self.blue_agent.get_reward_map(),
-                r=(min_decoys, max_decoys),
-                scaling_factor=blue_reward_scaling,
-                max_steps=self.max_steps,
-            )
+            self.reward_calculator = StepDetectedReward(blue_rewards=self.blue_agent.get_reward_map(), max_steps=self.max_steps)
         else:
-            self.reward_calculator = RecurringReward(
-                self.red_agent.get_reward_map(),
-                self.blue_agent.get_reward_map(),
-            )
+            self.reward_calculator = RecurringReward(self.red_agent.get_reward_map(), self.blue_agent.get_reward_map())
 
         self.evaluation = evaluation
 
     def step(self, action):
+        """
+        Steps through environment.
+        1. Blue agent runs action
+        2. Red agent runs action
+        3. Calculate reward based on red/blue actions and network state
+        4. Convert Alerts from Detector into observation space
+        5. Return obs and related metadata
+        """
         blue_agent_result = self.blue_agent.act(action)
         self.reward_calculator.handle_blue_action_output(blue_agent_result.name, blue_agent_result.id, blue_agent_result.success, blue_agent_result.recurring)
         red_action_name = (
@@ -155,10 +216,9 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         
         if self.reward_function == "step_detected":
             reward = self.reward_calculator.calculate_reward(
-                blue_agent_result.name, blue_agent_result.success, x, self.current_step
+                blue_agent_result.name, blue_agent_result.success, self.red_agent.history.mapping[red_action_dst].decoy, self.current_step
             )
         else:
-            # print(red_action_name)
             reward = self.reward_calculator.calculate_reward(
                 red_action_name, blue_agent_result.name, red_action_success, blue_agent_result.success, self.red_agent.history.mapping[red_action_dst].decoy
             )

@@ -47,9 +47,6 @@
 
 ## About Cyberwheel
 
-<!-- TODO: What would be a good project image? -->
-<!-- ![Cyberwheel Screenshot](images/screenshot.png "Cyberwheel Evaluation Visualizer") -->
-
 Cyberwheel is a Reinforcement Learning (RL) simulation environment built for training and evaluating autonomous cyber defense models on simulated networks. It was built with modularity in mind, to allow users to build on top of it to fit their needs. It supports various robust configuration files to build networks, services, host types, defensive agents, and more.
 
 Motivations:

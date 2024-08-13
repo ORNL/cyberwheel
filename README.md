@@ -315,6 +315,14 @@ Project Link: [https://github.com/ORNL/cyberwheel/](https://github.com/ORNL/cybe
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- Accompanying Papers -->
+## Papers
+[(2024) Towards a High Fidelity Training Environment for Autonomous Cyber Defense Agents](https://doi.org/10.1145/3675741.3675752)
+
+[(2024) The Path to Autonomous Cyber Defense](https://arxiv.org/pdf/2404.10788.pdf)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 <!-- MARKDOWN LINKS & IMAGES -->
 [issues-shield]: https://img.shields.io/github/issues/ORNL/cyberwheel.svg?style=for-the-badge
 [issues-url]: https://github.com/ORNL/cyberwheel/issues

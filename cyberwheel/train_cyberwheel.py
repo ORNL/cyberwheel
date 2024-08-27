@@ -1,9 +1,6 @@
-# CleanRL script for training Cage Challenge 2 agents. CleanRL documentation can be found at https://docs.cleanrl.dev/,
 import argparse
-import inspect
 import os
 import random
-import subprocess
 import time
 from distutils.util import strtobool
 from pprint import pprint
@@ -550,7 +547,6 @@ def train_cyberwheel():
                     base_path=run_path,
                     policy="now",
                 )
-
 
             # Run evaluation
             print("Evaluating Agent...")

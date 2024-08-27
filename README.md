@@ -224,6 +224,27 @@ This will run a dash server locally on the port number passed. You can then visi
 
 ![Visualizer GIF](images/visualizer.gif "Cyberwheel Visualizer")
 
+### Running a Basic Demo
+A basic demonstration of the code can be executed with the following commands:
+
+1. Train a model and save subsequent model checkpoints in the `models/` directory
+
+    ```sh
+    python3 train_cyberwheel.py --exp-name example_demo
+    ```
+
+
+2. Evaluate the most recent save of the model *example_demo* on the environment, and generate a log of the actions at each step to the `action_logs/` directory. If you pass `--visualize`, it will also save graph objects in the `graphs/` directory, which are needed for visualizing with our dash server. (NOTE: visualizing can take some time)
+
+    ```sh
+    python3 evaluate_cyberwheel.py --experiment example_demo [--visualize]
+    ```
+
+3. Run the visualization server on port 8080. When running locally, you can navigate to http://localhost:8080/ on your browser and it should include your experiment name in the list, allowing you to visualize the agent's actions throughout an episode.
+
+    ```sh
+    python3 run_visualization_server.py 8080
+    ```
 
 ## Cyberwheel Design
 

@@ -1,7 +1,7 @@
 from typing import List
-from gym import Space
-from gym.spaces import Discrete
-from gym.core import ActType
+from gymnasium import Space
+from gymnasium.spaces import Discrete
+from gymnasium.core import ActType
 
 from .action_space import ActionSpace, ASReturn
 from cyberwheel.network.network_base import Network

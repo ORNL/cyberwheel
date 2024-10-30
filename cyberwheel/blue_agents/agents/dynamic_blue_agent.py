@@ -4,28 +4,29 @@ import yaml
 
 from importlib.resources import files
 from typing import Dict, List
-from gym import Space
-
+from gymnasium import Space
 from cyberwheel.blue_agents.blue_agent import BlueAgent, BlueAgentResult
 from cyberwheel.reward.reward_base import RewardMap
 from cyberwheel.network.network_base import Network
 from cyberwheel.blue_agents.action_space.action_space import ActionSpace
 
 
-class _ActionConfigInfo():
-    def __init__(self, 
-                 name: str  = "", 
-                 configs: List = [], 
-                 immediate_reward: float = 0.0, 
-                 recurring_reward: float = 0.0, 
-                 action_space_args: Dict = {}, 
-                 shared_data: List = []) -> None:
+class _ActionConfigInfo:
+    def __init__(
+        self,
+        name: str = "",
+        configs: Dict = None,
+        immediate_reward: float = 0.0,
+        recurring_reward: float = 0.0,
+        action_space_args: Dict = None,
+        shared_data: List = None,
+    ) -> None:
         self.name = name
-        self.configs = configs
+        self.configs = configs or {}
         self.immediate_reward = immediate_reward
         self.recurring_reward = recurring_reward
-        self.shared_data = shared_data
-        self.action_space_args = action_space_args
+        self.shared_data = shared_data or []
+        self.action_space_args = action_space_args or {}
 
     def __str__(self) -> str:
         return f"config: {self.configs}, immediate_reward: {self.immediate_reward}, reccuring_reward: {self.recurring_reward}, action_type: {self.action_type}"
@@ -71,10 +72,8 @@ class DynamicBlueAgent(BlueAgent):
         action_space = contents['action_space']
         as_module = action_space['module']
         as_class = action_space['class']
-        if 'args' in action_space:
-            as_args = action_space['args']
-            if as_args is None:
-                as_args = {}
+        as_args = action_space.get('args', {}) or {}
+
         import_path = ".".join([as_module_path, as_module])
         m = importlib.import_module(import_path)
         self.action_space = getattr(m, as_class)(self.network, **as_args)      
@@ -85,71 +84,58 @@ class DynamicBlueAgent(BlueAgent):
         for k, v in contents['actions'].items():
             module_name = v['module']
             class_name = v['class']
-            configs = {}
-            if isinstance(v["configs"], Dict):
-                configs = v["configs"]
-            shared_data = []
-            if isinstance(v['shared_data'], List):
-                shared_data = v['shared_data']
+            configs = v.get("configs", {}) or {}
+            shared_data = v.get("shared_data", []) or []
             
             import_path = ".".join([action_module_path, module_name])
             m = importlib.import_module(import_path)
             class_ = getattr(m, class_name)
-            action_info = _ActionConfigInfo(k, 
-                                            configs, 
-                                            v['reward']['immediate'], 
-                                            v['reward']['recurring'], 
-                                            v['action_space_args'], 
-                                            shared_data)
+            
+            action_info = _ActionConfigInfo(
+                k, configs, v['reward']['immediate'], v['reward']['recurring'], 
+                v.get('action_space_args', {}),
+                shared_data
+            )
+            
             actions.append((class_, action_info))
         self.actions = actions
         
         # Set up data shared between actions
         self.shared_data = {}
-        self.reset_map = {}
-        if contents["shared_data"] is None:
-            return
-        for k, v in contents["shared_data"].items():
-            if v in ("list", "set", "dict"):
-                data_type = getattr(builtins, v)
-                self.shared_data[k] = data_type()
-            else:
-                if "module" not in v or "class" not in v:
-                    raise KeyError(
-                        "If using custom object, 'module' and 'class' must be defined."
-                    )
-                a = importlib.import_module(v["module"])
-                data_type = getattr(a, v["class"])
 
-                kwargs = {}
-                if "args" in v and v["args"] is not None:
-                    kwargs = v["args"]
+        if contents.get("shared_data") is not None:
+            for k, v in contents["shared_data"].items():
+                if v in ("list", "set", "dict"):
+                    self.shared_data[k] = getattr(builtins, v)()
+                else:
+                    module = v["module"]
+                    class_name = v["class"]
+                    a = importlib.import_module(module)
+                    data_type = getattr(a, class_name)
+                    kwargs = v.get("args", {})
+                    self.shared_data[k] = data_type(**kwargs)
 
-                self.shared_data[k] = data_type(**kwargs)
-            
-    def _init_blue_actions(self)-> None:
+
+    def _init_blue_actions(self) -> None:
         for action_class, action_info in self.actions:
             # Check configs and read them if they are new
             action_configs = {}
-            for name, config in action_info.configs.items():
-                # Skip configs that have already been seen
-                if not config in self.configs:
-                    conf_file = files(f"cyberwheel.resources.configs.{name}").joinpath(
-                        config
-                    )
-                    with open(conf_file, "r") as f:
-                        contents = yaml.safe_load(f)
-                    self.configs[config] = contents
-                    action_configs[name] = contents
-                else:
-                    action_configs[name] = self.configs[config]
-
-            action_kwargs = {}
-            for sd in action_info.shared_data:
-                action_kwargs[sd] = self.shared_data[sd]
+            if isinstance(action_info.configs, dict):
+                for name, config in action_info.configs.items():
+                    # Skip configs that have already been seen
+                    if config not in self.configs:
+                        conf_file = files(f"cyberwheel.resources.configs.{name}").joinpath(config)
+                        with open(conf_file, "r") as f:
+                            contents = yaml.safe_load(f)
+                        self.configs[config] = contents
+                        action_configs[name] = contents
+                    else:
+                        action_configs[name] = self.configs[config]
+            
+            action_kwargs = {sd: self.shared_data[sd] for sd in action_info.shared_data}
             action = action_class(self.network, action_configs, **action_kwargs)
-
             self.action_space.add_action(action_info.name, action, **action_info.action_space_args)
+        
         self.action_space.finalize()
 
     def _init_reward_map(self) -> None:
@@ -167,10 +153,7 @@ class DynamicBlueAgent(BlueAgent):
     def act(self, action: int) -> BlueAgentResult:
         asc_return = self.action_space.select_action(action)
         result = asc_return.action.execute(*asc_return.args, **asc_return.kwargs)
-        id = result.id
-        success = result.success
-        recurring = result.recurring
-        return BlueAgentResult(asc_return.name, id, success, recurring)
+        return BlueAgentResult(asc_return.name, result.id, result.success, result.recurring)
     
     def get_reward_map(self) -> RewardMap:
         return self.reward_map

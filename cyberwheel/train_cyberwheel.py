@@ -1,38 +1,25 @@
 import argparse
-import os
 import random
 import time
 from distutils.util import strtobool
-from pprint import pprint
-from pydoc import locate
-from typing import List
 from importlib.resources import files
 
-import gym
+import gymnasium as gym
+from gymnasium import spaces
+
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
-from tqdm import tqdm
-import sys
-import networkx as nx
 
 from cyberwheel.cyberwheel_envs.cyberwheel_dynamic import DynamicCyberwheel
 from cyberwheel.network.network_base import Network
-from cyberwheel.red_actions.actions.art_killchain_phases import (
-    ARTDiscovery,
-    ARTPrivilegeEscalation,
-    ARTImpact,
-    ARTLateralMovement,
-)
-from cyberwheel.red_actions import art_techniques
 from cyberwheel.red_agents import ARTAgent
-from cyberwheel.red_agents.strategies import RedStrategy, DFSImpact, ServerDowntime
+from cyberwheel.red_agents.strategies import DFSImpact, ServerDowntime
 
 from copy import deepcopy
-import pickle
 
 
 def parse_args():
@@ -107,12 +94,12 @@ def evaluate(blue_agent, args):
     episode_rewards = []
     total_reward = 0
     # Standard evaluation loop to estimate mean episodic return
-    for episode in range(args.eval_episodes):
+    for _ in range(args.eval_episodes):
         obs, _ = env.reset()
-        for step in range(args.num_steps):
+        for _ in range(args.num_steps):
             obs = torch.Tensor(obs).to(eval_device)
             action, _, _, _ = blue_agent.get_action_and_value(obs)
-            obs, rew, done, _, info = env.step(action)
+            obs, rew, _, _, _ = env.step(action)
             total_reward += rew
         episode_rewards.append(total_reward)
         total_reward = 0
@@ -342,7 +329,7 @@ def train_cyberwheel():
     )
 
     assert isinstance(
-        envs.single_action_space, gym.spaces.Discrete
+        envs.single_action_space, spaces.Discrete
     ), "only discrete action space is supported"
 
     # Create agent and optimizer

@@ -6,7 +6,6 @@ import networkx as nx
 import numpy as np
 from os import PathLike
 from pathlib import PosixPath
-import random
 from typing import Union, List, Type
 import yaml
 from copy import deepcopy
@@ -18,6 +17,11 @@ from .service import Service
 from .subnet import Subnet
 
 from tqdm import tqdm
+
+import random
+# If you want to maintain determinism, set the SEED variable
+SEED = 42
+random.seed(SEED)
 
 
 class Network:
@@ -124,10 +128,12 @@ class Network:
         return nx.has_path(self.graph, subnet1.name, subnet2.name)
 
     def get_random_host(self):
+        random.seed(SEED)  # Use a consistent seed here
         all_hosts = self.get_all_hosts()
         return random.choice(all_hosts)
 
     def get_random_user_host(self):
+        random.seed(SEED)  # Use a consistent seed here
         hosts = self.get_hosts()
         user_hosts = []
         for h in hosts:

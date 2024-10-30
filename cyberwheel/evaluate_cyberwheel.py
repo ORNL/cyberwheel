@@ -1,6 +1,6 @@
 import time
 import argparse
-import gym
+import gymnasium as gym
 import wandb
 import torch
 import sys
@@ -263,6 +263,10 @@ def parse_args():
 
 
 def evaluate_cyberwheel():
+
+    # If you want to maintain determinism, set the manual_seed variable
+    torch.manual_seed(0)
+
     """
     This function evaluates a trained model in the Cyberwheel environment.
     At each step of the evaluation, it saves metadata for logging actions.

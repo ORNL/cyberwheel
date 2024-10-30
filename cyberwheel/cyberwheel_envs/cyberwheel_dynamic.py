@@ -1,7 +1,7 @@
 import copy
 from importlib.resources import files
-from gym import spaces
-import gym
+from gymnasium import spaces
+import gymnasium as gym
 from typing import Dict, Iterable, List
 import yaml
 
@@ -151,7 +151,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
         num_hosts = len(self.network.get_hosts())
 
-        self.observation_space = spaces.Box(0, 1, shape=(2 * num_hosts,))
+        self.observation_space = spaces.Box(0, 1, shape=(2 * num_hosts,), dtype=float)
         self.alert_converter = HistoryObservation(
             self.observation_space.shape, host_to_index_mapping(self.network)
         )
@@ -212,7 +212,6 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
         alerts = self.detector.obs([red_action_result.detector_alert])
         obs_vec = self._get_obs(alerts)
-        #print(obs_vec)
         
         if self.reward_function == "step_detected":
             reward = self.reward_calculator.calculate_reward(
@@ -224,10 +223,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
             )
         self.total += reward
 
-        if self.current_step >= self.max_steps:  # Maximal number of steps
-            done = True
-        else:
-            done = False
+        done = self.current_step >= self.max_steps
         self.current_step += 1
 
         info = {}
@@ -242,7 +238,6 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
                 "history": self.red_agent.history,
                 "killchain": self.red_agent.killchain,
             }
-        self.detector.reset()
         self.detector.reset()
         return (
             obs_vec,

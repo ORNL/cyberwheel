@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
-from gym.core import ActType
-from gym import Space
+from gymnasium.core import ActType
+from gymnasium import Space
 
 from cyberwheel.blue_actions.blue_action import BlueAction
 from cyberwheel.network.network_base import Network
@@ -14,7 +14,7 @@ class ASReturn:
 
 class ActionSpace(ABC):
     """
-    A base class for converting the output of `gym.Space.sample()` to a blue action. 
+    A base class for converting the output of `gymnasium.Space.sample()` to a blue action. 
     Must implement:
     - `select_action()`: Method for handling which method the blue agent selects. It should at the least 
       take the `ActType` returned by sampling the action space and use it to select a blue action. The blue 
@@ -22,7 +22,7 @@ class ActionSpace(ABC):
     - `add_actions()`: Method for adding an action. Used while parsing the dynamic blue agent's config file to
       add mappings from `ActType` to a blue action. 
     - `get_shape()`: Method for getting the shape of the action space. 
-    - `create_action_space()`: Creates a gym.Space representation of the action space.
+    - `create_action_space()`: Creates a gymnasium.Space representation of the action space.
     """
     def __init__(self, network: Network) -> None:
         self.network = network
@@ -56,7 +56,7 @@ class ActionSpace(ABC):
     
     @abstractmethod
     def create_action_space(self) -> Space:
-        """Creates a gym.Space representation of the action space. This is used by the cyberwheel environment."""
+        """Creates a gymnasium.Space representation of the action space. This is used by the cyberwheel environment."""
         pass
 
     def finalize(self):

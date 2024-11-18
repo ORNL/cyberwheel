@@ -59,6 +59,10 @@ def parse_args():
     env_group.add_argument("--reward-scaling", help="Variable used to increase rewards", type=float, default=10.0)
     env_group.add_argument("--detector-config", help="Location of detector config file.", type=str, default="detector_handler.yaml")
 
+    # Deterministic Parameters
+    env_group.add_argument("--deterministic", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True, help="if toggled, the environment will operate in a deterministic mode using predefined seeds.")
+    env_group.add_argument("--seed-file", type=str, default="runs/seed_log.txt", help="the filename used to store/load seeds for deterministic behavior")
+
     # RL Algorithm Parameters
     rl_group.add_argument("--env-id", type=str, default="cyberwheel", help="the id of the environment")
     rl_group.add_argument("--learning-rate", type=float, default=2.5e-4, help="the learning rate of the optimizer")
@@ -116,10 +120,10 @@ def run_evals(model, args, globalstep):
     eval_device = torch.device("cpu")
 
     # This may not be necessary, but we do it in the main training process
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    torch.backends.cudnn.deterministic = args.torch_not_deterministic
+    # random.seed(args.seed)
+    # np.random.seed(args.seed)
+    # torch.manual_seed(args.seed)
+    # torch.backends.cudnn.deterministic = args.torch_not_deterministic
 
     env_funcs = [make_env(i, args) for i in range(1)]
 
@@ -161,6 +165,8 @@ def create_cyberwheel_env(args):
         network=deepcopy(args.network),
         service_mapping=args.service_mapping,
         red_strategy=args.red_strategy,
+        deterministic=args.deterministic,
+        seed_file=args.seed_file,
     )
     return env
 
@@ -276,14 +282,6 @@ def train_cyberwheel():
         "|param|value|\n|-|-|\n%s"
         % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
     )
-
-    # TRY NOT TO MODIFY: seeding
-    # We need to seed all sources of randomness for reproducibility. If you run the same seed you should get the same results.
-    # This of course requires the environment to be seeded, which we don't do for Cyberwheel, so it won't work for us.
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    torch.backends.cudnn.deterministic = args.torch_not_deterministic
 
     # Use a GPU if available. You can choose a specific GPU (for example, the 1st GPU) by setting --device to "cuda:0"
     # Defaults to 'cpu'

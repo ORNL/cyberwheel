@@ -6,7 +6,6 @@ import networkx as nx
 import numpy as np
 from os import PathLike
 from pathlib import PosixPath
-import random
 from typing import Union, List, Type
 import yaml
 from copy import deepcopy
@@ -19,6 +18,7 @@ from .subnet import Subnet
 
 from tqdm import tqdm
 
+import random
 
 class Network:
 

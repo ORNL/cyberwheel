@@ -1,7 +1,9 @@
 import copy
 from importlib.resources import files
-from gym import spaces
-import gym
+import os
+import random
+from gymnasium import spaces
+import gymnasium as gym
 from typing import Dict, Iterable, List
 import yaml
 
@@ -62,6 +64,8 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         blue_config="dynamic_blue_agent.yaml",
         network=None,
         service_mapping={},
+        deterministic=True,
+        seed_file="runs/seed_log.txt",
         **kwargs,
     ):
         """
@@ -124,6 +128,18 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
             - The host -> valid_action mapping from the exploitable services on the Network.
             - If not passed, it will build the mapping when defining the red agent.
             - Default: {}
+
+        * `deterministic`: optional
+            - A boolean flag indicating whether the environment should operate in a deterministic mode. If set to True,
+              the environment will use predefined seeds for reproducibility, allowing consistent behavior across runs.
+              When False, the environment will generate new seeds for randomness and log them for reproducibility.
+            - Default: True
+
+        * `seed_file`: optional
+            - The filename used to store and/or load seeds when in deterministic mode. This log file ensures consistent
+              behavior by providing stored seeds for reproducibility across different runs.
+            - Default: "runs/seed_log.txt"
+
         """
         network_conf_file = files("cyberwheel.resources.configs.network").joinpath(
             network_config
@@ -134,6 +150,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
         host_conf_file = files(
             "cyberwheel.resources.configs.host_definitions"
         ).joinpath(host_def_file)
+
         super().__init__(config_file_path=network_conf_file, network=network)
         self.total = 0
         self.max_steps = kwargs.get("num_steps", 100)
@@ -151,7 +168,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
         num_hosts = len(self.network.get_hosts())
 
-        self.observation_space = spaces.Box(0, 1, shape=(2 * num_hosts,))
+        self.observation_space = spaces.Box(0, 1, shape=(2 * num_hosts,), dtype=float)
         self.alert_converter = HistoryObservation(
             self.observation_space.shape, host_to_index_mapping(self.network)
         )
@@ -160,8 +177,16 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
         self.red_strategy = kwargs.get("red_strategy", ServerDowntime)
 
+        self.deterministic = deterministic
+        self.seed_log = []  # List to track generated seeds for reproducibility  
+        self.seed_file = seed_file
+
+        if self.deterministic:
+            self.load_seeds_from_file()
+
+
         self.red_agent = ARTAgent(
-            self.network.get_random_user_host(), network=self.network, service_mapping=self.service_mapping, red_strategy=self.red_strategy
+            self._get_random_user_host(), network=self.network, service_mapping=self.service_mapping, red_strategy=self.red_strategy
         )
 
         self.blue_conf_file = files("cyberwheel.resources.configs.blue_agent").joinpath(
@@ -212,7 +237,6 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
         alerts = self.detector.obs([red_action_result.detector_alert])
         obs_vec = self._get_obs(alerts)
-        #print(obs_vec)
         
         if self.reward_function == "step_detected":
             reward = self.reward_calculator.calculate_reward(
@@ -224,10 +248,7 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
             )
         self.total += reward
 
-        if self.current_step >= self.max_steps:  # Maximal number of steps
-            done = True
-        else:
-            done = False
+        done = self.current_step >= self.max_steps
         self.current_step += 1
 
         info = {}
@@ -243,7 +264,6 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
                 "killchain": self.red_agent.killchain,
             }
         self.detector.reset()
-        self.detector.reset()
         return (
             obs_vec,
             reward,
@@ -257,14 +277,54 @@ class DynamicCyberwheel(gym.Env, Cyberwheel):
 
     def _reset_obs(self) -> Iterable:
         return self.alert_converter.reset_obs_vector()
+    
+    def _get_random_user_host(self):
+        """
+        Generates a random seed based on deterministic mode. If deterministic,
+        seeds are loaded from the log file. If non-deterministic, new seeds are generated
+        and written to the log file.
+        """
+        if self.deterministic:
+            if self.seed_log:
+                # Use the next seed from the log
+                seed = self.seed_log.pop(0)
+            else:
+                raise ValueError("No more seeds available in the seed log.")
+        else:
+            # Generate a new random seed and log it
+            seed = random.randint(0, 10000)
+            self.seed_log.append(seed)
+            self.save_seeds_to_file()
 
+        random.seed(seed)
+        return self.network.get_random_user_host()
+    
+    def save_seeds_to_file(self):
+        if not self.deterministic:  # Only save new seeds if non-deterministic
+            path = files("cyberwheel").joinpath(self.seed_file)
+            with open(path, 'w') as file:
+                for seed in self.seed_log:
+                    file.write(f"{seed}\n")
+
+    def load_seeds_from_file(self):
+        path = files("cyberwheel").joinpath(self.seed_file)
+        if os.path.exists(path):
+            with open(path, 'r') as file:
+                self.seed_log = [int(line.strip()) for line in file.readlines()]
+        else:
+            # Create the file if it doesn't exist
+            with open(path, 'w') as file:
+                pass  # Creating an empty file for seed logging
+            self.seed_log = []  # Initialize with an empty seed log
+
+        
     def reset(self, seed=None, options=None):
         self.total = 0
         self.current_step = 0
         self.network.reset()
 
         self.red_agent.reset(
-            self.network.get_random_user_host(), network=self.network
+            self._get_random_user_host(), network=self.network
         )
 
         self.blue_agent.reset()

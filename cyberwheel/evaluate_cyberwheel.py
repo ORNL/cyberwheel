@@ -1,12 +1,13 @@
 import time
 import argparse
-import gym
+import gymnasium as gym
 import wandb
 import torch
 import sys
 import torch.nn as nn
 import numpy as np
 import pandas as pd
+from distutils.util import strtobool
 
 from copy import deepcopy
 from importlib.resources import files
@@ -95,6 +96,8 @@ def make_env(
     network=None,
     service_mapping={},
     red_strategy=ServerDowntime,
+    deterministic=True,
+    seed_file="runs/seed_log.txt",
 ):
     """
     Utility function for multiprocessed env.
@@ -122,6 +125,8 @@ def make_env(
             service_mapping=service_mapping,
             evaluation=True,
             red_strategy=red_strategy,
+            deterministic=deterministic,
+            seed_file=seed_file,
         )
         env.reset(seed=seed + rank)  # Reset the environment with a specific seed
         env = gym.wrappers.RecordEpisodeStatistics(
@@ -259,10 +264,29 @@ def parse_args():
         required="--download-model" in sys.argv,
     )
 
+    parser.add_argument(
+        "--deterministic", 
+        type=lambda x: bool(strtobool(x)), 
+        default=False, 
+        nargs="?", 
+        const=True, 
+        help="if toggled, the environment will operate in a deterministic mode using predefined seeds.")
+
+    parser.add_argument(
+        "--seed-file",
+        help="Filename for logging/loading seeds (used in deterministic mode)",
+        type=str,
+        default="runs/seed_log.txt"
+    )
+
     return parser.parse_args()
 
 
 def evaluate_cyberwheel():
+
+    # If you want to maintain determinism, set the manual_seed variable
+    torch.manual_seed(0)
+
     """
     This function evaluates a trained model in the Cyberwheel environment.
     At each step of the evaluation, it saves metadata for logging actions.
@@ -306,6 +330,8 @@ def evaluate_cyberwheel():
             network=deepcopy(network),
             service_mapping=service_mapping,
             red_strategy=args.red_strategy,
+            deterministic=args.deterministic,
+            seed_file=args.seed_file,
         )
         for i in range(1)
     ]

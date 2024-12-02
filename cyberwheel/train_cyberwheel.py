@@ -1,38 +1,27 @@
 import argparse
-import os
 import random
+import sys
+import os
 import time
 from distutils.util import strtobool
-from pprint import pprint
-from pydoc import locate
-from typing import List
 from importlib.resources import files
 
-import gym
+import gymnasium as gym
+from gymnasium import spaces
+
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
-from tqdm import tqdm
-import sys
-import networkx as nx
 
 from cyberwheel.cyberwheel_envs.cyberwheel_dynamic import DynamicCyberwheel
 from cyberwheel.network.network_base import Network
-from cyberwheel.red_actions.actions.art_killchain_phases import (
-    ARTDiscovery,
-    ARTPrivilegeEscalation,
-    ARTImpact,
-    ARTLateralMovement,
-)
-from cyberwheel.red_actions import art_techniques
 from cyberwheel.red_agents import ARTAgent
-from cyberwheel.red_agents.strategies import RedStrategy, DFSImpact, ServerDowntime
+from cyberwheel.red_agents.strategies import DFSImpact, ServerDowntime
 
 from copy import deepcopy
-import pickle
 
 
 def parse_args():
@@ -69,6 +58,10 @@ def parse_args():
     env_group.add_argument("--reward-function", help="Which reward function to use. Current options: default | step_detected", type=str, default="default")
     env_group.add_argument("--reward-scaling", help="Variable used to increase rewards", type=float, default=10.0)
     env_group.add_argument("--detector-config", help="Location of detector config file.", type=str, default="detector_handler.yaml")
+
+    # Deterministic Parameters
+    env_group.add_argument("--deterministic", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True, help="if toggled, the environment will operate in a deterministic mode using predefined seeds.")
+    env_group.add_argument("--seed-file", type=str, default="runs/seed_log.txt", help="the filename used to store/load seeds for deterministic behavior")
 
     # RL Algorithm Parameters
     rl_group.add_argument("--env-id", type=str, default="cyberwheel", help="the id of the environment")
@@ -107,12 +100,12 @@ def evaluate(blue_agent, args):
     episode_rewards = []
     total_reward = 0
     # Standard evaluation loop to estimate mean episodic return
-    for episode in range(args.eval_episodes):
+    for _ in range(args.eval_episodes):
         obs, _ = env.reset()
-        for step in range(args.num_steps):
+        for _ in range(args.num_steps):
             obs = torch.Tensor(obs).to(eval_device)
             action, _, _, _ = blue_agent.get_action_and_value(obs)
-            obs, rew, done, _, info = env.step(action)
+            obs, rew, _, _, _ = env.step(action)
             total_reward += rew
         episode_rewards.append(total_reward)
         total_reward = 0
@@ -127,10 +120,10 @@ def run_evals(model, args, globalstep):
     eval_device = torch.device("cpu")
 
     # This may not be necessary, but we do it in the main training process
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    torch.backends.cudnn.deterministic = args.torch_not_deterministic
+    # random.seed(args.seed)
+    # np.random.seed(args.seed)
+    # torch.manual_seed(args.seed)
+    # torch.backends.cudnn.deterministic = args.torch_not_deterministic
 
     env_funcs = [make_env(i, args) for i in range(1)]
 
@@ -172,6 +165,8 @@ def create_cyberwheel_env(args):
         network=deepcopy(args.network),
         service_mapping=args.service_mapping,
         red_strategy=args.red_strategy,
+        deterministic=args.deterministic,
+        seed_file=args.seed_file,
     )
     return env
 
@@ -288,14 +283,6 @@ def train_cyberwheel():
         % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
     )
 
-    # TRY NOT TO MODIFY: seeding
-    # We need to seed all sources of randomness for reproducibility. If you run the same seed you should get the same results.
-    # This of course requires the environment to be seeded, which we don't do for Cyberwheel, so it won't work for us.
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    torch.backends.cudnn.deterministic = args.torch_not_deterministic
-
     # Use a GPU if available. You can choose a specific GPU (for example, the 1st GPU) by setting --device to "cuda:0"
     # Defaults to 'cpu'
     device = args.device
@@ -342,7 +329,7 @@ def train_cyberwheel():
     )
 
     assert isinstance(
-        envs.single_action_space, gym.spaces.Discrete
+        envs.single_action_space, spaces.Discrete
     ), "only discrete action space is supported"
 
     # Create agent and optimizer

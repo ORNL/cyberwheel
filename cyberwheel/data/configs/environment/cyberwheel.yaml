@@ -1,0 +1,11 @@
+# Evaluation Parameters
+environment: Cyberwheel
+experiment_name: NoRLCyberwheel
+red_agent: inactive_red_agent.yaml
+blue_agent: inactive_blue_agent.yaml
+network_config: 15-host-network.yaml
+decoy_config: decoy_hosts.yaml
+host_config: host_defs_services.yaml
+num_steps: 50
+num_episodes: 10
+deterministic: false

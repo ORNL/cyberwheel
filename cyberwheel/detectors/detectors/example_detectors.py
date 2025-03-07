@@ -1,4 +1,5 @@
 import random
+
 from typing import Iterable
 
 from cyberwheel.detectors.alert import Alert

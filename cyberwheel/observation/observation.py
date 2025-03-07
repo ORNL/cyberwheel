@@ -1,10 +1,10 @@
-from abc import abstractmethod
-from typing import Iterable, Dict
 import numpy as np
+
+from abc import abstractmethod
+from typing import Iterable
 
 from cyberwheel.network.network_base import Network
 from cyberwheel.network.host import Host
-from cyberwheel.detectors.alert import Alert
 
 
 class Observation:
@@ -14,12 +14,9 @@ class Observation:
     """
 
     @abstractmethod
-    def create_obs_vector(self, alerts: Iterable[Alert]) -> Iterable:
-        """create_obs_vector() maps alerts to the blue observation space represented by a vector"""
+    def reset(self) -> Iterable:
+        """Resets the observation"""
         pass
-
-    def reset_obs_vector(self) -> Iterable:
-        """Resets the obs_vector and returns the observation of the initial state"""
 
     def set_network(self, network: Network) -> None:
         self.network = network
@@ -31,7 +28,7 @@ class TestObservation(Observation):
             isinstance(data_object, Host)
             for _, data_object in self.network.graph.nodes(data="data")
         )
-        observation_vector = np.zeros(num_hosts, dtype=np.int8)
+        observation_vector = np.zeros(num_hosts, dtype=np.int64)
         index = 0
         for _, data_object in self.network.graph.nodes(data="data"):
             if not isinstance(data_object, Host):

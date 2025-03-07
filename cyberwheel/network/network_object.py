@@ -1,6 +1,7 @@
 import ipaddress as ipa
+
 from pydantic import BaseModel
-from typing import Generator, List
+from typing import Generator
 
 
 class Route(BaseModel):
@@ -83,7 +84,6 @@ class NetworkObject:
         self.firewall_rules.extend(rules)
 
 
-    # TODO: refactor for FirewallRule
     def remove_firewall_rule(self, rule_name: str):
         """
         Removes an existing firewall rule
@@ -101,7 +101,6 @@ class NetworkObject:
         try:
             return ipa.ip_address(ip)
         except ValueError as e:
-            # TODO: raise custom exception here?
             raise e
 
 
@@ -109,7 +108,6 @@ class NetworkObject:
         try:
             return ipa.ip_network(net)
         except ValueError as e:
-            # TODO: raise custom exception here?
             raise e
 
 
@@ -138,7 +136,6 @@ class NetworkObject:
             dest: ipa.IPv4Network | ipa.IPv6Network = ipa.ip_network(dest_net)
             via: ipa.IPv4Address | ipa.IPv6Address = ipa.ip_address(via_ip)
         except ValueError as e:
-            # TODO: raise custom exception?
             raise e
         return Route(dest=dest, via=via)
 
@@ -167,7 +164,6 @@ class NetworkObject:
                 else:
                     dest = route['dest']
             except ValueError as e:
-                # TODO: custom exception here?
                 raise e
             # make sure 'via' is an ip_address object
             try:
@@ -176,7 +172,6 @@ class NetworkObject:
                 else:
                     via = route['via']
             except ValueError as e:
-                # TODO: custom exception here?
                 raise e
             self.add_route(route=Route(dest=dest, via=via))
 

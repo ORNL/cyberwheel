@@ -5,34 +5,6 @@ from typing import Any, TypeVar, Type
 # https://stackoverflow.com/a/44644576
 T = TypeVar("T", bound="Service")
 
-
-# TODO
-class Vuln(BaseModel):
-    name: str
-    id: str
-
-    def __key(self):
-        return (self.name, self.id)
-
-    def __hash__(self):
-        return hash(self.__key())
-
-    def __eq__(self, other) -> bool:
-        if isinstance(other, Vuln):
-            name_matched: bool = self.name == other.name
-            id_matched: bool = self.id == other.id
-            return name_matched and id_matched
-        return False
-
-    # @validator('id')
-    # @classmethod
-    # def validate_id(cls, id: str) -> int:
-    #    if port not in range(2**16):
-    #        msg = 'Port should be an integer (1-65535)'
-    #        raise PortValueError(value=port, message=msg)
-    #    return port
-
-
 class Service(BaseModel):
     name: str
     port: PositiveInt = 1  # default value so we can omit port for ICMP

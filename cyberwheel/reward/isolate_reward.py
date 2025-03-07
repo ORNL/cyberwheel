@@ -1,6 +1,4 @@
-from typing import Dict, List, NewType, Tuple
-
-from cyberwheel.reward.reward import RewardCalculator, RewardMap
+from cyberwheel.reward import RewardCalculator, RewardMap
 
 class IsolateReward(RewardCalculator):
     def __init__(
@@ -19,6 +17,7 @@ class IsolateReward(RewardCalculator):
         create fewer or more recurring actions.
 
         `scaling_factor` impacts how much being outside `r` affects the reward
+        TODO: Needs testing
         """
         self.red_rewards = red_rewards
 

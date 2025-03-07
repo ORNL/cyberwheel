@@ -1,0 +1,27 @@
+# Evaluation Parameters
+red_agent: brute_force_encryption_campaign.yaml
+blue_agent: rl_blue_agent.yaml
+environment: CyberwheelRL
+valid_targets: servers # Options: 'servers' | 'users' | 'all' | '{host_name}' | list of 'hostnames' (in YAML format)
+train_red: false # Indicates if the red agent will be the agent utilizing the policy
+train_blue: true # Indicates if the blue agent will be the agent utilizing the policy
+campaign: true # Indicates if the red agent is an ART Campaign
+seed: 1
+deterministic: false
+
+checkpoint: agent
+download_model: false # If true, will download model from W&B in data/models/{experiment_name}
+run:  # required if download_model is true
+wandb_project_name:  # required if download_model is true
+wandb_entity:  # required if download_model is true
+
+experiment_name: TrainBlueAgentARTCampaign # Will use model under data/models/{experiment_name}
+visualize: true
+graph_name: TrainBlueAgentARTCampaign # Will save visualization under data/graphs/{graph_name}
+network_config: 15-host-network.yaml
+decoy_config: decoy_hosts.yaml
+host_config: host_defs_services.yaml
+detector_config: detector_handler.yaml
+reward_function: RLReward
+num_steps: 100
+num_episodes: 10

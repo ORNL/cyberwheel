@@ -1,7 +1,8 @@
 import importlib
+import yaml
 import matplotlib.pyplot as plt
 import networkx as nx
-import yaml
+
 from typing import Iterator
 
 from cyberwheel.detectors.detector_base import Detector
@@ -69,7 +70,6 @@ class DetectorHandler:
                 input_alerts = node_data_view[edge[0]]
                 detector = self.DG.get_edge_data(*edge)['attr']['detector'] 
                 result = detector.obs(input_alerts)
-            #print(len(next_node_input))
             for r in result:
                 if r not in next_node_input:
                     next_node_input.append(r)

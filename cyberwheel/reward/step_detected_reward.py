@@ -1,21 +1,20 @@
-from typing import Tuple
+from cyberwheel.reward.reward_base import RewardMap
+from cyberwheel.reward.rl_reward import RLReward
 
-from cyberwheel.reward.reward_base import Reward, RewardMap
-from cyberwheel.reward.recurring_reward import RecurringReward
-import time
-
-class StepDetectedReward(RecurringReward):
+class StepDetectedReward(RLReward):
     def __init__(
         self,
         blue_rewards: RewardMap,
         max_steps,
     ) -> None:
         """
-        Increases the reward the earlier that the red agent is detected. So the best reward it can get is
+        Reward is maximized if red agent is detected early by blue agent. The best reward it can get is
         one in which the blue agent immediately detects the red agent's actions. The worst reward it can get
         is one in which the blue agent detects the red agent at the final step of the episode.
 
         Reward Function: max_steps / n, where n is the number of steps
+
+        TODO: Needs testing with recent reward changes.
         """
         self.reward_function = max_steps * 10
         self.step_detected = 99999999

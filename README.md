@@ -47,13 +47,13 @@
 
 ## About Cyberwheel
 
-Cyberwheel is a Reinforcement Learning (RL) simulation environment built for training and evaluating autonomous cyber defense models on simulated networks. It was built with modularity in mind, to allow users to build on top of it to fit their needs. It supports various robust configuration files to build networks, services, host types, defensive agents, and more.
+Cyberwheel is a Reinforcement Learning (RL) simulation environment built for training and evaluating autonomous cyber defense models on simulated networks. It was built with modularity in mind, to allow users to build on top of it to fit their needs. It supports various robust configuration files to build networks, services, host types, offensive/defensive agents, and more.
 
 Motivations:
 * Extensibility - allowing for modifying and adding various defensive actions and offensive strategies without requiring structural changes to codebase.
 * Scalability - supporting training on large networks with minimal performance cost
 
-This environment contains a training script and evaluation script with a large set of configurable parameters to switch out networks, strategies, episode lengths, and more. It also contains a script to run a dash server that allows for the evaluations to be visualized in a readble graph display showing agent actions througout the episodes.
+This environment allows for RL training and evaluations with a large set of configurable arguments to swap out networks, strategies, agents, RL parameters, and more. It also includes a visualization server using dash that allows for evaluations to be visualized in a readble graph display showing agent actions througout the episodes.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -101,8 +101,15 @@ Once all dependencies are installed:
     ```sh
     poetry install
     ```
+3. (Optional) If running into issues with poetry, you can create your own venv and install from requirements.txt
+    ```sh
+    python3.10 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    ```
 
 *On newer OSX systems running on silicone chips, there may be an error installing the `pygraphviz` package, with poetry not finding the graphviz configuration files. You can work around this by pip installing the pygraphviz package manually, explicitly passing graphviz config paths. [This link](https://stackoverflow.com/a/70439868) helped me work through this issue.*
+*Feel free to comment this package out of the requirements.txt if you want to use cyberwheel without the visualizations and debug this package installation separately.*
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -113,138 +120,106 @@ To run any cyberwheel scripts, shell into the poetry virtual environment
 ```sh
 poetry shell
 ```
-When you want to deactivate the environment, you can just hit Ctrl+D. This will exit the virtual environment shell.
+or activate your venv if not using poetry
+```sh
+source venv/bin/activate
+```
+
+When you want to deactivate the environment with poetry, you can just hit **Ctrl+D**. This will exit the virtual environment shell. If using a venv, just run 
+```sh
+deactivate
+```
 
 ### Training a model
 
-To train a model on our environment, you can use our training script, `train_cyberwheel.py`
 
+
+For a full list of parameters, you can run
 ```sh
-python3 train_cyberwheel.py
+python3 -m cyberwheel -h
 ```
-
-This will run training with default parameters. It will save the model during evaluations in the `models/` directory. If tracking to Weights & Biases, the model and its checkpoints will be saved on your W&B project, as well as locally. You can also view real-time training progress on your W&B account.
-
-The script also includes a wide array of configuration options as arguments that can be passed.
-
-<ins>Training Parameters<ins>
-
-  * `--exp-name EXP_NAME`:  name of this experiment
-  * `--seed SEED`: seed of the experiment
-  * `--torch-not-deterministic`: if toggled, `torch.backends.cudnn deterministic=False`
-  * `--device DEVICE`: Choose device for training: `cpu` | `cuda` | `cuda:GPU_NUM`
-  * `--async-env`: if toggled, trains with asynchronous environments
-  * `--track`: if toggled, this experiment will be tracked with Weights and Biases
-    * `--wandb-project-name WANDB_PROJECT_NAME`: the wandb's project name
-    * `--wandb-entity WANDB_ENTITY`: the entity (team) of wandb's project
-  * `--total-timesteps TOTAL_TIMESTEPS`: total timesteps for training
-  * `--num-saves NUM_SAVES`: the number of model saves/evaluations throughout training
-  * `--num-envs NUM_ENVS`: the number of parallel game environments
-  * `--num-steps NUM_STEPS`: the number of steps to run in each environment per episode
-  * `--eval-episodes EVAL_EPISODES`: Number of evaluation episodes to run
-
-<ins>Environment Parameters<ins>
-
-  * `--red-agent RED_AGENT` the red agent to train against
-  * `--red-strategy RED_STRATEGY`: the red agent strategy to train against
-  * `--network-config NETWORK_CONFIG`: Input the network config filename
-  * `--decoy-config DECOY_CONFIG`: Input the decoy config filename
-  * `--host-config HOST_CONFIG`: Input the host config filename
-  * `--blue-config BLUE_CONFIG`: Input the blue agent config filename
-  * `--min-decoys MIN_DECOYS`: Minimum number of decoys for blue agent to deploy
-  * `--max-decoys MAX_DECOYS`: Maximum number of decoys for blue agent to deploy
-  * `--reward-function REWARD_FUNCTION`: Which reward function to use
-  * `--reward-scaling REWARD_SCALING`: Variable used to increase rewards
-  * `--detector-config DETECTOR_CONFIG`: Location of detector config file.
-
-<ins>Reinforcement Learning Parameters<ins>
-
-  * `--env-id ENV_ID`: the id of the environment
-  * `--learning-rate LEARNING_RATE`: the learning rate of the optimizer
-  * `--anneal-lr`: Toggle learning rate annealing for policy and value networks
-  * `--gamma GAMMA`: the discount factor gamma
-  * `--gae-lambda GAE_LAMBDA`: the lambda for the general advantage estimation
-  * `--num-minibatches NUM_MINIBATCHES`: the number of mini-batches
-  * `--update-epochs`: UPDATE_EPOCHS the K epochs to update the policy
-  * `--norm-adv [NORM_ADV]`: Toggles advantages normalization
-  * `--clip-coef CLIP_COEF`: the surrogate clipping coefficient
-  * `--clip-vloss`: Toggles whether or not to use a clipped loss for the value function
-  * `--ent-coef ENT_COEF`: coefficient of the entropy
-  * `--vf-coef VF_COEF`: coefficient of the value function
-  * `--max-grad-norm MAX_GRAD_NORM`: the maximum norm for the gradient clipping
-  * `--target-kl TARGET_KL`: the target KL divergence threshold
+or look at the config files in `cyberwheel/data/configs/environment`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Evaluating a model
+### Running Cyberwheel
 
-To evaluate a trained model with Cyberwheel, you can use our evaluation script, `evaluate_cyberwheel.py`
+There are 4 modes for running cyberwheel: `train`, `evaluate`, `visualizer`, and `run`
 
+#### Training
+
+To train a model on our environment, you can run
 ```sh
-python3 evaluate_cyberwheel.py --experiment [exp-name]
+python3 -m cyberwheel train [config_file.yaml]
 ```
+which will run training with the parameters defined in the YAML config file. It will save the model during evaluations in the `models/` directory. If tracking to Weights & Biases, the model and its checkpoints will be saved on your W&B project, as well as locally. This way, you can also view real-time training progress on your W&B account.
 
-This will run evaluation with default parameters on a trained model by its experiment name. It will load the model from the `models/` directory. If tracked to Weights & Biases, the model and its checkpoints can be loaded from your W&B project as well.
+Cyberwheel allows for a wide array of configuration options as arguments that can be passed. These parameters are defined in config files stored in the `data/configs/environment` directory which you can pass when training, evaluating, or just running cyberwheel. You may also run any parameter in the command line and it will override the parameter stored in the YAML file.
 
-The script also includes a wide array of configuration options as arguments that can be passed.
-
-<ins>Evaluation Parameters<ins>
-
-  * `--download-model`: If toggled, downloads agent model file from WandB. If present, requires --run --wandb-entity, --wandb-project-name flags.
-    * `--wandb-entity WANDB_ENTITY`: Username where W&B model is stored. Required when downloading model from W&B
-    * `--wandb-project-name WANDB_PROJECT_NAME`: Project name where W&B model is stored. Required when downloading model from W&B
-    * `--run RUN`: Run ID from WandB for pretrained blue agent to use. Required when downloading model from W&B
-  * `--checkpoint CHECKPOINT`: Filename (excluding extension) for checkpoint of the trained model to evaluate, by globalstep. Defaults to 'agent' (latest).
-  * `--red-agent RED_AGENT`: Red agent to evaluate with
-  * `--red-strategy RED_STRATEGY`: Red agent strategy to evaluate with
-  * `--blue-config BLUE_CONFIG`: Input the blue agent config filename
-  * `--experiment EXPERIMENT`: Experiment name of trained agent model
-  * `--visualize`: Stores visualization of network at each step/episode. Can be viewed in dash server.
-  * `--graph-name GRAPH_NAME`: Override naming convention of graph storage directory.
-  * `--network-config NETWORK_CONFIG`: Input the network config filename
-  * `--decoy-config DECOY_CONFIG`: Input the decoy config filename
-  * `--host-config HOST_CONFIG`: Input the host config filename
-  * `--detector-config DETECTOR_CONFIG`: Path to detector config file
-  * `--min-decoys MIN_DECOYS`: Minimum number of decoys that blue agent should deploy
-  * `--max-decoys MAX_DECOYS`: Maximum number of decoys that blue agent should deploy
-  * `--reward-scaling REWARD_SCALING`: Variable used to increase rewards
-  * `--reward-function REWARD_FUNCTION`: Which reward function to use.
-  * `--num-steps NUM_STEPS`: Number of steps per episode to evaluate
-  * `--num-episodes NUM_EPISODES`: Number of episodes to evaluate
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-### Visualization
-
-To view the visualizations of the evaluations that were run, you can run the visualization script:
+Example:
 ```sh
-python3 run_visualization_server.py [PORT_NUM]
+python3 -m cyberwheel train train_blue.yaml
+```
+will train a blue agent using the parameters defined in `cyberwheel/data/configs/environment/train_blue.yaml`
+
+#### Evaluating
+
+You can evaluate a model given the parameters defined in the YAML file or command line. For example, to evaluate a pre-trained RL blue agent, you can run
+```sh
+python3 -m cyberwheel evaluate evaluate_blue.yaml
+```
+which will evaluate the model using the parameters defined in `cyberwheel/data/configs/environment/evaluate_blue.yaml`. In order to evaluate, the parameter `experiment_name` must be set to a model directory that exists `cyberwheel/data/models/{experiment_name}`. If the training run was tracked to Weights & Biases, the model and its checkpoints can be loaded from your W&B project as well. The `experiment_name` argument, like all other arguments, can be defined in the config or overriden in the command line like so:
+
+```sh
+python3 -m cyberwheel evaluate evaluate_blue.yaml --experiment-name TrainBlueAgent
+```
+#### Visualizer
+
+To view the visualizations of the evaluations that were run, you can run the visualization server with:
+```sh
+python3 -m cyberwheel visualizer [PORT_NUM]
 ```
 This will run a dash server locally on the port number passed. You can then visit `http://localhost:PORT_NUM/` to access the frontend. From here, you can find the evaluation you ran in the list, and view the network state over the course of each episode with a step slider.
 
 ![Visualizer GIF](images/visualizer.gif "Cyberwheel Visualizer")
 
-### Running a Basic Demo
-A basic demonstration of the code can be executed with the following commands:
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-1. Train a model and save subsequent model checkpoints in the `models/` directory
+#### Running
 
-    ```sh
-    python3 train_cyberwheel.py --exp-name example_demo
-    ```
+Another option is to run the cyberwheel environment without any RL components. The two agents that are currently connected to this environment are inactive red/blue agents, meaning the environment is currently running through its steps without any actions being taken. This environment is not as in-depth or exhaustive, but provides a framework to tailor the Cyberwheel environment to your use case. 
 
+```sh
+python3 -m cyberwheel run cyberwheel.yaml
+```
 
-2. Evaluate the most recent save of the model *example_demo* on the environment, and generate a log of the actions at each step to the `action_logs/` directory. If you pass `--visualize`, it will also save graph objects in the `graphs/` directory, which are needed for visualizing with our dash server. (NOTE: visualizing can take some time)
+### Demos
 
-    ```sh
-    python3 evaluate_cyberwheel.py --experiment example_demo [--visualize]
-    ```
+#### Training, Evaluating, and Visualizing an RL Blue Agent
+```sh
+python3 -m cyberwheel train train_blue.yaml
+```
+This may run long depending on hardware. For demo purposes, you can ctrl-C after a few training iterations or change the `total_timesteps` argument in the config file.
 
-3. Run the visualization server on port 8080. When running locally, you can navigate to http://localhost:8080/ on your browser and it should include your experiment name in the list, allowing you to visualize the agent's actions throughout an episode.
+```sh
+python3 -m cyberwheel evaluate evaluate_blue.yaml
+```
+This will evaluate the model under the current environment, and save the logs of the evaluation in `cyberwheel/data/action_logs/{graph_name}.csv` If the `visualizer` parameter is set to true, this will also generate and store visualizations in `cyberwheel/data/graphs/{graph_name}/` to be viewed later. (Note: The visualization generation has a longer runtime than a basic evaluation, so if you only care about the CSV logs, you can set it to false to greatly speed up the evaluation.)
 
-    ```sh
-    python3 run_visualization_server.py 8080
-    ```
+Once these have run, you can run the server on http://localhost:8050 by running:
+```sh
+python3 -m cyberwheel visualizer 8050
+```
+and access the server on your browser to see a list of the available graphs. These are dependent on what is listed in the `cyberwheel/data/graphs/` directory.
+
+#### Training, Evaluating, and Visualizing an RL Red Agent
+The steps are virtually the same for the RL Red Agent:
+
+```sh
+python3 -m cyberwheel train train_red.yaml
+python3 -m cyberwheel evaluate evaluate_red.yaml
+python3 -m cyberwheel visualizer 8050
+```
 
 ## Cyberwheel Design
 
@@ -256,13 +231,17 @@ Networks in Cyberwheel are comprised of routers, subnets, and hosts represented 
 * Hosts are machines/devices that belong to a subnet​, and they contain list of running services with ports, CVEs, and other attributes.
  ​Cyberwheel builds networks from a config YAML file.
 
-### Blue Agent Design
+### RL Blue Agent Design
 
-The blue agent is largely focused on deploying Decoys to slow and/or stop red agent attacks throughout the network. The blue agent's actions and logic be configured and defined in a YAML file, allowing for greater modularity.
+The RL blue agent is largely focused on deploying Decoys to slow and/or stop red agent attacks throughout the network. The blue agent's actions and logic be configured and defined in a YAML file, allowing for greater modularity. Different configurations of blue agents are defined in `cyberwheel/data/configs/blue_agent/`. Its observation space is defined by the entire network, and alerts that are flagged by detectors it has set up.
 
-### Red Agent Design
+### RL Red Agent Design
 
-The red agent is a heuristic agent that has a set of defined rules and strategies that it can use to traverse a network, although its behavior to dictate which Hosts it chooses to target is modular. It's actions are mapped from MITRE ATT&CK Killchain Phases (Discovery, Lateral Movement, Privilege Escalation, Impact) to Atomic Red Team (ART) techniques. We've defined these techniques with a set of attributes mapped from existing cyber attack data. This allows our ART Agent to run a higher level killchain phase (i.e. discovery) on a host, and the environment will cross-reference the target host's attributes with ART Technique attributes. Techniques are valid for the attack by checking:
+The RL red agent is built around the Atomic Red Team techniques, with goals that are influenced by various configurations that can be configured. Different configurations can be found in `cyberwheel/data/configs/red_agent/`. Its observation space is defined by its (initially limited) view of the network as it explores. As it performs certain correct actions, this view can expand up to the size of the network.
+
+### Atomic Red Team Agent Design
+
+The Atomic Red Team (ART) agent is a heuristic agent that has a set of defined rules and strategies that it can use to traverse a network, although its behavior to dictate which Hosts it chooses to target is modular. It's actions are mapped from MITRE ATT&CK Killchain Phases (Discovery, Lateral Movement, Privilege Escalation, Impact) to Atomic Red Team (ART) techniques. We've defined these techniques with a set of attributes mapped from existing cyber attack data. This allows our ART Agent to run a higher level killchain phase (i.e. discovery) on a host, and the environment will cross-reference the target host's attributes with ART Technique attributes. Techniques are valid for the attack by checking:
   - [x] Technique includes the target host's OS in its supported platforms
   - [x] Technique includes the killchain phase in its supported killchain phases
   - [x] Technique can exploit any CVE that is present on the target host
@@ -285,13 +264,17 @@ if (Test-Path "${gup_executable}") {exit 0} else {exit 1}​
 taskkill /F /IM ${process_name} >nul 2>&1​
 ```
 
+### ART Campaign Design
+
+The ART Campaign is very similar to the ART Agent, but its actions are much more specific. Where the ARTAgent works with higher-level actions that may filter down into more specific actions, the ART Campaign is defined with a killchain of specific ART Techniques. ART Campaigns can be more helpful for more narrow use cases to simulate a killchain of techniques in a defined network, as well as when testing with emulation.
+
 ### Detectors and Alerts
 
 Red actions produce Alerts which contain information such as the actions's source host, target host, exploited services, and techniques. The blue agent has a detector layer set up with Alerts that detect any red agent action on the network. These detectors can filter out Alerts, add noise, or even create false-positive Alerts. You can use multiple detectors together to capture various red agent behavior. These alerts are then converted into the observation space which the RL agent uses to train.
 
 ### Configurations
 
-All configurations are stored in the `resources/configs` directory. You can use config to define blue agents, decoy types, detectors, host types, networks, and services.
+All configurations are stored in the `cyberwheel/data/configs` directory. You can use config to define the environment, red agents, campaigns, blue agents, decoy types, detectors, host types, networks, and services.
 
 <!-- CONTRIBUTING -->
 ## Contributing
@@ -299,14 +282,6 @@ All configurations are stored in the `resources/configs` directory. You can use 
 If you are not familiar with SOLID principles, please read this before contributing. Pretty basic, but makes a huge difference down the road --- [Article on SOLID](https://medium.com/@iclub-ideahub/the-solid-principles-a-guide-to-writing-maintainable-and-extensible-code-in-python-ecac4ea8d7ee).
 
 If you need to add a dependency, this project is packaged with [poetry](https://python-poetry.org/). Please take a few minutes to read about the [basics](https://python-poetry.org/docs/basic-usage/#specifying-dependencies) before adding any dependencies. Do not use pip, do not use requirements.txt. TLDR: use `poetry add <dependency name>`. After adding your dependency, add and commit the new `poetry.lock` file.
-
-This project uses pre-commit to automatically run formatting prior to every commit. Pyright is included in this suite and _will_ block your commit if you commit code with bad type labels. If you'd like to skip this check, run `SKIP=pyright git commit <rest of commit command>`.
-
-If you need to do anything with the networkx graph, write helper functions in the network module (base class where possible) rather than passing the graph around / injecting it wherever possible. Of course you may have to inject the network instance since it holds the state information.
-
-The cyberwheel class that inherits from gym should contain minimal code to keep it clean. If you find yourself writing long code blocks in this file, consider whether they should be moved into another module or class. The same thing goes for the main class --- keep it clean. If you want to add 30 command line args, maybe find a way to parse them using a helper class just to keep that file clean.
-
-Be creative and have fun!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -322,15 +297,16 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Sean Oesch - oeschts@ornl.gov
 
-Cory Watson - watsoncl1@ornl.gov
-
 Amul Chaulagain - chaulagaina@ornl.gov
+
+Phillipe Austria - austriaps@ornl.gov
 
 Matthew Dixson - dixsonmk@ornl.gov
 
 Brian Weber - weberb@ornl.gov
 
-Phillipe Austria - austriaps@ornl.gov
+Cory Watson - watsoncl1@ornl.gov
+
 
 Project Link: [https://github.com/ORNL/cyberwheel/](https://github.com/ORNL/cyberwheel/)
 
@@ -338,6 +314,8 @@ Project Link: [https://github.com/ORNL/cyberwheel/](https://github.com/ORNL/cybe
 
 <!-- Accompanying Papers -->
 ## Papers
+[PLACEHOLDER]()
+
 [(2024) Towards a High Fidelity Training Environment for Autonomous Cyber Defense Agents](https://doi.org/10.1145/3675741.3675752)
 
 [(2024) The Path to Autonomous Cyber Defense](https://arxiv.org/pdf/2404.10788.pdf)

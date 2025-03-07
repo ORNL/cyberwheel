@@ -24,9 +24,9 @@ pygraphviz = "^1.13"
 dash = "^2.17.0"
 python-dotenv = "^1.0.1"
 bigtree = "^0.19.3"
-ray = "^2.38.0"
-stable-baselines3 = "^2.3.2"
-gymnasium = "0.28.1"
+gymnasium = "^1.1.0"
+ray = "^2.43.0"
+stable-baselines3 = "^2.5.0"
 
 
 [tool.poetry.group.dev.dependencies]

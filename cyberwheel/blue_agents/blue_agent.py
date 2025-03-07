@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from cyberwheel.reward import RewardMap
 
 class BlueAgentResult():
-    def __init__(self, name: str, id: str, success: bool, recurring: int) -> None:
+    def __init__(self, name: str, id: str, success: bool, recurring: int, target=None) -> None:
         """
         - `name`: name of the blue action executed
         - `id`: id for a recurring reward
@@ -15,6 +15,7 @@ class BlueAgentResult():
         self.id = id
         self.success = success
         self.recurring = recurring
+        self.target = target
 
 
 class BlueAgent(ABC):

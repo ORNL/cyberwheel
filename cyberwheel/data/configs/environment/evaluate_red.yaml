@@ -1,0 +1,27 @@
+# Evaluation Parameters
+red_agent: rl_red_agent.yaml
+blue_agent: inactive_blue_agent.yaml
+environment: CyberwheelRL
+valid_targets: servers
+train_red: true
+train_blue: false
+campaign: false
+seed: 1
+deterministic: false
+
+checkpoint: agent
+download_model: false
+run: # required if download_model is true
+wandb_project_name: # required if download_model is true
+wandb_entity: # required if download_model is true
+
+experiment_name: TrainRedAgent
+visualize: true
+graph_name: TrainRedAgent
+network_config: 15-host-network.yaml
+decoy_config: decoy_hosts.yaml
+host_config: host_defs_services.yaml
+detector_config: detector_handler.yaml
+reward_function: RLReward
+num_steps: 50
+num_episodes: 10

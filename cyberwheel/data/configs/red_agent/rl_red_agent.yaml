@@ -1,0 +1,34 @@
+actions: # All actions in this killchain (pingsweep -> impact) are required.
+  pingsweep:
+    class: ARTPingSweep
+    reward:
+      immediate: 0
+      recurring: 0
+  portscan:
+    class: ARTPortScan
+    reward:
+      immediate: 0
+      recurring: 0
+  discovery:
+    class: ARTDiscovery
+    reward:
+      immediate: 20
+      recurring: 0
+  lateral-movement:
+    class: ARTLateralMovement
+    reward:
+      immediate: 0
+      recurring: 0
+  privilege-escalation:
+    class: ARTPrivilegeEscalation
+    reward:
+      immediate: 0
+      recurring: 0
+  impact:
+    class: ARTImpact
+    reward:
+      immediate: 100
+      recurring: 0
+action_space: RedDiscreteActionSpace
+entry_host: host1 # optional; defaults to random user
+leader: server1 # optional; defaults to random server

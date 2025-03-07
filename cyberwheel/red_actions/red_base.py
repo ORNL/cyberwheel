@@ -1,5 +1,6 @@
 from __future__ import annotations
-from abc import abstractmethod
+
+from abc import abstractmethod, ABC
 from typing import Union, List, Dict, Any
 from cyberwheel.detectors.alert import Alert
 from cyberwheel.network.host import Host
@@ -34,7 +35,7 @@ class RedActionResults:
     target_host: Host
     cost: int
 
-    def __init__(self, src_host : Host, target_host : Host):
+    def __init__(self, src_host: Host, target_host: Host):
         self.discovered_hosts = []
         self.detector_alert = Alert(None, [], [])
         self.attack_success = False
@@ -97,7 +98,8 @@ class RedActionResults:
             return True
         return False
 
-class ARTAction:
+
+class ARTAction(ABC):
     """
     Base class for defining Atomic Red Team actions. New ART actions should inherit from this class and define sim_execute().
     """
@@ -106,16 +108,11 @@ class ARTAction:
         """
         - `src_host`: Host from which the attack originates.
 
-        - `target_service`: The service being targeted.
-
-        - `target_hosts`: The hosts being targeted. Can either be a list of hosts or list of subnets. If it is a list of subnets, then the attack should target all known hosts on that subnet.
-
-        - `techniques`: A list of techniques that can be used to perform this attack.
+        - `target_host`: The host being targeted.
         """
         self.src_host = src_host
         self.target_host = target_host
         self.action_results = RedActionResults(src_host, target_host)
-        self.name = ""
 
     @abstractmethod
     def sim_execute(self) -> RedActionResults | type[NotImplementedError]:

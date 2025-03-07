@@ -1,14 +1,16 @@
 import random
-from cyberwheel.red_agents.strategies.red_strategy import RedStrategy
 
-"""
-The DFS Impact strategy is to attack the current host until it's impacted,
-move to another random unimpacted host, and repeat.
-"""
+from cyberwheel.red_agents.strategies.red_strategy import RedStrategy
+from cyberwheel.network.host import Host
+
 
 class DFSImpact(RedStrategy):
+    """
+    The DFS Impact strategy is to attack the current host until it's impacted,
+    move to another random unimpacted host, and repeat.
+    """
     @classmethod
-    def select_target(cls, agent_obj):
+    def select_target(cls, agent_obj) -> Host:
         """
         If current host has been impacted: choose a random other unimpacted host
         Else: Continue attacking current host
@@ -17,33 +19,5 @@ class DFSImpact(RedStrategy):
             agent_obj.history.hosts[agent_obj.current_host.name].last_step
             == len(agent_obj.killchain) - 1
         ):
-            unimpacted_hosts = [
-                h
-                for h, info in agent_obj.history.hosts.items()
-                if info.last_step < len(agent_obj.killchain) - 1
-            ]
-            if len(unimpacted_hosts) > 0:
-                target_host_name = random.choice(unimpacted_hosts)
-                target_host = agent_obj.history.mapping[target_host_name]
-                return target_host
+            return agent_obj.network.hosts[agent_obj.unimpacted_hosts.get_random()]
         return agent_obj.current_host
-
-    @classmethod
-    def get_reward_map(cls) -> dict[str, tuple[int, int]]:
-        return {
-            "pingsweep": (-1, 0),
-            "portscan": (-1, 0),
-            "discovery": (-2, 0),
-            "lateral-movement": (-4, 0),
-            "privilege-escalation": (-6, 0),
-            "impact": (-8, -4),
-        }
-
-
-
-
-
-
-
-
-

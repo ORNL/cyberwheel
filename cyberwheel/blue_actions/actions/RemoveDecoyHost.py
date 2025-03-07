@@ -17,5 +17,6 @@ class RemoveDecoyHost(SubnetAction):
                 self.network.remove_host_from_subnet(host)
                 success = True
                 id = host.name
+                #print(f"removed {id}")
                 break
         return BlueActionReturn(id, success, -1)

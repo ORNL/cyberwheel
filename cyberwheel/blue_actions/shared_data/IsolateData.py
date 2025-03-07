@@ -3,6 +3,7 @@ from cyberwheel.network.host import Host
 from cyberwheel.network.subnet import Subnet
 
 class IsolateData(CustomSharedData):
+    # TODO: IsolateHost needs more testing
     def __init__(self, **kwargs):
         self.size: int = kwargs.get("size", 10)
         self.decoys = []

@@ -3,7 +3,7 @@ from typing import List
 class Dependency:
     """
     The Dependency class defines a dependency in an Atomic Test. This is a given prerequisite
-    for the main attack of the test. It contains the 
+    for the main attack of the test. It contains the
     *   executor_name - the name of the executor of the command (i.e. command prompt)
     *   description - description of dependency
     *   get_prerequisite_command - command that needs to be run to download and setup any tools or dependencies
@@ -121,6 +121,7 @@ class AtomicTest:
         *   dependency_executor_name: str
         *   dependencies: List[Dependency]
     """
+
     def __init__(self, atomic_test_dict):
         """
         Initializes an AtomicTest class from the dict representation.
@@ -144,19 +145,15 @@ class AtomicTest:
         if "executor" in atomic_test_dict:
             executor = atomic_test_dict["executor"]
             executor_name = executor["name"] if "name" in executor else ""
-            executor_command = (
-                executor["command"] if "command" in executor else ""
-            )
+            executor_command = executor["command"] if "command" in executor else ""
             executor_cleanup_command = (
-                executor["cleanup_command"]
-                if "cleanup_command" in executor
-                else ""
+                executor["cleanup_command"] if "cleanup_command" in executor else ""
             )
             executor_elevation_required = (
                 executor["elevation_required"]
                 if "elevation_required" in executor
                 else True
-            )  # TODO: Is it better for default elevation required to be T or F???
+            )
 
             self.executor = Executor(
                 name=executor_name,
@@ -175,9 +172,9 @@ class AtomicTest:
                 inargs.append(
                     InputArgument(name, arg["description"], arg["type"], arg["default"])
                 )
-            self.input_arguments = inargs
+            self.input_arguments: list[InputArgument] = inargs
         else:
-            self.input_arguments = []
+            self.input_arguments: list[InputArgument] = []
 
         if "dependency_executor_name" in atomic_test_dict:
             self.dependency_executor_name = atomic_test_dict["dependency_executor_name"]

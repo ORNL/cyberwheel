@@ -1,0 +1,28 @@
+name: BruteForceEncryption
+entry_host: random # Set an entry host. If 'random', chooses random user host.
+leader: random # Set a leader host. If 'random', chooses random server host
+strategy: BruteForce # Set red agent strategy.
+campaign:
+  - technique_name: RemoteSystemDiscovery
+    atomic_test_guid: 96db2632-8417-4dbb-b8bb-a8b92ba391de
+    reward:
+      immediate: 10.0
+      recurring: 0.0
+  - technique_name: NetworkServiceDiscovery
+    atomic_test_guid: 515942b0-a09f-4163-a7bb-22fefb6f185f
+    reward:
+      immediate: 20.0
+      recurring: 0.0
+  - technique_name: SudoandSudoCaching
+    atomic_test_guid: 150c3a08-ee6e-48a6-aeaf-3659d24ceb4e
+    reward:
+      immediate: 30.0
+      recurring: 0.0
+  - technique_name: DataEncryptedforImpact
+    atomic_test_guid: 08cbf59f-85da-4369-a5f4-049cffd7709f
+    reward:
+      immediate: 40.0
+      recurring: 10.0
+lateral_movement_technique: null # Define a technique to use for Lateral movement actions
+lateral_movement_atomic_test: null # Define a test to run for Lateral movement technique
+lateral_movement_reward: 0.0

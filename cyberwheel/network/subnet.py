@@ -1,10 +1,11 @@
 import ipaddress as ipa
 import random
-from .network_object import NetworkObject, Route
-from typing import Union, List
-#from .host import Host  # this is causing circular import issues
-from .router import Router
+
 from copy import deepcopy
+
+from cyberwheel.network.network_object import NetworkObject, Route
+from cyberwheel.network.router import Router
+
 
 
 class Subnet(NetworkObject):
@@ -112,8 +113,6 @@ class Subnet(NetworkObject):
     def get_num_unassigned_ips(self) -> int:
         return len(self.available_ips)
 
-
-    # TODO: refactor for Route
     def assign_dhcp_lease(self, host_obj) -> None:
         '''
         Emulate a DHCP lease

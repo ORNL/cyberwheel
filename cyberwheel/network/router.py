@@ -1,5 +1,5 @@
 import ipaddress as ipa
-from .network_object import NetworkObject
+from cyberwheel.network.network_object import NetworkObject
 
 
 class Router(NetworkObject):
@@ -31,8 +31,6 @@ class Router(NetworkObject):
         super().__init__(name, firewall_rules)
         # TODO
         self.default_route = None
-        # TODO: set routes after init?
-        #self.routes = routes  # List of routes to other subnets or routers
         self.interfaces = {}
 
     def __str__(self) -> str:

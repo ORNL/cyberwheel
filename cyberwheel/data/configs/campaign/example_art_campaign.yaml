@@ -1,0 +1,27 @@
+name: campaign_name
+entry_host: null # Set an entry host. If null, chooses random user host.
+leader: null # Set a leader host. If null, chooses random server host.
+strategy: ServerDowntime # Set red agent strategy.
+campaign:
+  - technique_name: ARTTechnique1 # Define the art technique to be run at a given step
+    atomic_test_guid: AtomicTest1GUID # Define which atomic test to use for art technique
+  - technique_name: ARTTechnique2
+    atomic_test_guid: AtomicTest2GUID
+  - technique_name: ARTTechnique3
+    atomic_test_guid: AtomicTest3GUID
+  - technique_name: ARTTechnique4
+    atomic_test_guid: AtomicTest4GUID
+  - technique_name: ARTTechnique5
+    atomic_test_guid: AtomicTest5GUID
+  - technique_name: ARTTechnique6
+    atomic_test_guid: AtomicTest6GUID
+lateral_movement_technique: LateralMovementTechniqueName # Define a technique to use for Lateral movement actions
+lateral_movement_atomic_test: LateralMovementTestGUID # Define a test to run for Lateral movement technique
+reward:
+  ARTTechnique1: 10
+  ARTTechnique2: 20
+  ARTTechnique3: 30
+  ARTTechnique4: 40
+  ARTTechnique5: 50
+  ARTTechnique6: 60
+  LateralMovementTechniqueName: 20

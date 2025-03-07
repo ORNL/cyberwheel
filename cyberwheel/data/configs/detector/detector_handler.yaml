@@ -1,0 +1,10 @@
+adjacency_list:
+- - start
+  - d1
+- - d1
+  - end
+init_info:
+  d1:
+    class: PerfectDetector
+    config: null
+    module: example_detectors

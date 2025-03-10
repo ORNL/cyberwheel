@@ -325,7 +325,7 @@ Project Link: [https://github.com/ORNL/cyberwheel/](https://github.com/ORNL/cybe
 <!-- MARKDOWN LINKS & IMAGES -->
 [issues-shield]: https://img.shields.io/github/issues/ORNL/cyberwheel.svg?style=for-the-badge
 [issues-url]: https://github.com/ORNL/cyberwheel/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/ORNL/cyberwheel.svg?style=for-the-badge
 [license-url]: https://github.com/ORNL/cyberwheel/blob/release/LICENSE
 
 [plotly-dash]: https://img.shields.io/badge/plotly-dash-000000?style=for-the-badge&logo=plotly&logoColor=white

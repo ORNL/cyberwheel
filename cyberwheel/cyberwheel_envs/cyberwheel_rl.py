@@ -120,7 +120,9 @@ class CyberwheelRL(gym.Env, Cyberwheel):
                 "killchain": self.red_agent.killchain,
                 "network": self.network,
                 "history": self.red_agent.history,
-                "commands": red_agent_result.action_results.metadata.get("commands", []) 
+                "commands": red_agent_result.action_results.metadata
+                    .get(red_agent_result.target_host.name, {})
+                    .get("commands", [])
             }
 
         return obs_vec, reward, done, False, info

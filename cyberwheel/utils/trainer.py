@@ -14,6 +14,7 @@ from importlib.resources import files
 from cyberwheel.utils import RLAgent, get_service_map
 from cyberwheel.utils.set_seed import set_seed
 from cyberwheel.network.network_base import Network
+from cyberwheel.utils.async_call import async_call, make_env
 
 class Trainer:
     def __init__(self, args):
@@ -23,30 +24,6 @@ class Trainer:
         self.deterministic = os.getenv("CYBERWHEEL_DETERMINISTIC", "False").lower() in ('true', '1', 't')
         self.args.deterministic = self.deterministic
         self.seed = 0
-    def make_env(self, rank, evaluation: bool = False):
-        """
-        Utility function for multiprocessed env.
-
-        :param env_id: the environment ID
-        :param num_env: the number of environments you wish to have in subprocesses
-        :param rank: index of the subprocess
-        """
-
-        def _init():
-            if evaluation:
-                config_path = files("cyberwheel.data.configs.network").joinpath(self.args.network_config)
-                env = self.env(self.args, network=Network.create_network_from_yaml(config_path), evaluation=True)
-            else:
-                env = self.env(self.args, network=self.networks[rank], evaluation=False)
-            self.max_action_space_size = env.max_action_space_size
-            env.reset()
-            env = gym.wrappers.RecordEpisodeStatistics(
-                env
-            )  # This tracks the rewards of the environment that it wraps. Used for logging
-            return env
-
-        return _init
-    
     def get_action_mask(self, action_space_size, action_masks):
         action_masks[:action_space_size] = True # Valid actions
         action_masks[action_space_size:] = False # Invalid actions
@@ -90,7 +67,7 @@ class Trainer:
         """Evaluate 'model' on tasks listed in 'eval_queue' in a separate process"""
         eval_device = torch.device("cpu")
 
-        env_funcs = [self.make_env(i, evaluation=True) for i in range(1)]
+        env_funcs = [make_env(self.env, self.args, self.networks, 0, evaluation=True)]
 
         # Load the agent
         sample_env = gym.vector.SyncVectorEnv(env_funcs)
@@ -164,13 +141,15 @@ class Trainer:
 
         print("Defining environment(s) and beginning training:", end="\n\n")
 
-        env_funcs = [self.make_env(i) for i in range(self.args.num_envs)]
+        env_funcs = [make_env(self.env, self.args, self.networks, i, False) for i in range(self.args.num_envs)]
 
         self.envs = (
-            gym.vector.AsyncVectorEnv(env_funcs)
+            async_call(env_funcs)
             if self.args.async_env
             else gym.vector.SyncVectorEnv(env_funcs)
         )
+
+        self.max_action_space_size = env_funcs[0].max_action_space_size
 
         assert isinstance(
             self.envs.single_action_space, gym.spaces.Discrete

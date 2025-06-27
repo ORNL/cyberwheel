@@ -2,7 +2,7 @@ from importlib.resources import files
 import gymnasium as gym
 from cyberwheel.network.network_base import Network
 
-def make_env(env_func, args, networks, rank, evaluation: bool = False) -> function:
+def make_env(env_func, args, networks, rank, evaluation: bool = False):
     """
     Utility function for multiprocessed env.
 

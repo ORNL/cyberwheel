@@ -1,0 +1,16 @@
+attributes:
+    depends:
+        - graph
+    precedes: []
+    provides:
+        - topology
+model_components:
+    depends:
+        - layer2.ovs
+        - base_objects
+        - linux.ubuntu_cyberwheel
+        - vyos.helium118
+name: cyberwheel.topology
+plugin: plugin.py
+vm_resources:
+    - vm_resources/*

@@ -2,13 +2,13 @@
 
 ## Overview
 
-<figure align="center">
+<p align="center" width="100%">
 <img 
   alt="Cyberwheel Emulation Environment Diagram"
-  src="images/emulation-environment.png" 
+  src="/images/emulation-environment.png"
   width="500"
 >
-</figure>
+</p>
 
 Cyberwheel uses [Firewheel](https://github.com/sandialabs/firewheel) for emulation and evaluating agents. Firewheel provides a high-fidelity testing environment to perform repeatable experiments and scale to large networks.
 
